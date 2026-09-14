@@ -231,14 +231,27 @@ full store degrades to "no save" instead of throwing into the render loop.
 4. ~~**Real maps** — Tiled tilemaps, camera follow, collision, multiple areas.~~ Done.
 5. ~~**Persistence and invites** — database-backed worlds surviving a restart, invite codes.~~ Done.
 
-Next, roughly in order of what the game needs most:
+The farming loop works end to end, but nothing in it is scarce and nothing
+accumulates, so no day is a decision and no day matters more than the last.
+[`docs/specs/`](docs/specs/) is the plan for fixing that, in dependency order:
 
-6. **Real accounts** — passwords or a third-party sign-in, so an identity is not
-   tied to one browser. See the note on the player token above.
-7. **More to do** — more crops, tools, buildings, NPCs, and seasons that matter.
-8. **Movement that holds up over the internet** — the local player is predicted
-   and corrected past a drift threshold, which is fine on a LAN and visibly
-   rubbery on a slow link.
+| # | Spec | What it changes |
+| --- | --- | --- |
+| 01 | [Energy and sleeping](docs/specs/01-energy-and-sleep.md) | A day costs something, and the player chooses when it ends |
+| 02 | [Sound](docs/specs/02-sound.md) | The game is currently silent |
+| 03 | [Inventory slots](docs/specs/03-inventory-slots.md) | Structural; blocks 04, 06 and 07 |
+| 04 | [Seasons and crops](docs/specs/04-seasons-and-crops.md) | Seasons currently change nothing |
+| 05 | [One HUD, and the mouse](docs/specs/05-hud-and-mouse.md) | The HUD is drawn twice; there is no mouse input |
+| 06 | [Tools and buildings](docs/specs/06-tools-and-buildings.md) | Day 40 currently plays exactly like day 1 |
+| 07 | [NPCs worth visiting](docs/specs/07-npc-relationships.md) | The reason to stay once the farm runs itself |
+
+Two known limits not covered there:
+
+- **Real accounts.** The player token ties an identity to one browser; see the
+  note above for exactly what it does and does not protect.
+- **Movement over the internet.** The local player is predicted and corrected
+  past a drift threshold, which is fine on a LAN and visibly rubbery on a slow
+  link.
 
 ## Assets
 
