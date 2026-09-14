@@ -4,8 +4,11 @@ import {
   applyServerMoves,
   applyServerSync,
   applyServerWelcome,
+  setConnectionError,
+  setInviteCode,
   setTransport,
 } from '../state/store';
+import { farmSocketUrl, readInviteCode, readToken, rememberToken, showInviteCode } from './identity';
 import type { FarmState } from '../state/types';
 import {
   MSG,
@@ -14,6 +17,7 @@ import {
   type ClientCommand,
   type ClockMessage,
   type EventsMessage,
+  type IdentityMessage,
   type MoveUpdate,
   type WelcomeMessage,
 } from './protocol';
@@ -26,8 +30,11 @@ export interface FarmConnection {
 /** How long to wait for the socket to open before giving up. */
 const CONNECT_TIMEOUT_MS = 4000;
 
-/** Close code the server uses when a farm already has its four players. */
-const FARM_FULL = 4001;
+/** Why the server hung up, and what to tell the player about it. */
+const CLOSE_REASONS: Record<number, string> = {
+  4001: 'That farm already has four farmhands. Playing offline instead.',
+  4002: 'No farm with that code. Check the invite link, or clear it to start your own.',
+};
 
 /**
  * Connects to the authoritative server and wires it to the store.
@@ -40,8 +47,12 @@ const FARM_FULL = 4001;
 export async function connectToFarm(url: string | undefined): Promise<FarmConnection | null> {
   if (!url) return null;
 
-  const socket = await open(url);
+  // Who we are and where we are going travel in the URL, so the server knows
+  // both before the first frame and can refuse with a reason.
+  const socket = await open(farmSocketUrl(url, readInviteCode(), readToken()));
   if (!socket) return null;
+
+  setConnectionError(null);
 
   socket.addEventListener('message', (event) => {
     if (typeof event.data !== 'string') return;
@@ -51,8 +62,10 @@ export async function connectToFarm(url: string | undefined): Promise<FarmConnec
 
   socket.addEventListener('close', (event) => {
     setTransport(null);
-    if (event.code === FARM_FULL) {
-      console.warn('[net] this farm already has four players; playing offline instead.');
+    const reason = CLOSE_REASONS[event.code];
+    if (reason) {
+      setConnectionError(reason);
+      console.warn(`[net] ${reason}`);
     }
   });
 
@@ -111,6 +124,15 @@ function open(url: string): Promise<WebSocket | null> {
 
 function route(frame: { t: string; d: unknown }): void {
   switch (frame.t) {
+    case MSG.identity: {
+      const message = frame.d as IdentityMessage;
+      // Kept so the next visit is recognised as the same player, and shown in
+      // the address bar so the world can be reloaded or shared.
+      rememberToken(message.token);
+      setInviteCode(message.code);
+      showInviteCode(message.code);
+      return;
+    }
     case MSG.welcome: {
       const message = frame.d as WelcomeMessage;
       applyServerWelcome(message.playerId, message.farm);

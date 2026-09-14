@@ -457,7 +457,11 @@ export default class FarmScene extends Phaser.Scene {
    */
   private syncAvatars() {
     const { farm, localPlayerId } = farmStore.getState();
-    const here = Object.values(farm.players).filter((player) => player.area === this.builtArea);
+    // Members who are logged out keep their place in the world but are not
+    // standing in it, so they are not drawn.
+    const here = Object.values(farm.players).filter(
+      (player) => player.online && player.area === this.builtArea,
+    );
     const present = new Set(here.map((player) => player.id));
 
     for (const player of here) {

@@ -35,14 +35,22 @@ export interface Connection {
  * without opening a port.
  */
 export class FarmRoom {
-  private farm: FarmState = createFarmState();
+  private farm: FarmState;
   private connections = new Map<PlayerId, Connection>();
+
+  /** True when the world has changed since it was last written to storage. */
+  private dirty = false;
 
   /** Latest movement input per player, applied on the server's own clock. */
   private moveInputs = new Map<PlayerId, { dx: number; dy: number }>();
 
   /** Commands received since the last tick, drained in arrival order. */
   private pending: Array<{ playerId: PlayerId; command: ActionCommand }> = [];
+
+  /** Restores a saved world, or starts a new one when given nothing. */
+  constructor(initial?: FarmState) {
+    this.farm = initial ?? createFarmState();
+  }
 
   get state(): FarmState {
     return this.farm;
@@ -52,19 +60,38 @@ export class FarmRoom {
     return this.connections.size;
   }
 
+  get memberCount(): number {
+    return Object.keys(this.farm.players).length;
+  }
+
+  /** True when the world has changes worth writing to storage. */
+  get needsSaving(): boolean {
+    return this.dirty;
+  }
+
+  markSaved(): void {
+    this.dirty = false;
+  }
+
+  /** Whether a newcomer could still be given a place here. */
   get isFull(): boolean {
-    return this.connections.size >= MAX_PLAYERS;
+    return this.memberCount >= MAX_PLAYERS;
   }
 
   /**
-   * Seats a connection. Refused when the farm is full, so the cap lives here
-   * rather than depending on every caller to check first.
+   * Seats a connection.
+   *
+   * A returning member always gets in: their place is already theirs, and the
+   * cap is on how many people belong to a world, not on how many happen to be
+   * connected at once. Only a newcomer can be turned away.
    */
-  join(connection: Connection): boolean {
-    if (this.isFull || this.connections.has(connection.id)) return false;
+  join(connection: Connection, name = connection.id.slice(0, 6)): boolean {
+    if (this.connections.has(connection.id)) return false;
+    const returning = Boolean(this.farm.players[connection.id]);
+    if (!returning && this.isFull) return false;
 
     this.connections.set(connection.id, connection);
-    this.apply({ type: 'player/join', playerId: connection.id, name: connection.id.slice(0, 6) });
+    this.apply({ type: 'player/join', playerId: connection.id, name });
 
     connection.send(encodeFrame({ t: MSG.welcome, d: { playerId: connection.id, farm: this.farm } }));
     this.broadcast({ t: MSG.sync, d: this.farm }, connection.id);
@@ -168,6 +195,7 @@ export class FarmRoom {
 
   private apply(intent: Parameters<typeof applyIntent>[1]): GameEvent[] {
     const result = applyIntent(this.farm, intent);
+    if (result.state !== this.farm) this.dirty = true;
     this.farm = result.state;
     return result.events;
   }

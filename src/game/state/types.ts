@@ -34,6 +34,14 @@ export interface PlayerState {
   satchel: Satchel;
   /** Whether this player has turned in for the night; the day ends when all have. */
   asleep: boolean;
+  /**
+   * Whether this player is connected right now.
+   *
+   * Membership outlives a session: leaving keeps the record, the satchel, and
+   * the spot by the gate, so coming back tomorrow is coming back, not starting
+   * over. Only presence is transient.
+   */
+  online: boolean;
 }
 
 /**

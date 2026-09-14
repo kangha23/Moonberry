@@ -1,6 +1,16 @@
+import { useState } from 'react';
 import { useStore } from 'zustand';
 import GameCanvas from './components/GameCanvas';
-import { CONTROLS_HINT, formatClock, localPlayer, promptFor, seedLabel, toolLabel } from './game/state/selectors';
+import { inviteLink } from './game/net/identity';
+import {
+  CONTROLS_HINT,
+  formatClock,
+  localPlayer,
+  onlineCount,
+  promptFor,
+  seedLabel,
+  toolLabel,
+} from './game/state/selectors';
 import { farmStore, startNewFarm } from './game/state/store';
 
 export default function App() {
@@ -10,11 +20,14 @@ export default function App() {
   const weather = useStore(farmStore, (store) => store.farm.weather);
   const coins = useStore(farmStore, (store) => store.farm.coins);
   const quest = useStore(farmStore, (store) => store.farm.quest);
-  const playerCount = useStore(farmStore, (store) => Object.keys(store.farm.players).length);
+  const playerCount = useStore(farmStore, (store) => onlineCount(store.farm));
   const player = useStore(farmStore, localPlayer);
   const prompt = useStore(farmStore, promptFor);
   const restored = useStore(farmStore, (store) => store.restored);
   const online = useStore(farmStore, (store) => store.online);
+  const inviteCode = useStore(farmStore, (store) => store.inviteCode);
+  const connectionError = useStore(farmStore, (store) => store.connectionError);
+  const [copied, setCopied] = useState(false);
 
   const satchel = player?.satchel;
   const questPercent = Math.min(100, Math.round((quest.progress / quest.target) * 100));
@@ -80,7 +93,7 @@ export default function App() {
             </dl>
             <p className="hud-note">
               Coins are the farm&apos;s shared wallet. Seeds, crops, and water are yours alone.
-              {playerCount > 1 ? ` ${playerCount} farmhands on the farm.` : ''}
+              {playerCount > 1 ? ` ${playerCount} farmhands here right now.` : ''}
             </p>
           </div>
 
@@ -105,14 +118,34 @@ export default function App() {
           <div className="hud-section">
             <h2>{online ? 'Connection' : 'Save'}</h2>
             {online ? (
-              <p className="hud-note">
-                Connected to the farm server. It keeps the farm, the clock, and the wallet, so
-                everyone here sees the same fields.
-              </p>
+              <>
+                <p className="hud-note">
+                  The server keeps this farm, its clock, and its wallet, so everyone here sees the
+                  same fields and it is all still here tomorrow.
+                </p>
+                {inviteCode ? (
+                  <div className="invite">
+                    <span className="invite-label">Invite code</span>
+                    <code className="invite-code">{inviteCode}</code>
+                    <button
+                      type="button"
+                      className="ghost-button"
+                      onClick={() => {
+                        void navigator.clipboard
+                          ?.writeText(inviteLink(inviteCode))
+                          .then(() => setCopied(true))
+                          .catch(() => setCopied(false));
+                      }}
+                    >
+                      {copied ? 'Link copied' : 'Copy invite link'}
+                    </button>
+                  </div>
+                ) : null}
+              </>
             ) : (
               <>
                 <p className="hud-note">
-                  Playing offline. The farm saves itself as you play, in this browser only.
+                  {connectionError ?? 'Playing offline. The farm saves itself as you play, in this browser only.'}
                 </p>
                 <button
                   type="button"

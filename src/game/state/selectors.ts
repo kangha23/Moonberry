@@ -44,9 +44,9 @@ export function areaName(player: PlayerState | null): string {
   return player ? areaMap(player.area).name : '';
 }
 
-/** Players standing on the same map as the local player, for rendering. */
-export function playersInArea(farm: FarmState, area: PlayerState['area']): PlayerState[] {
-  return Object.values(farm.players).filter((player) => player.area === area);
+/** How many members of this world are connected right now. */
+export function onlineCount(farm: FarmState): number {
+  return Object.values(farm.players).filter((player) => player.online).length;
 }
 
 export function formatClock(totalMinutes: number): string {

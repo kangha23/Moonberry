@@ -29,6 +29,7 @@
     // its HUD selectors, and the colyseus.js connection.
     "../src/game/state/store.ts",
     "../src/game/state/selectors.ts",
-    "../src/game/net/client.ts"
+    "../src/game/net/client.ts",
+    "../src/game/net/identity.ts"
   ]
 }

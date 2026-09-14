@@ -93,14 +93,52 @@ describe('seating players', () => {
     expect(room.playerCount).toBe(MAX_PLAYERS);
   });
 
-  it('frees the seat when a player leaves', () => {
+  it('drops the connection but keeps the place when a player leaves', () => {
     room.join(alice);
     room.join(bob);
 
     room.leave('alice');
 
     expect(room.playerCount).toBe(1);
-    expect((bob.latest(MSG.sync) as FarmState).players.alice).toBeUndefined();
+    expect(room.memberCount).toBe(2);
+    expect((bob.latest(MSG.sync) as FarmState).players.alice.online).toBe(false);
+  });
+
+  it('lets a member back in even when the world is full', () => {
+    const members = [];
+    for (let i = 0; i < MAX_PLAYERS; i += 1) {
+      const connection = new FakeConnection(`p${i}`);
+      members.push(connection);
+      room.join(connection);
+    }
+    room.leave('p0');
+
+    expect(room.isFull).toBe(true);
+    // A newcomer is turned away, but somebody who already lives here is not.
+    expect(room.join(new FakeConnection('newcomer'))).toBe(false);
+    expect(room.join(new FakeConnection('p0'))).toBe(true);
+  });
+
+  it('restores a world it is handed instead of starting a fresh one', () => {
+    const seeded = new FarmRoom();
+    seeded.join(new FakeConnection('alice'));
+    seeded.state.coins = 999;
+
+    const resumed = new FarmRoom(seeded.state);
+
+    expect(resumed.state.coins).toBe(999);
+    expect(resumed.memberCount).toBe(1);
+  });
+
+  it('reports having changes to save only after something changed', () => {
+    const fresh = new FarmRoom();
+    expect(fresh.needsSaving).toBe(false);
+
+    fresh.join(alice);
+    expect(fresh.needsSaving).toBe(true);
+
+    fresh.markSaved();
+    expect(fresh.needsSaving).toBe(false);
   });
 
   it('ignores commands from a connection that is not seated', () => {

@@ -86,6 +86,7 @@ function createPlayer(id: PlayerId, name: string, spawn: Point): PlayerState {
     seed: 'turnip',
     satchel: createSatchel(),
     asleep: false,
+    online: true,
   };
 }
 
@@ -252,7 +253,21 @@ function applyTick(state: FarmState, deltaMs: number): ApplyResult {
 export function applyIntent(state: FarmState, intent: Intent): ApplyResult {
   switch (intent.type) {
     case 'player/join': {
-      if (state.players[intent.playerId]) return unchanged(state);
+      // A returning member is not a new one: they keep their satchel and the
+      // spot they logged out from, and take no extra seat.
+      const existing = state.players[intent.playerId];
+      if (existing) {
+        if (existing.online) return unchanged(state);
+        return {
+          state: {
+            ...state,
+            revision: state.revision + 1,
+            players: { ...state.players, [intent.playerId]: { ...existing, online: true } },
+          },
+          events: [{ kind: 'playerJoined', playerId: intent.playerId }],
+        };
+      }
+
       const taken = Object.keys(state.players).length;
       if (taken >= MAX_PLAYERS) return unchanged(state);
       const spawns = spawnPoints();
@@ -270,11 +285,16 @@ export function applyIntent(state: FarmState, intent: Intent): ApplyResult {
     }
 
     case 'player/leave': {
-      if (!state.players[intent.playerId]) return unchanged(state);
-      const players = { ...state.players };
-      delete players[intent.playerId];
+      // Disconnecting, not moving out. The record stays so the world keeps a
+      // place for them; only their presence ends.
+      const player = state.players[intent.playerId];
+      if (!player || !player.online) return unchanged(state);
       return {
-        state: { ...state, revision: state.revision + 1, players },
+        state: {
+          ...state,
+          revision: state.revision + 1,
+          players: { ...state.players, [intent.playerId]: { ...player, online: false } },
+        },
         events: [{ kind: 'playerLeft', playerId: intent.playerId }],
       };
     }

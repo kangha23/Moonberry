@@ -83,12 +83,43 @@ describe('player seats', () => {
     expect(again.state).toBe(state);
   });
 
-  it('frees the seat on leave', () => {
-    const state = join(createFarmState(), 'a', 'b');
+  it('keeps a member when they leave, marking them away rather than gone', () => {
+    let state = join(createFarmState(), 'a', 'b');
+    state = { ...state, players: { ...state.players, a: { ...state.players.a, satchel: { ...state.players.a.satchel, wood: 42 } } } };
+
     const after = applyIntent(state, { type: 'player/leave', playerId: 'a' }).state;
 
-    expect(after.players.a).toBeUndefined();
-    expect(after.players.b).toBeDefined();
+    expect(after.players.a.online).toBe(false);
+    expect(after.players.a.satchel.wood).toBe(42);
+    expect(after.players.b.online).toBe(true);
+  });
+
+  it('gives a returning member their own things back, not a new start', () => {
+    let state = join(createFarmState(), 'a');
+    state = {
+      ...state,
+      players: { ...state.players, a: { ...state.players.a, x: 500, y: 400, satchel: { ...state.players.a.satchel, wood: 42 } } },
+    };
+    state = applyIntent(state, { type: 'player/leave', playerId: 'a' }).state;
+
+    const back = applyIntent(state, { type: 'player/join', playerId: 'a', name: 'A' }).state;
+
+    expect(back.players.a.online).toBe(true);
+    expect(back.players.a.satchel.wood).toBe(42);
+    expect(back.players.a.x).toBe(500);
+  });
+
+  it('does not spend a seat on a member who comes back', () => {
+    let state = createFarmState();
+    for (let i = 0; i < MAX_PLAYERS; i += 1) {
+      state = applyIntent(state, { type: 'player/join', playerId: `p${i}`, name: `P${i}` }).state;
+    }
+    state = applyIntent(state, { type: 'player/leave', playerId: 'p0' }).state;
+
+    const back = applyIntent(state, { type: 'player/join', playerId: 'p0', name: 'P0' }).state;
+
+    expect(back.players.p0.online).toBe(true);
+    expect(Object.keys(back.players)).toHaveLength(MAX_PLAYERS);
   });
 });
 

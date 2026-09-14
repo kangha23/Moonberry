@@ -2,9 +2,9 @@
 
 A cozy farming RPG built with React 19, Vite, TypeScript, and Phaser 4.
 
-> **Status: playable multiplayer across two areas.** Up to four players share a
-> world through an authoritative server. Without a server configured the game
-> falls back to an offline world saved in the browser.
+> **Status: playable persistent multiplayer.** Up to four players share a world
+> that survives a server restart, reached by an invite code. Without a server
+> configured the game falls back to an offline world saved in the browser.
 
 ## What plays today
 
@@ -20,6 +20,8 @@ A cozy farming RPG built with React 19, Vite, TypeScript, and Phaser 4.
   each player carrying their own satchel. Players are drawn only on the map they
   are standing on.
 - Farming on the farm, selling and Rowan's quest in the village.
+- Worlds stored in SQLite and reached by a six-character invite code. Your
+  satchel and your spot are still there when you come back.
 
 ## Controls
 
@@ -54,9 +56,13 @@ Then point the client at it by copying `.env.example` to `.env.local`:
 VITE_GAME_SERVER=ws://localhost:2567
 ```
 
-Open the client in two tabs and you are two farmhands on one farm. With no
-`VITE_GAME_SERVER`, or when the server cannot be reached, the client says so in
-the console and plays offline instead.
+Opening the client creates a world and puts its invite code in the address bar,
+as `?farm=CODE`. Send that link to somebody, or have them enter the code, and
+you are farmhands on the same land. With no `VITE_GAME_SERVER`, or when the
+server cannot be reached, the client says so and plays offline instead.
+
+The server writes to `server/data/moonberry.sqlite` by default; set
+`DATABASE_FILE` to move it.
 
 ## Quality gates
 
@@ -80,7 +86,7 @@ staged JS/TS files).
 | `src/game/world/` | The Tiled parser, the parsed areas, collision, and interaction geometry. Pure functions, no Phaser. |
 | `src/game/state/` | `FarmState`, the intent/event protocol, the reducer over both, the store, and save/load. |
 | `src/game/net/` | The wire protocol and the browser side of the connection. |
-| `server/` | The authoritative game server. Its own package, because it deploys separately from the static client. |
+| `server/` | The authoritative game server and its database. Its own package, because it deploys separately from the static client. |
 | `src/game/scenes/FarmScene.ts` | Phaser scene: rendering and input only. Owns no game state. |
 | `src/game/assets/` | Procedurally generated pixel-art textures used when image files are missing. |
 | `src/components/`, `src/App.tsx` | React shell and HUD, fed by a `farm-snapshot` window event. |
@@ -170,6 +176,44 @@ without giving up the purity that lets the same code run on both sides — and
 its current server line has no matching published JavaScript client. The server
 now uses `ws` directly.
 
+### Worlds, and who owns a place in one
+
+A world is stored in SQLite through Node's built-in driver: no service to run,
+no native module to build. `server/src/db.ts` is deliberately small so moving to
+Postgres later means writing one more class, not rewriting the server.
+
+A world lives in memory only while somebody is in it. It is read on the first
+arrival and written as it changes, so a restart costs seconds rather than the
+farm. Because SQLite runs with write-ahead logging, even an abrupt kill leaves
+the last write recoverable.
+
+Membership outlives a session. Leaving marks a player away rather than deleting
+them: their satchel, their spot, and their place in the four stay theirs, and a
+returning member gets in even when the world is full. Only newcomers can be
+turned away.
+
+A save the validator rejects is refused rather than replaced. Serving a fresh
+farm under an existing invite code would quietly destroy whatever went wrong,
+so the row is left on disk to be looked at.
+
+### What the player token is, and is not
+
+Each browser holds a long random token the server issues once and recognises
+afterwards. That is what makes your farm yours when you come back.
+
+**It is not authentication.** There is no password and nothing to verify the
+token against, so:
+
+- Anyone who obtains the token *is* that player.
+- Clearing site data loses the identity, with no recovery.
+- One token means one browser; there is no way to sign in elsewhere.
+
+The database stores a SHA-256 hash rather than the token, so a leaked dump does
+not hand out working identities — but that is the limit of the protection.
+Real accounts (passwords, sessions, recovery, rate limiting) are a separate
+piece of work, and pretending the token is one would be worse than saying
+plainly that it is not.
+
 ### Saves
 
 `src/game/state/persistence.ts` serializes `FarmState` behind a `SaveStorage`
@@ -185,7 +229,16 @@ full store degrades to "no save" instead of throwing into the render loop.
 2. ~~**Save/load** — persist that store.~~ Done.
 3. ~~**Authoritative server** — shared clock, server-arbitrated actions, player sync.~~ Done.
 4. ~~**Real maps** — Tiled tilemaps, camera follow, collision, multiple areas.~~ Done.
-5. **Accounts and persistence** — database-backed worlds surviving a restart, invite codes.
+5. ~~**Persistence and invites** — database-backed worlds surviving a restart, invite codes.~~ Done.
+
+Next, roughly in order of what the game needs most:
+
+6. **Real accounts** — passwords or a third-party sign-in, so an identity is not
+   tied to one browser. See the note on the player token above.
+7. **More to do** — more crops, tools, buildings, NPCs, and seasons that matter.
+8. **Movement that holds up over the internet** — the local player is predicted
+   and corrected past a drift threshold, which is fine on a LAN and visibly
+   rubbery on a slow link.
 
 ## Assets
 

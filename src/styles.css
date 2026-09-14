@@ -256,6 +256,58 @@ h1 {
   line-height: 1.45;
 }
 
+.invite {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.invite-label {
+  flex-basis: 100%;
+  color: rgba(248, 240, 216, 0.58);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+}
+
+.invite-code {
+  padding: 6px 12px;
+  border: 2px solid rgba(255, 231, 173, 0.24);
+  border-radius: 10px;
+  background: rgba(31, 22, 17, 0.62);
+  color: var(--gold);
+  font-family: var(--font-pixel), monospace;
+  font-size: 0.86rem;
+  letter-spacing: 0.14em;
+}
+
+.ghost-button {
+  padding: 7px 12px;
+  border: 1px solid rgba(255, 231, 173, 0.28);
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(248, 240, 216, 0.84);
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.ghost-button:hover {
+  background: rgba(255, 231, 173, 0.1);
+  border-color: rgba(255, 231, 173, 0.5);
+}
+
+.ghost-button:focus-visible,
+.danger-button:focus-visible {
+  outline: 2px solid #f1cc7b;
+  outline-offset: 2px;
+}
+
 .danger-button {
   margin-top: 10px;
   width: 100%;

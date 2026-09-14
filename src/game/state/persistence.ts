@@ -118,6 +118,7 @@ function parsePlayer(value: unknown): PlayerState | null {
   if (!oneOf(value.tool, TOOLS)) return null;
   if (!oneOf(value.seed, CROP_IDS)) return null;
   if (typeof value.asleep !== 'boolean') return null;
+  if (typeof value.online !== 'boolean') return null;
   const satchel = parseSatchel(value.satchel);
   if (!satchel) return null;
   return {
@@ -131,6 +132,8 @@ function parsePlayer(value: unknown): PlayerState | null {
     seed: value.seed,
     satchel,
     asleep: value.asleep,
+    // Nobody is connected to a world that has just been read off a disk.
+    online: false,
   };
 }
 

@@ -16,6 +16,8 @@ export const MSG = {
   events: 'e',
   /** server -> client: which player this connection controls. */
   welcome: 'w',
+  /** server -> client: who the player is and which world they are in. */
+  identity: 'id',
 } as const;
 
 /**
@@ -58,6 +60,14 @@ export interface ClockMessage {
 
 export interface EventsMessage {
   events: GameEvent[];
+}
+
+export interface IdentityMessage {
+  /** Present this next time to be recognised as the same player. */
+  token: string;
+  /** The world's invite code, for bringing somebody else in. */
+  code: string;
+  playerId: PlayerId;
 }
 
 /** One axis of a movement input, as sent by a well-behaved client. */
@@ -108,6 +118,7 @@ export function toMoveUpdates(farm: FarmState): MoveUpdate[] {
 
 /** Everything the server can send, tagged by channel. */
 export type ServerFrame =
+  | { t: typeof MSG.identity; d: IdentityMessage }
   | { t: typeof MSG.welcome; d: WelcomeMessage }
   | { t: typeof MSG.sync; d: FarmState }
   | { t: typeof MSG.moves; d: MoveUpdate[] }

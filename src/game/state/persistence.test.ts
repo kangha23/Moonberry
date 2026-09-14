@@ -49,13 +49,20 @@ function playedFarm(): FarmState {
 }
 
 describe('save round trip', () => {
-  it('restores an identical farm', () => {
+  it('restores the farm exactly, except that nobody is connected to it', () => {
     const farm = playedFarm();
     const storage = memoryStorage();
 
     saveFarm(farm, storage);
+    const restored = loadFarm(storage);
 
-    expect(loadFarm(storage)).toEqual(farm);
+    // A world read off a disk has no live connections, so restoring anyone as
+    // online would leave a player standing there who is not actually playing.
+    expect(restored?.players.a.online).toBe(false);
+    expect(restored).toEqual({
+      ...farm,
+      players: { ...farm.players, a: { ...farm.players.a, online: false } },
+    });
   });
 
   it('preserves per-player satchels and the shared wallet separately', () => {

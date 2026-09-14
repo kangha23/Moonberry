@@ -15,6 +15,10 @@ export interface FarmStoreState {
   restored: boolean;
   /** True while an authoritative server, not this browser, owns the farm. */
   online: boolean;
+  /** The world's invite code while online, so it can be shared. */
+  inviteCode: string | null;
+  /** Set when the server refused the connection, with something to show. */
+  connectionError: string | null;
 }
 
 const INITIAL_MESSAGE = 'Wake up on Amberfall Farm.';
@@ -33,6 +37,8 @@ export const farmStore = createStore<FarmStoreState>(() => ({
   message: INITIAL_MESSAGE,
   restored: false,
   online: false,
+  inviteCode: null,
+  connectionError: null,
 }));
 
 /**
@@ -167,6 +173,17 @@ export function startAutosave(storage?: SaveStorage): () => void {
 export function setTransport(send: ((command: ClientCommand) => void) | null): void {
   transport = send;
   farmStore.setState({ online: send !== null });
+  if (send === null) farmStore.setState({ inviteCode: null });
+}
+
+/** The world this client is in, learned from the server on connect. */
+export function setInviteCode(code: string | null): void {
+  farmStore.setState({ inviteCode: code });
+}
+
+/** Why the server would not take this connection, for the player to read. */
+export function setConnectionError(message: string | null): void {
+  farmStore.setState({ connectionError: message });
 }
 
 /**
