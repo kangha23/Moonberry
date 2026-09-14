@@ -1,7 +1,7 @@
 import { useStore } from 'zustand';
 import GameCanvas from './components/GameCanvas';
 import { CONTROLS_HINT, formatClock, localPlayer, promptFor, seedLabel, toolLabel } from './game/state/selectors';
-import { farmStore } from './game/state/store';
+import { farmStore, startNewFarm } from './game/state/store';
 
 export default function App() {
   // Individually selected so a change to one slice does not re-render the rest.
@@ -13,6 +13,7 @@ export default function App() {
   const playerCount = useStore(farmStore, (store) => Object.keys(store.farm.players).length);
   const player = useStore(farmStore, localPlayer);
   const prompt = useStore(farmStore, promptFor);
+  const restored = useStore(farmStore, (store) => store.restored);
 
   const satchel = player?.satchel;
   const questPercent = Math.min(100, Math.round((quest.progress / quest.target) * 100));
@@ -21,7 +22,7 @@ export default function App() {
     <main className="shell">
       <section className="hero-panel" aria-label="Game overview">
         <div>
-          <p className="eyebrow">Amberfall Farm</p>
+          <p className="eyebrow">Amberfall Farm{restored ? ' • saved progress restored' : ''}</p>
           <h1>Restore a little hillside farm before moonrise.</h1>
           <p className="lede">
             A first playable slice with farming, movement, weather, time pressure, a neighbor quest,
@@ -95,6 +96,24 @@ export default function App() {
             <h2>Hint</h2>
             <p>{prompt}</p>
             <small>{CONTROLS_HINT}</small>
+          </div>
+
+          <div className="hud-section">
+            <h2>Save</h2>
+            <p className="hud-note">
+              The farm saves itself as you play, in this browser only.
+            </p>
+            <button
+              type="button"
+              className="danger-button"
+              onClick={() => {
+                if (window.confirm('Start a new farm? This erases the saved farm for good.')) {
+                  startNewFarm();
+                }
+              }}
+            >
+              Start a new farm
+            </button>
           </div>
         </aside>
       </section>

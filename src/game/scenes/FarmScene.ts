@@ -3,7 +3,7 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../constants';
 import { createPixelArtTextures } from '../assets/createPixelArtTextures';
 import type { GameEvent } from '../state/intents';
 import { promptFor } from '../state/selectors';
-import { dispatch, farmStore, joinAsLocalPlayer, onGameEvent, resetFarm } from '../state/store';
+import { dispatch, farmStore, initFarm, joinAsLocalPlayer, onGameEvent, startAutosave } from '../state/store';
 import { TOOL_LABELS, TOOL_ORDER, type PlayerId, type PlayerState } from '../state/types';
 import { CROP_DEFINITIONS } from '../systems/farming';
 import {
@@ -74,6 +74,7 @@ export default class FarmScene extends Phaser.Scene {
   private sparkles = new Map<string, Phaser.GameObjects.Image>();
   private lastWeather = '';
   private unsubscribeEvents: (() => void) | null = null;
+  private stopAutosave: (() => void) | null = null;
 
   constructor() {
     super('farm-scene');
@@ -120,13 +121,16 @@ export default class FarmScene extends Phaser.Scene {
     this.createUi();
     this.bindInput();
 
-    resetFarm();
+    initFarm();
     this.unsubscribeEvents = onGameEvent((events) => this.handleEvents(events));
     joinAsLocalPlayer(LOCAL_PLAYER_ID, 'You');
+    this.stopAutosave = startAutosave();
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.unsubscribeEvents?.();
       this.unsubscribeEvents = null;
+      this.stopAutosave?.();
+      this.stopAutosave = null;
     });
 
     this.refreshAllPlots();
@@ -162,6 +166,9 @@ export default class FarmScene extends Phaser.Scene {
         const plot = this.farm.plots[event.key];
         if (plot) this.refreshPlot(plot.x, plot.y);
       } else if (event.kind === 'dayStarted') {
+        this.updateWeatherPresentation();
+      } else if (event.kind === 'farmReplaced') {
+        this.refreshAllPlots();
         this.updateWeatherPresentation();
       }
     }

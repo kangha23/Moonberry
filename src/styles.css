@@ -256,6 +256,31 @@ h1 {
   line-height: 1.45;
 }
 
+.danger-button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  border: 1px solid rgba(233, 137, 111, 0.42);
+  border-radius: 10px;
+  background: rgba(120, 52, 40, 0.32);
+  color: #ffd9c7;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.danger-button:hover {
+  background: rgba(150, 62, 46, 0.46);
+  border-color: rgba(233, 137, 111, 0.7);
+}
+
+.danger-button:focus-visible {
+  outline: 2px solid #f1cc7b;
+  outline-offset: 2px;
+}
+
 @media (max-width: 1120px) {
   .play-layout {
     grid-template-columns: 1fr;

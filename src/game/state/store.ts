@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import type { GameEvent, Intent } from './intents';
+import { clearSave, loadFarm, saveFarm, type SaveStorage } from './persistence';
 import { applyIntent, createFarmState } from './reducer';
 import type { FarmState, PlayerId } from './types';
 
@@ -9,9 +10,15 @@ export interface FarmStoreState {
   localPlayerId: PlayerId | null;
   /** Latest message addressed to the local player, shown in the HUD. */
   message: string;
+  /** True when the farm on screen was restored from a save. */
+  restored: boolean;
 }
 
 const INITIAL_MESSAGE = 'Wake up on Amberfall Farm.';
+const RESTORED_MESSAGE = 'Welcome back to Amberfall Farm.';
+
+/** How long the farm must sit unchanged before it is written to storage. */
+const AUTOSAVE_DEBOUNCE_MS = 1000;
 
 type EventListener = (events: GameEvent[]) => void;
 
@@ -21,6 +28,7 @@ export const farmStore = createStore<FarmStoreState>(() => ({
   farm: createFarmState(),
   localPlayerId: null,
   message: INITIAL_MESSAGE,
+  restored: false,
 }));
 
 /**
@@ -67,8 +75,70 @@ export function joinAsLocalPlayer(playerId: PlayerId, name: string): void {
   dispatch({ type: 'player/join', playerId, name });
 }
 
-/** Resets the farm. Used when the Phaser scene is torn down and remounted. */
-export function resetFarm(): void {
+/**
+ * Starts a session: restores the saved farm if there is a usable one,
+ * otherwise begins a fresh farm. A corrupt or outdated save is discarded
+ * rather than repaired.
+ */
+export function initFarm(storage?: SaveStorage): void {
   listeners.clear();
-  farmStore.setState({ farm: createFarmState(), localPlayerId: null, message: INITIAL_MESSAGE });
+  const restored = loadFarm(storage);
+  farmStore.setState({
+    farm: restored ?? createFarmState(),
+    localPlayerId: null,
+    message: restored ? RESTORED_MESSAGE : INITIAL_MESSAGE,
+    restored: restored !== null,
+  });
+}
+
+/** Discards the save and starts a brand new farm. */
+export function startNewFarm(storage?: SaveStorage): void {
+  clearSave(storage);
+  const { localPlayerId } = farmStore.getState();
+  farmStore.setState({
+    farm: createFarmState(),
+    localPlayerId: null,
+    message: INITIAL_MESSAGE,
+    restored: false,
+  });
+  if (localPlayerId) joinAsLocalPlayer(localPlayerId, 'You');
+  publish([{ kind: 'farmReplaced' }]);
+}
+
+/**
+ * Writes the farm to storage whenever it settles.
+ *
+ * Keyed on `revision`, which only moves when an intent actually changed
+ * something, so the sub-second clock accumulator does not trigger writes.
+ */
+export function startAutosave(storage?: SaveStorage): () => void {
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  let lastSaved = farmStore.getState().farm.revision;
+
+  const flush = () => {
+    timer = null;
+    const { farm } = farmStore.getState();
+    if (farm.revision === lastSaved) return;
+    lastSaved = farm.revision;
+    saveFarm(farm, storage);
+  };
+
+  const unsubscribe = farmStore.subscribe(() => {
+    if (farmStore.getState().farm.revision === lastSaved) return;
+    if (timer) return;
+    timer = setTimeout(flush, AUTOSAVE_DEBOUNCE_MS);
+  });
+
+  // A closing tab never reaches the debounce, so write the pending farm now.
+  const onHide = () => {
+    if (timer) clearTimeout(timer);
+    flush();
+  };
+  globalThis.addEventListener?.('pagehide', onHide);
+
+  return () => {
+    if (timer) clearTimeout(timer);
+    unsubscribe();
+    globalThis.removeEventListener?.('pagehide', onHide);
+  };
 }

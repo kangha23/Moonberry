@@ -29,7 +29,9 @@ export type GameEvent =
   | { kind: 'questRewarded'; playerId: PlayerId; coins: number }
   | { kind: 'dayStarted'; day: number }
   | { kind: 'playerJoined'; playerId: PlayerId }
-  | { kind: 'playerLeft'; playerId: PlayerId };
+  | { kind: 'playerLeft'; playerId: PlayerId }
+  /** The whole farm was swapped out: start a new farm now, a server resync later. */
+  | { kind: 'farmReplaced' };
 
 export interface ApplyResult {
   state: FarmState;
