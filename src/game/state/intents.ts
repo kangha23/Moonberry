@@ -1,4 +1,5 @@
 import type { CropId } from '../systems/satchel';
+import type { AreaId } from '../world/areas';
 import type { FarmState, PlayerId, Tool } from './types';
 
 /**
@@ -30,6 +31,7 @@ export type GameEvent =
   | { kind: 'dayStarted'; day: number }
   | { kind: 'playerJoined'; playerId: PlayerId }
   | { kind: 'playerLeft'; playerId: PlayerId }
+  | { kind: 'areaChanged'; playerId: PlayerId; area: AreaId }
   /** The whole farm was swapped out: start a new farm now, a server resync later. */
   | { kind: 'farmReplaced' };
 

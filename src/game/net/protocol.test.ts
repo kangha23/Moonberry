@@ -79,10 +79,20 @@ describe('move updates', () => {
     expect(updates[0]).toHaveProperty('facing');
   });
 
-  it('carries only position and facing, never satchels or coins', () => {
+  it('carries only where a player is, never satchels or coins', () => {
     const farm = applyIntent(createFarmState(), { type: 'player/join', playerId: 'a', name: 'A' }).state;
 
-    expect(Object.keys(toMoveUpdates(farm)[0]).sort()).toEqual(['facing', 'id', 'x', 'y']);
+    expect(Object.keys(toMoveUpdates(farm)[0]).sort()).toEqual(['area', 'facing', 'id', 'x', 'y']);
+  });
+
+  it('says which map each player is on, so doorways are visible to everyone', () => {
+    let farm = applyIntent(createFarmState(), { type: 'player/join', playerId: 'a', name: 'A' }).state;
+    farm = {
+      ...farm,
+      players: { ...farm.players, a: { ...farm.players.a, area: 'village' } },
+    };
+
+    expect(toMoveUpdates(farm)[0].area).toBe('village');
   });
 
   it('rounds coordinates so float noise does not inflate every packet', () => {

@@ -434,6 +434,24 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
     ctx.fillRect(0, 0, 96, 96);
   });
 
+  // The village well. Previously assembled from loose rectangles in the scene;
+  // now a texture, so the map can name it like any other prop.
+  withTexture(scene, 'well', 64, 64, (ctx) => {
+    ctx.clearRect(0, 0, 64, 64);
+    rect(ctx, '#2e211b', 6, 30, 52, 28);
+    rect(ctx, '#6e5846', 8, 32, 48, 24);
+    rect(ctx, '#5b4738', 8, 40, 48, 4);
+    rect(ctx, '#324b55', 14, 20, 36, 20);
+    rect(ctx, '#93b5bd', 16, 22, 32, 16);
+    rect(ctx, '#b8dbe2', 18, 24, 28, 5);
+    rect(ctx, '#4a2a19', 8, 8, 48, 8);
+    rect(ctx, '#7b4328', 10, 10, 44, 5);
+    rect(ctx, '#4a2a19', 12, 14, 5, 18);
+    rect(ctx, '#4a2a19', 47, 14, 5, 18);
+    px(ctx, '#d9edf2', 30, 26);
+    px(ctx, '#d9edf2', 36, 27);
+  });
+
   withTexture(scene, 'splash', 10, 5, (ctx) => {
     ctx.clearRect(0, 0, 10, 5);
     ctx.strokeStyle = 'rgba(200,235,245,0.9)';

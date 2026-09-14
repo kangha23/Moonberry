@@ -10,18 +10,21 @@ import { claimQuestReward, createQuest, recordHarvest } from '../systems/quest';
 import { createSatchel, refillWater } from '../systems/satchel';
 import { advanceTime, createTimeState, isRainy, seasonForDay, weatherForDay } from '../systems/time';
 import {
-  LANDMARKS,
-  SPAWN_POINTS,
-  createMap,
+  AREAS,
+  START_AREA,
   describeTile,
-  isNear,
+  interactableAt,
   plotKey,
   plotTiles,
+  isAreaId,
+  portalAt,
   resolveMove,
+  spawnPoints,
   targetTile,
+  type AreaId,
   type Direction,
   type Point,
-} from '../world/layout';
+} from '../world/areas';
 import type { ApplyResult, GameEvent, Intent } from './intents';
 import {
   MAX_PLAYERS,
@@ -32,12 +35,6 @@ import {
   type PlayerState,
   type Tool,
 } from './types';
-
-/**
- * The map never changes, so it is derived once rather than stored in state.
- * Client and server build the identical map from the same function.
- */
-const MAP = createMap();
 
 /** Real milliseconds per in-game clock step. */
 const CLOCK_STEP_MS = 1200;
@@ -58,8 +55,10 @@ const TOOL_ACTIONS: Partial<Record<Tool, FarmAction>> = {
 
 export function createFarmState(): FarmState {
   const plots: Record<string, PlotState> = {};
-  for (const tile of plotTiles()) {
-    plots[plotKey(tile.x, tile.y)] = createPlot(tile.x, tile.y);
+  for (const area of Object.keys(AREAS) as AreaId[]) {
+    for (const tile of plotTiles(area)) {
+      plots[plotKey(area, tile.x, tile.y)] = createPlot(tile.x, tile.y);
+    }
   }
 
   return {
@@ -79,6 +78,7 @@ function createPlayer(id: PlayerId, name: string, spawn: Point): PlayerState {
   return {
     id,
     name,
+    area: START_AREA,
     x: spawn.x,
     y: spawn.y,
     facing: 'down',
@@ -145,12 +145,17 @@ function startNewDay(state: FarmState): { state: FarmState; events: GameEvent[] 
 /**
  * Resolves a context-sensitive action: talk to Rowan, sell at the market, or
  * use the equipped tool on the tile the player faces.
+ *
+ * What is interactive comes from the map rather than from constants here, so
+ * moving the market stall in Tiled moves where crops can be sold.
  */
 function applyAct(state: FarmState, playerId: PlayerId): ApplyResult {
   const player = state.players[playerId];
   if (!player) return unchanged(state);
 
-  if (isNear(player, LANDMARKS.rowan)) {
+  const nearby = interactableAt(player.area, player);
+
+  if (nearby?.interact === 'rowan') {
     const result = claimQuestReward(state.quest);
     const events: GameEvent[] = [say(playerId, result.message)];
     if (!result.claimed) return { state, events };
@@ -166,7 +171,7 @@ function applyAct(state: FarmState, playerId: PlayerId): ApplyResult {
     };
   }
 
-  if (isNear(player, LANDMARKS.market)) {
+  if (nearby?.interact === 'market') {
     const sale = sellAllCrops(player.satchel);
     const events: GameEvent[] = [say(playerId, sale.message)];
     if (!sale.changed) return { state, events };
@@ -182,13 +187,13 @@ function applyAct(state: FarmState, playerId: PlayerId): ApplyResult {
     };
   }
 
-  const target = targetTile(player, player.facing);
-  const key = plotKey(target.x, target.y);
+  const target = targetTile(player.area, player, player.facing);
+  const key = plotKey(player.area, target.x, target.y);
   const plot = state.plots[key];
   const action = TOOL_ACTIONS[player.tool];
 
   if (!plot || !action) {
-    return { state, events: [say(playerId, describeTile(MAP, target.x, target.y))] };
+    return { state, events: [say(playerId, describeTile(player.area, target.x, target.y))] };
   }
 
   const result = applyFarmAction(plot, player.satchel, action, player.seed);
@@ -250,13 +255,14 @@ export function applyIntent(state: FarmState, intent: Intent): ApplyResult {
       if (state.players[intent.playerId]) return unchanged(state);
       const taken = Object.keys(state.players).length;
       if (taken >= MAX_PLAYERS) return unchanged(state);
+      const spawns = spawnPoints();
       return {
         state: {
           ...state,
           revision: state.revision + 1,
           players: {
             ...state.players,
-            [intent.playerId]: createPlayer(intent.playerId, intent.name, SPAWN_POINTS[taken]),
+            [intent.playerId]: createPlayer(intent.playerId, intent.name, spawns[taken % spawns.length]),
           },
         },
         events: [{ kind: 'playerJoined', playerId: intent.playerId }],
@@ -276,8 +282,35 @@ export function applyIntent(state: FarmState, intent: Intent): ApplyResult {
     case 'player/move': {
       const player = state.players[intent.playerId];
       if (!player) return unchanged(state);
+
       const facing = facingFor(intent.dx, intent.dy, player.facing);
-      const position = resolveMove(MAP, player, intent.dx, intent.dy, intent.deltaMs);
+      const position = resolveMove(player.area, player, intent.dx, intent.dy, intent.deltaMs);
+
+      // Walking into a doorway is what moves a player between maps. Resolving
+      // it here rather than in the renderer means the server decides where a
+      // player ends up, and an offline client follows the identical rule.
+      const portal = portalAt(player.area, position);
+      if (portal && isAreaId(portal.toArea)) {
+        const moved: PlayerState = {
+          ...player,
+          area: portal.toArea,
+          x: portal.toX,
+          y: portal.toY,
+          facing,
+        };
+        return {
+          state: {
+            ...state,
+            revision: state.revision + 1,
+            players: { ...state.players, [intent.playerId]: moved },
+          },
+          events: [
+            { kind: 'areaChanged', playerId: intent.playerId, area: portal.toArea },
+            say(intent.playerId, `You follow the path to ${portal.label}.`),
+          ],
+        };
+      }
+
       if (position.x === player.x && position.y === player.y && facing === player.facing) {
         return unchanged(state);
       }

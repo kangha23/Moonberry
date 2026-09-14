@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CROP_DEFINITIONS } from '../systems/farming';
 import { QUEST_REWARD_COINS } from '../systems/quest';
-import { LANDMARKS, TILE_SIZE, plotKey } from '../world/layout';
+import { START_AREA, TILE_SIZE, areaMap, plotKey } from '../world/areas';
 import { applyIntent, createFarmState } from './reducer';
 import { MAX_PLAYERS, type FarmState, type PlayerId } from './types';
 
@@ -10,13 +10,36 @@ function join(state: FarmState, ...ids: PlayerId[]): FarmState {
 }
 
 /** Places a player at a world position without going through movement. */
-function place(state: FarmState, id: PlayerId, x: number, y: number): FarmState {
-  return { ...state, players: { ...state.players, [id]: { ...state.players[id], x, y } } };
+function place(state: FarmState, id: PlayerId, x: number, y: number, area = START_AREA): FarmState {
+  return { ...state, players: { ...state.players, [id]: { ...state.players[id], area, x, y } } };
+}
+
+/** The first farmable tiles on the starting map, whatever the map looks like. */
+const FIELD = areaMap(START_AREA).plotTiles;
+
+/** Where Rowan and the market stand, read off the map rather than hard-coded. */
+function propCentreOf(interact: string): { x: number; y: number } {
+  for (const area of ['farm', 'village'] as const) {
+    for (const prop of areaMap(area).props) {
+      if (prop.interact === interact) {
+        return { x: prop.x + prop.width / 2, y: prop.y + prop.height / 2 };
+      }
+    }
+  }
+  throw new Error(`No prop interacts as "${interact}".`);
+}
+
+/** Which area a given interactive prop lives on. */
+function propArea(interact: string): 'farm' | 'village' {
+  for (const area of ['farm', 'village'] as const) {
+    if (areaMap(area).props.some((prop) => prop.interact === interact)) return area;
+  }
+  throw new Error(`No prop interacts as "${interact}".`);
 }
 
 /** Puts a ripe turnip in a plot so harvest paths can be exercised directly. */
 function ripen(state: FarmState, x: number, y: number): FarmState {
-  const key = plotKey(x, y);
+  const key = plotKey(START_AREA, x, y);
   return {
     ...state,
     plots: {
@@ -28,7 +51,7 @@ function ripen(state: FarmState, x: number, y: number): FarmState {
 
 /** Stands a player one tile below `tile`, facing up at it. */
 function faceTileFromBelow(state: FarmState, id: PlayerId, tileX: number, tileY: number): FarmState {
-  const placed = place(state, id, tileX * TILE_SIZE + 16, (tileY + 1) * TILE_SIZE + 16);
+  const placed = place(state, id, tileX * TILE_SIZE + 16, (tileY + 1) * TILE_SIZE + 16, START_AREA);
   return { ...placed, players: { ...placed.players, [id]: { ...placed.players[id], facing: 'up' } } };
 }
 
@@ -80,7 +103,8 @@ describe('shared wallet, private satchel', () => {
         b: { ...state.players.b, satchel: { ...state.players.b.satchel, crops: { turnip: 2, strawberry: 0 } } },
       },
     };
-    state = place(state, 'a', LANDMARKS.market.x, LANDMARKS.market.y);
+    const market = propCentreOf('market');
+    state = place(state, 'a', market.x, market.y, propArea('market'));
     const walletBefore = state.coins;
 
     const result = applyIntent(state, { type: 'player/act', playerId: 'a' });
@@ -92,8 +116,10 @@ describe('shared wallet, private satchel', () => {
 
   it('spends seeds from the acting player satchel only', () => {
     let state = join(createFarmState(), 'a', 'b');
-    state = faceTileFromBelow(state, 'a', 9, 7);
-    state = { ...state, plots: { ...state.plots, [plotKey(9, 7)]: { ...state.plots[plotKey(9, 7)], stage: 'tilled' } } };
+    const cell = FIELD[0];
+    const cellKey = plotKey(START_AREA, cell.x, cell.y);
+    state = faceTileFromBelow(state, 'a', cell.x, cell.y);
+    state = { ...state, plots: { ...state.plots, [cellKey]: { ...state.plots[cellKey], stage: 'tilled' } } };
     state = { ...state, players: { ...state.players, a: { ...state.players.a, tool: 'seed' } } };
 
     const after = applyIntent(state, { type: 'player/act', playerId: 'a' }).state;
@@ -109,12 +135,7 @@ describe('farm-wide quest', () => {
     state = { ...state, players: { ...state.players, a: { ...state.players.a, tool: 'harvest' } } };
 
     // Player A harvests the three turnips the quest asks for.
-    const targets: Array<[number, number]> = [
-      [9, 7],
-      [10, 7],
-      [11, 7],
-    ];
-    for (const [x, y] of targets) {
+    for (const { x, y } of FIELD.slice(0, 3)) {
       state = ripen(state, x, y);
       state = faceTileFromBelow(state, 'a', x, y);
       state = applyIntent(state, { type: 'player/act', playerId: 'a' }).state;
@@ -124,7 +145,8 @@ describe('farm-wide quest', () => {
     expect(state.quest.completed).toBe(true);
 
     // Player B, who harvested nothing, can still collect for the farm.
-    state = place(state, 'b', LANDMARKS.rowan.x, LANDMARKS.rowan.y + 40);
+    const rowan = propCentreOf('rowan');
+    state = place(state, 'b', rowan.x, rowan.y + 28, propArea('rowan'));
     const walletBefore = state.coins;
     const claim = applyIntent(state, { type: 'player/act', playerId: 'b' });
 
@@ -140,8 +162,8 @@ describe('farm-wide quest', () => {
 describe('movement', () => {
   it('refuses to walk into the pond', () => {
     let state = join(createFarmState(), 'a');
-    // Just east of the pond, which covers tiles x < 9 at y >= 17.
-    state = place(state, 'a', 9 * TILE_SIZE + 4, 18 * TILE_SIZE);
+    // Just east of the pond, which covers tiles x <= 7 at y >= 23.
+    state = place(state, 'a', 8 * TILE_SIZE + 4, 25 * TILE_SIZE);
 
     const after = applyIntent(state, { type: 'player/move', playerId: 'a', dx: -1, dy: 0, deltaMs: 200 }).state;
 

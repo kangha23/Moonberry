@@ -2,7 +2,7 @@ import type { PlotState } from '../systems/farming';
 import type { QuestState } from '../systems/quest';
 import type { CropId, Satchel } from '../systems/satchel';
 import type { Season, TimeState, Weather } from '../systems/time';
-import type { Direction } from '../world/layout';
+import type { AreaId, Direction } from '../world/areas';
 
 export type PlayerId = string;
 export type Tool = 'hoe' | 'seed' | 'water' | 'harvest' | 'inspect';
@@ -24,6 +24,8 @@ export const SEED_ORDER: readonly CropId[] = ['turnip', 'strawberry'];
 export interface PlayerState {
   id: PlayerId;
   name: string;
+  /** Which map the player is standing on. */
+  area: AreaId;
   x: number;
   y: number;
   facing: Direction;
@@ -50,6 +52,7 @@ export interface FarmState {
   time: TimeState;
   season: Season;
   weather: Weather;
+  /** Every farmable cell in the world, keyed by area and tile. */
   plots: Record<string, PlotState>;
   /** The farm's shared wallet. */
   coins: number;

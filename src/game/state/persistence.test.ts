@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { plotKey } from '../world/layout';
+import { START_AREA, areaMap, plotKey } from '../world/areas';
 import {
   SAVE_KEY,
   SAVE_VERSION,
@@ -82,12 +82,13 @@ describe('save round trip', () => {
 
   it('preserves crop growth on individual plots', () => {
     const farm = createFarmState();
-    const key = plotKey(9, 7);
+    const cell = areaMap(START_AREA).plotTiles[0];
+    const key = plotKey(START_AREA, cell.x, cell.y);
     const grown: FarmState = {
       ...farm,
       plots: {
         ...farm.plots,
-        [key]: { x: 9, y: 7, stage: 'sprout', crop: 'strawberry', daysWatered: 2, wateredToday: true },
+        [key]: { ...cell, stage: 'sprout', crop: 'strawberry', daysWatered: 2, wateredToday: true },
       },
     };
     const storage = memoryStorage();
@@ -140,7 +141,12 @@ describe('rejecting bad saves', () => {
         farm.plots = 'none';
       },
       (farm) => {
-        (farm.plots as Record<string, unknown>)[plotKey(9, 7)] = { x: 9, y: 7, stage: 'ablaze' };
+        const cell = areaMap(START_AREA).plotTiles[0];
+        (farm.plots as Record<string, unknown>)[plotKey(START_AREA, cell.x, cell.y)] = {
+          x: cell.x,
+          y: cell.y,
+          stage: 'ablaze',
+        };
       },
       (farm) => {
         farm.quest = { id: 'some-other-quest' };
@@ -159,6 +165,13 @@ describe('rejecting bad saves', () => {
     const envelope = JSON.parse(encodeSave(playedFarm()));
     envelope.farm.players.impostor = envelope.farm.players.a;
     delete envelope.farm.players.a;
+
+    expect(decodeSave(JSON.stringify(envelope))).toBeNull();
+  });
+
+  it('refuses a player standing on an area this build does not have', () => {
+    const envelope = JSON.parse(encodeSave(playedFarm()));
+    envelope.farm.players.a.area = 'atlantis';
 
     expect(decodeSave(JSON.stringify(envelope))).toBeNull();
   });

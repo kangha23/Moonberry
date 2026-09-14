@@ -1,6 +1,6 @@
 import type { GameEvent } from '../state/intents';
 import { TOOL_ORDER, type FarmState, type PlayerId, type Tool } from '../state/types';
-import type { Direction } from '../world/layout';
+import type { AreaId, Direction } from '../world/areas';
 
 /** Message channels. Kept short because they travel on every packet. */
 export const MSG = {
@@ -37,6 +37,9 @@ export type ClientCommand =
 
 export interface MoveUpdate {
   id: PlayerId;
+  /** Sent with every position: a player who walked through a door is not
+   *  simply somewhere else, they are somewhere else on a different map. */
+  area: AreaId;
   x: number;
   y: number;
   facing: Direction;
@@ -96,6 +99,7 @@ export function parseClientCommand(raw: unknown): ClientCommand | null {
 export function toMoveUpdates(farm: FarmState): MoveUpdate[] {
   return Object.values(farm.players).map((player) => ({
     id: player.id,
+    area: player.area,
     x: Math.round(player.x * 100) / 100,
     y: Math.round(player.y * 100) / 100,
     facing: player.facing,

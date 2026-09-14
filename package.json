@@ -19,7 +19,9 @@
     "prepare": "husky",
     "dev:server": "tsx watch server/src/index.ts",
     "server": "tsx server/src/index.ts",
-    "typecheck:server": "tsc --noEmit -p server/tsconfig.json"
+    "typecheck:server": "tsc --noEmit -p server/tsconfig.json",
+    "maps:seed": "node scripts/generate-maps.mjs",
+    "maps:build": "node scripts/build-maps.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.0.3",

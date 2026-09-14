@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { MSG, decodeFrame, encodeFrame, type ClientCommand } from '../../src/game/net/protocol';
 import { MAX_PLAYERS, type FarmState } from '../../src/game/state/types';
-import { LANDMARKS, TILE_SIZE, plotKey } from '../../src/game/world/layout';
+import { START_AREA, TILE_SIZE, areaMap, plotKey } from '../../src/game/world/areas';
 import { FarmRoom, type Connection } from './FarmRoom';
 
 /** A connection that records what the server sent it. */
@@ -36,6 +36,21 @@ function command(room: FarmRoom, playerId: string, payload: ClientCommand): void
 /** Sends a raw string the way a modified or hostile client would. */
 function raw(room: FarmRoom, playerId: string, payload: string): void {
   room.receive(playerId, payload);
+}
+
+/** The first farmable tile on the starting map. */
+const FIELD = areaMap(START_AREA).plotTiles[0];
+
+/** Where an interactive prop stands, and on which map. */
+function propSpot(interact: string): { area: 'farm' | 'village'; x: number; y: number } {
+  for (const area of ['farm', 'village'] as const) {
+    for (const prop of areaMap(area).props) {
+      if (prop.interact === interact) {
+        return { area, x: prop.x + prop.width / 2, y: prop.y + prop.height / 2 };
+      }
+    }
+  }
+  throw new Error(`No prop interacts as "${interact}".`);
 }
 
 let room: FarmRoom;
@@ -183,21 +198,28 @@ describe('what the room broadcasts', () => {
     room.join(alice);
     // Stand Alice below a plot, facing it.
     room.tick(16);
-    const farm = room.state;
-    Object.assign(farm.players.alice, { x: 9 * TILE_SIZE + 16, y: 8 * TILE_SIZE + 16, facing: 'up' });
+    Object.assign(room.state.players.alice, {
+      x: FIELD.x * TILE_SIZE + 16,
+      y: (FIELD.y + 1) * TILE_SIZE + 16,
+      facing: 'up',
+    });
     alice.sent.length = 0;
 
     command(room, 'alice', { type: 'act' });
     room.tick(16);
 
     const sync = alice.latest(MSG.sync) as FarmState;
-    expect(sync.plots[plotKey(9, 7)].stage).toBe('tilled');
+    expect(sync.plots[plotKey(START_AREA, FIELD.x, FIELD.y)].stage).toBe('tilled');
   });
 
   it('reports action results as events', () => {
     room.join(alice);
     room.tick(16);
-    Object.assign(room.state.players.alice, { x: 9 * TILE_SIZE + 16, y: 8 * TILE_SIZE + 16, facing: 'up' });
+    Object.assign(room.state.players.alice, {
+      x: FIELD.x * TILE_SIZE + 16,
+      y: (FIELD.y + 1) * TILE_SIZE + 16,
+      facing: 'up',
+    });
     alice.sent.length = 0;
 
     command(room, 'alice', { type: 'act' });
@@ -226,7 +248,8 @@ describe('the farm is shared', () => {
 
     // Complete the quest outright, then let Bob collect it.
     Object.assign(room.state.quest, { progress: 3, completed: true });
-    Object.assign(room.state.players.bob, { x: LANDMARKS.rowan.x, y: LANDMARKS.rowan.y + 40 });
+    const rowan = propSpot('rowan');
+    Object.assign(room.state.players.bob, { area: rowan.area, x: rowan.x, y: rowan.y + 28 });
     const before = room.state.coins;
 
     command(room, 'bob', { type: 'act' });

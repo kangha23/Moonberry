@@ -1,6 +1,6 @@
 import { CROP_DEFINITIONS } from '../systems/farming';
 import { countCrops } from '../systems/satchel';
-import { LANDMARKS, isNear } from '../world/layout';
+import { areaMap, interactableAt } from '../world/areas';
 import type { FarmStoreState } from './store';
 import { TOOL_LABELS, type FarmState, type PlayerId, type PlayerState } from './types';
 
@@ -11,8 +11,7 @@ export function localPlayer(store: FarmStoreState): PlayerState | null {
   return localPlayerId ? (farm.players[localPlayerId] ?? null) : null;
 }
 
-function rowanHint(farm: FarmState, player: PlayerState): string | null {
-  if (!isNear(player, LANDMARKS.rowan)) return null;
+function rowanHint(farm: FarmState): string {
   const { quest } = farm;
   if (quest.rewarded) return 'Rowan: The village market is watching Amberfall now.';
   if (quest.completed) return 'Rowan: Those turnips look perfect. Press Space to collect your reward.';
@@ -20,8 +19,7 @@ function rowanHint(farm: FarmState, player: PlayerState): string | null {
   return `Rowan: Bring me ${remaining} more turnip${remaining === 1 ? '' : 's'} and I will pay well.`;
 }
 
-function marketHint(player: PlayerState): string | null {
-  if (!isNear(player, LANDMARKS.market)) return null;
+function marketHint(player: PlayerState): string {
   const basket = countCrops(player.satchel);
   if (basket <= 0) return 'Market stall: harvest crops, then press Space/Enter here to sell your basket.';
   return `Market stall: press Space/Enter to sell ${basket} crop${basket === 1 ? '' : 's'} for coins.`;
@@ -34,7 +32,21 @@ function marketHint(player: PlayerState): string | null {
 export function promptFor(store: FarmStoreState): string {
   const player = localPlayer(store);
   if (!player) return store.message;
-  return rowanHint(store.farm, player) ?? marketHint(player) ?? store.message;
+
+  const nearby = interactableAt(player.area, player);
+  if (nearby?.interact === 'rowan') return rowanHint(store.farm);
+  if (nearby?.interact === 'market') return marketHint(player);
+  return store.message;
+}
+
+/** The human-readable name of the area a player is standing in. */
+export function areaName(player: PlayerState | null): string {
+  return player ? areaMap(player.area).name : '';
+}
+
+/** Players standing on the same map as the local player, for rendering. */
+export function playersInArea(farm: FarmState, area: PlayerState['area']): PlayerState[] {
+  return Object.values(farm.players).filter((player) => player.area === area);
 }
 
 export function formatClock(totalMinutes: number): string {

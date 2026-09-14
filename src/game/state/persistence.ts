@@ -1,7 +1,8 @@
 import type { PlotStage, PlotState } from '../systems/farming';
 import type { CropId, Satchel } from '../systems/satchel';
 import type { Season, Weather } from '../systems/time';
-import type { Direction } from '../world/layout';
+import { isAreaId } from '../world/areas';
+import type { Direction } from '../world/areas';
 import type { FarmState, PlayerState, Tool } from './types';
 
 /**
@@ -111,6 +112,9 @@ function parsePlayer(value: unknown): PlayerState | null {
   if (typeof value.id !== 'string' || typeof value.name !== 'string') return null;
   if (!isFiniteNumber(value.x) || !isFiniteNumber(value.y)) return null;
   if (!oneOf(value.facing, DIRECTIONS)) return null;
+  // An area that no longer exists would strand the player on a missing map,
+  // so a save naming one is discarded rather than silently relocated.
+  if (!isAreaId(value.area)) return null;
   if (!oneOf(value.tool, TOOLS)) return null;
   if (!oneOf(value.seed, CROP_IDS)) return null;
   if (typeof value.asleep !== 'boolean') return null;
@@ -119,6 +123,7 @@ function parsePlayer(value: unknown): PlayerState | null {
   return {
     id: value.id,
     name: value.name,
+    area: value.area,
     x: value.x,
     y: value.y,
     facing: value.facing,

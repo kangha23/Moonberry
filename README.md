@@ -2,21 +2,24 @@
 
 A cozy farming RPG built with React 19, Vite, TypeScript, and Phaser 4.
 
-> **Status: playable multiplayer on one screen.** Up to four players share a
-> farm through an authoritative server. Without a server configured the game
-> falls back to an offline farm saved in the browser.
+> **Status: playable multiplayer across two areas.** Up to four players share a
+> world through an authoritative server. Without a server configured the game
+> falls back to an offline world saved in the browser.
 
 ## What plays today
 
-- Top-down farm exploration on a single 30x20 tile screen (WASD/arrow keys).
+- Two Tiled-authored areas — a 40x30 farm and a village — joined by a doorway,
+  with the camera following the player rather than one fixed screen.
 - Complete farming loop: till, plant, water, grow overnight, harvest, sell.
 - Deterministic time, day transitions, weather, and seasons.
 - Inventory with seeds, crop stacks, water charges, and coins.
 - Rowan's first-harvest quest and reward interaction.
 - Hand-drawn LPC/CC0 art with procedural pixel-art textures as fallback.
 - Autosave to the browser, restored on reload, with a "start a new farm" reset.
-- Up to four players on one farm: shared clock, plots, quest, and wallet, with
-  each player carrying their own satchel.
+- Up to four players in one world: shared clock, plots, quest, and wallet, with
+  each player carrying their own satchel. Players are drawn only on the map they
+  are standing on.
+- Farming on the farm, selling and Rowan's quest in the village.
 
 ## Controls
 
@@ -73,7 +76,8 @@ staged JS/TS files).
 | Path | Contents |
 | --- | --- |
 | `src/game/systems/` | Pure, deterministic game rules — farming, time, quest, satchel. Unit-tested, no Phaser or DOM dependency. |
-| `src/game/world/` | Map generation, collision, and interaction geometry. Pure functions, no Phaser. |
+| `maps/` | Tiled map sources. Open these in Tiled to edit the world. |
+| `src/game/world/` | The Tiled parser, the parsed areas, collision, and interaction geometry. Pure functions, no Phaser. |
 | `src/game/state/` | `FarmState`, the intent/event protocol, the reducer over both, the store, and save/load. |
 | `src/game/net/` | The wire protocol and the browser side of the connection. |
 | `server/` | The authoritative game server. Its own package, because it deploys separately from the static client. |
@@ -103,6 +107,42 @@ The multiplayer model is already encoded in the state shape:
 - **Four player seats**, each with its own spawn point and avatar.
 - **The clock is a `world/tick` intent**, so one authority drives time for
   everyone rather than each client counting frames.
+
+### Maps
+
+The world is authored in [Tiled](https://www.mapeditor.org/). `maps/*.json` are
+real Tiled maps: open `maps/farm.json` and edit it like any other.
+
+The tileset is an *image collection*, so every tile keeps its own PNG and there
+is no atlas to pack or keep in sync with the art.
+
+What the map says, the game does:
+
+| In Tiled | In game |
+| --- | --- |
+| A `ground` tile layer | The terrain, and which cells are farmable (`kind: plot`) or solid (`kind: water`) |
+| An object of type `prop` | A house, tree, stall, or NPC, sized by its rectangle, blocking if `solid` |
+| A prop with an `interact` property | Something acting on it does: `rowan` or `market` |
+| An object of type `portal` | A doorway, carrying `toArea` and the landing tile |
+| An object of type `spawn` | Where a player starts |
+| The map's `displayName` property | The name shown in the HUD |
+
+So moving the market stall in Tiled moves where crops can be sold; no code
+changes.
+
+After editing, regenerate the runtime data:
+
+```sh
+npm run maps:build
+```
+
+That writes `src/game/world/maps.generated.ts`. The indirection exists because
+the client, the server, and the tests all need identical map data, and a plain
+TypeScript module is the only format all three runtimes import the same way —
+Node ESM needs import attributes for JSON, Vite does not.
+
+`npm run maps:seed` rewrites the starter maps from scratch. It overwrites
+anything you have edited, so it is not part of any build.
 
 ### The server
 
@@ -144,8 +184,8 @@ full store degrades to "no save" instead of throwing into the render loop.
 1. ~~**State extraction** — move game state out of `FarmScene` into a serializable store.~~ Done.
 2. ~~**Save/load** — persist that store.~~ Done.
 3. ~~**Authoritative server** — shared clock, server-arbitrated actions, player sync.~~ Done.
-4. **Real maps** — Tiled tilemaps, camera follow, collision, multiple areas.
-5. **Accounts and persistence** — database-backed farms, invite codes.
+4. ~~**Real maps** — Tiled tilemaps, camera follow, collision, multiple areas.~~ Done.
+5. **Accounts and persistence** — database-backed worlds surviving a restart, invite codes.
 
 ## Assets
 
