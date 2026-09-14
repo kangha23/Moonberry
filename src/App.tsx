@@ -14,6 +14,7 @@ export default function App() {
   const player = useStore(farmStore, localPlayer);
   const prompt = useStore(farmStore, promptFor);
   const restored = useStore(farmStore, (store) => store.restored);
+  const online = useStore(farmStore, (store) => store.online);
 
   const satchel = player?.satchel;
   const questPercent = Math.min(100, Math.round((quest.progress / quest.target) * 100));
@@ -22,7 +23,10 @@ export default function App() {
     <main className="shell">
       <section className="hero-panel" aria-label="Game overview">
         <div>
-          <p className="eyebrow">Amberfall Farm{restored ? ' • saved progress restored' : ''}</p>
+          <p className="eyebrow">
+            Amberfall Farm
+            {online ? ' • shared farm' : restored ? ' • saved progress restored' : ''}
+          </p>
           <h1>Restore a little hillside farm before moonrise.</h1>
           <p className="lede">
             A first playable slice with farming, movement, weather, time pressure, a neighbor quest,
@@ -99,21 +103,30 @@ export default function App() {
           </div>
 
           <div className="hud-section">
-            <h2>Save</h2>
-            <p className="hud-note">
-              The farm saves itself as you play, in this browser only.
-            </p>
-            <button
-              type="button"
-              className="danger-button"
-              onClick={() => {
-                if (window.confirm('Start a new farm? This erases the saved farm for good.')) {
-                  startNewFarm();
-                }
-              }}
-            >
-              Start a new farm
-            </button>
+            <h2>{online ? 'Connection' : 'Save'}</h2>
+            {online ? (
+              <p className="hud-note">
+                Connected to the farm server. It keeps the farm, the clock, and the wallet, so
+                everyone here sees the same fields.
+              </p>
+            ) : (
+              <>
+                <p className="hud-note">
+                  Playing offline. The farm saves itself as you play, in this browser only.
+                </p>
+                <button
+                  type="button"
+                  className="danger-button"
+                  onClick={() => {
+                    if (window.confirm('Start a new farm? This erases the saved farm for good.')) {
+                      startNewFarm();
+                    }
+                  }}
+                >
+                  Start a new farm
+                </button>
+              </>
+            )}
           </div>
         </aside>
       </section>

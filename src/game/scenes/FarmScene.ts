@@ -3,7 +3,17 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../constants';
 import { createPixelArtTextures } from '../assets/createPixelArtTextures';
 import type { GameEvent } from '../state/intents';
 import { promptFor } from '../state/selectors';
-import { dispatch, farmStore, initFarm, joinAsLocalPlayer, onGameEvent, startAutosave } from '../state/store';
+import { connectToFarm, type FarmConnection } from '../net/client';
+import {
+  dispatch,
+  farmStore,
+  initFarm,
+  joinAsLocalPlayer,
+  onGameEvent,
+  sendAction,
+  sendMove,
+  startAutosave,
+} from '../state/store';
 import { TOOL_LABELS, TOOL_ORDER, type PlayerId, type PlayerState } from '../state/types';
 import { CROP_DEFINITIONS } from '../systems/farming';
 import {
@@ -23,7 +33,8 @@ type KeyMap = Record<string, Phaser.Input.Keyboard.Key>;
 /** LPC walkcycle rows: 0 = up, 1 = left, 2 = down, 3 = right (9 frames each). */
 const WALK_ROW: Record<Direction, number> = { up: 0, left: 1, down: 2, right: 3 };
 
-const LOCAL_PLAYER_ID = 'local';
+/** Player id used while playing offline. Online, the server's session id wins. */
+const OFFLINE_PLAYER_ID = 'local';
 
 interface Avatar {
   sprite: Phaser.GameObjects.Sprite;
@@ -75,6 +86,7 @@ export default class FarmScene extends Phaser.Scene {
   private lastWeather = '';
   private unsubscribeEvents: (() => void) | null = null;
   private stopAutosave: (() => void) | null = null;
+  private connection: FarmConnection | null = null;
 
   constructor() {
     super('farm-scene');
@@ -123,14 +135,20 @@ export default class FarmScene extends Phaser.Scene {
 
     initFarm();
     this.unsubscribeEvents = onGameEvent((events) => this.handleEvents(events));
-    joinAsLocalPlayer(LOCAL_PLAYER_ID, 'You');
-    this.stopAutosave = startAutosave();
+    joinAsLocalPlayer(OFFLINE_PLAYER_ID, 'You');
+
+    // Start playable immediately, then hand authority to the server if one
+    // answers. Waiting on the network before the farm draws would make a slow
+    // or missing server look like a broken game.
+    void this.goOnline();
 
     this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
       this.unsubscribeEvents?.();
       this.unsubscribeEvents = null;
       this.stopAutosave?.();
       this.stopAutosave = null;
+      this.connection?.disconnect();
+      this.connection = null;
     });
 
     this.refreshAllPlots();
@@ -142,7 +160,8 @@ export default class FarmScene extends Phaser.Scene {
     this.handleToolHotkeys();
     this.handleMovement(delta, time);
     this.handleInteractions();
-    dispatch({ type: 'world/tick', deltaMs: delta });
+    // Online the server drives time for everyone; offline this client does.
+    if (!farmStore.getState().online) dispatch({ type: 'world/tick', deltaMs: delta });
     this.syncAvatars(delta);
     this.updateCursor();
     this.updateAtmosphere(delta);
@@ -156,7 +175,8 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   private get localPlayer(): PlayerState | null {
-    return this.farm.players[LOCAL_PLAYER_ID] ?? null;
+    const { farm, localPlayerId } = farmStore.getState();
+    return localPlayerId ? (farm.players[localPlayerId] ?? null) : null;
   }
 
   /** Turns simulation events into sprites, tweens, and re-renders. */
@@ -172,6 +192,12 @@ export default class FarmScene extends Phaser.Scene {
         this.updateWeatherPresentation();
       }
     }
+  }
+
+  private async goOnline() {
+    this.connection = await connectToFarm(import.meta.env.VITE_GAME_SERVER);
+    // Browser saves are for offline play only; online, the server owns the farm.
+    if (!this.connection) this.stopAutosave = startAutosave();
   }
 
   // --- input ----------------------------------------------------------------
@@ -207,9 +233,11 @@ export default class FarmScene extends Phaser.Scene {
     const down = this.keys.down.isDown || this.keys.arrowDown.isDown;
     const dx = (right ? 1 : 0) - (left ? 1 : 0);
     const dy = (down ? 1 : 0) - (up ? 1 : 0);
-    if (dx === 0 && dy === 0) return;
 
-    dispatch({ type: 'player/move', playerId: LOCAL_PLAYER_ID, dx, dy, deltaMs: delta });
+    // Reported every frame, releases included: the server holds the last input
+    // it was told about, so it has to hear when the player stops.
+    sendMove(dx, dy, delta);
+    if (dx === 0 && dy === 0) return;
 
     const player = this.localPlayer;
     if (!player) return;
@@ -226,7 +254,7 @@ export default class FarmScene extends Phaser.Scene {
       this.tweens.add({ targets: dust, y: dust.y - 8, alpha: 0, scale: 1.1, duration: 420, onComplete: () => dust.destroy() });
     }
 
-    const avatar = this.avatars.get(LOCAL_PLAYER_ID);
+    const avatar = this.avatars.get(player.id);
     if (avatar && !this.anims.exists(`player-walk-${player.facing}`)) {
       avatar.sprite.setAngle(Math.sin(time / 130) * 1.5);
     }
@@ -237,19 +265,19 @@ export default class FarmScene extends Phaser.Scene {
     const hotkeys = [this.keys.one, this.keys.two, this.keys.three, this.keys.four, this.keys.five];
     hotkeys.forEach((key, index) => {
       if (Phaser.Input.Keyboard.JustDown(key)) {
-        dispatch({ type: 'player/selectTool', playerId: LOCAL_PLAYER_ID, tool: TOOL_ORDER[index] });
+        sendAction({ type: 'selectTool', tool: TOOL_ORDER[index] });
       }
     });
 
     if (Phaser.Input.Keyboard.JustDown(this.keys.q)) {
-      dispatch({ type: 'player/cycleSeed', playerId: LOCAL_PLAYER_ID });
+      sendAction({ type: 'cycleSeed' });
     }
   }
 
   private handleInteractions() {
     if (!this.keys) return;
     if (!Phaser.Input.Keyboard.JustDown(this.keys.space) && !Phaser.Input.Keyboard.JustDown(this.keys.enter)) return;
-    dispatch({ type: 'player/act', playerId: LOCAL_PLAYER_ID });
+    sendAction({ type: 'act' });
   }
 
   // --- rendering ------------------------------------------------------------
@@ -347,7 +375,7 @@ export default class FarmScene extends Phaser.Scene {
       .setDepth(50)
       .setScale(hasSheet ? 0.62 : 1.2);
     // Remote players are tinted so they read as somebody else at a glance.
-    if (player.id !== LOCAL_PLAYER_ID) sprite.setTint(0xbfd8ff);
+    if (player.id !== farmStore.getState().localPlayerId) sprite.setTint(0xbfd8ff);
     return { sprite, shadow, lastX: player.x, lastY: player.y };
   }
 

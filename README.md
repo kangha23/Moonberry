@@ -2,8 +2,9 @@
 
 A cozy farming RPG built with React 19, Vite, TypeScript, and Phaser 4.
 
-> **Status: single-player vertical slice.** One screen, one farm.
-> Multiplayer is the goal — see [Roadmap](#roadmap).
+> **Status: playable multiplayer on one screen.** Up to four players share a
+> farm through an authoritative server. Without a server configured the game
+> falls back to an offline farm saved in the browser.
 
 ## What plays today
 
@@ -14,6 +15,8 @@ A cozy farming RPG built with React 19, Vite, TypeScript, and Phaser 4.
 - Rowan's first-harvest quest and reward interaction.
 - Hand-drawn LPC/CC0 art with procedural pixel-art textures as fallback.
 - Autosave to the browser, restored on reload, with a "start a new farm" reset.
+- Up to four players on one farm: shared clock, plots, quest, and wallet, with
+  each player carrying their own satchel.
 
 ## Controls
 
@@ -32,6 +35,25 @@ npm run dev
 ```
 
 Open the Vite URL shown in the terminal (default `http://localhost:5173`).
+That alone gives an offline farm saved in the browser.
+
+To play together, run the game server too, in a second terminal:
+
+```sh
+cd server
+npm install
+npm run dev
+```
+
+Then point the client at it by copying `.env.example` to `.env.local`:
+
+```sh
+VITE_GAME_SERVER=ws://localhost:2567
+```
+
+Open the client in two tabs and you are two farmhands on one farm. With no
+`VITE_GAME_SERVER`, or when the server cannot be reached, the client says so in
+the console and plays offline instead.
 
 ## Quality gates
 
@@ -53,6 +75,8 @@ staged JS/TS files).
 | `src/game/systems/` | Pure, deterministic game rules — farming, time, quest, satchel. Unit-tested, no Phaser or DOM dependency. |
 | `src/game/world/` | Map generation, collision, and interaction geometry. Pure functions, no Phaser. |
 | `src/game/state/` | `FarmState`, the intent/event protocol, the reducer over both, the store, and save/load. |
+| `src/game/net/` | The wire protocol and the browser side of the connection. |
+| `server/` | The authoritative game server. Its own package, because it deploys separately from the static client. |
 | `src/game/scenes/FarmScene.ts` | Phaser scene: rendering and input only. Owns no game state. |
 | `src/game/assets/` | Procedurally generated pixel-art textures used when image files are missing. |
 | `src/components/`, `src/App.tsx` | React shell and HUD, fed by a `farm-snapshot` window event. |
@@ -80,6 +104,32 @@ The multiplayer model is already encoded in the state shape:
 - **The clock is a `world/tick` intent**, so one authority drives time for
   everyone rather than each client counting frames.
 
+### The server
+
+`server/` runs the same `applyIntent` reducer as the client and is the only
+authority over the farm. Two things a client is never allowed to state are
+absent from the wire protocol by construction rather than by validation:
+
+- **Its player id.** Commands carry no id; the server stamps each one with the
+  connection it arrived on, so a client cannot act as somebody else.
+- **Its timestep.** Movement is sent as a direction, and the server advances it
+  on the server's own clock, so a modified client cannot walk faster by
+  claiming a larger delta.
+
+Everything else arriving from a client is validated in
+`src/game/net/protocol.ts` and dropped silently if it does not parse.
+
+Traffic is split by how often it changes: positions go out every tick, a
+compact clock frame when only the time moved, and the whole farm only when
+something else changed. Because the reducer is immutable, "did the world
+change?" is an object-identity check rather than a guess.
+
+Colyseus was the original plan and was dropped after trying it: its value is
+`@colyseus/schema` delta sync, which a pure plain-JSON reducer cannot use
+without giving up the purity that lets the same code run on both sides — and
+its current server line has no matching published JavaScript client. The server
+now uses `ws` directly.
+
 ### Saves
 
 `src/game/state/persistence.ts` serializes `FarmState` behind a `SaveStorage`
@@ -93,8 +143,8 @@ full store degrades to "no save" instead of throwing into the render loop.
 
 1. ~~**State extraction** — move game state out of `FarmScene` into a serializable store.~~ Done.
 2. ~~**Save/load** — persist that store.~~ Done.
-3. **Real maps** — Tiled tilemaps, camera follow, collision, multiple areas.
-4. **Authoritative server** — shared clock, server-arbitrated actions, player sync.
+3. ~~**Authoritative server** — shared clock, server-arbitrated actions, player sync.~~ Done.
+4. **Real maps** — Tiled tilemaps, camera follow, collision, multiple areas.
 5. **Accounts and persistence** — database-backed farms, invite codes.
 
 ## Assets

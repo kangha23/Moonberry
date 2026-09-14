@@ -1,4 +1,5 @@
 import { createStore } from 'zustand/vanilla';
+import type { ClientCommand, ClockMessage, MoveUpdate } from '../net/protocol';
 import type { GameEvent, Intent } from './intents';
 import { clearSave, loadFarm, saveFarm, type SaveStorage } from './persistence';
 import { applyIntent, createFarmState } from './reducer';
@@ -12,6 +13,8 @@ export interface FarmStoreState {
   message: string;
   /** True when the farm on screen was restored from a save. */
   restored: boolean;
+  /** True while an authoritative server, not this browser, owns the farm. */
+  online: boolean;
 }
 
 const INITIAL_MESSAGE = 'Wake up on Amberfall Farm.';
@@ -29,7 +32,18 @@ export const farmStore = createStore<FarmStoreState>(() => ({
   localPlayerId: null,
   message: INITIAL_MESSAGE,
   restored: false,
+  online: false,
 }));
+
+/**
+ * How far, in pixels, the server's idea of where the local player stands may
+ * drift from the predicted position before the server wins. Small corrections
+ * are ignored so ordinary latency does not make walking stutter.
+ */
+const RECONCILE_THRESHOLD = 24;
+
+/** Set while connected to a server; null when playing against the local reducer. */
+let transport: ((command: ClientCommand) => void) | null = null;
 
 /**
  * Subscribes to game events. Today every event originates from a local
@@ -141,4 +155,130 @@ export function startAutosave(storage?: SaveStorage): () => void {
     unsubscribe();
     globalThis.removeEventListener?.('pagehide', onHide);
   };
+}
+
+// --- networking -------------------------------------------------------------
+
+/**
+ * Points the store at a server. Once set, commands travel to the server and
+ * the authoritative farm comes back; the local reducer is used only to predict
+ * the local player's movement so walking stays responsive under latency.
+ */
+export function setTransport(send: ((command: ClientCommand) => void) | null): void {
+  transport = send;
+  farmStore.setState({ online: send !== null });
+}
+
+/**
+ * Sends a movement input.
+ *
+ * Only a direction crosses the wire, never a timestep: the server advances
+ * movement on its own clock, so a modified client cannot walk faster by
+ * claiming a larger delta. `deltaMs` here is used purely for local prediction.
+ */
+export function sendMove(dx: number, dy: number, deltaMs: number): void {
+  const { localPlayerId } = farmStore.getState();
+  if (!localPlayerId) return;
+
+  if (transport) {
+    // The server keeps applying the last input it was given, so a packet is
+    // only needed when the direction actually changes, including on stop.
+    if (dx !== lastSentDx || dy !== lastSentDy) {
+      lastSentDx = dx;
+      lastSentDy = dy;
+      transport({ type: 'move', dx, dy });
+    }
+  }
+
+  if (dx === 0 && dy === 0) return;
+  dispatch({ type: 'player/move', playerId: localPlayerId, dx, dy, deltaMs });
+}
+
+let lastSentDx = 0;
+let lastSentDy = 0;
+
+/** Sends a non-movement command: equip a tool, change seed, or use the tool. */
+export function sendAction(command: Exclude<ClientCommand, { type: 'move' }>): void {
+  const { localPlayerId } = farmStore.getState();
+  if (!localPlayerId) return;
+
+  if (transport) {
+    // Actions change shared state, so they are never predicted: showing a
+    // harvest that the server then refuses is worse than a moment's wait.
+    transport(command);
+    return;
+  }
+
+  switch (command.type) {
+    case 'selectTool':
+      dispatch({ type: 'player/selectTool', playerId: localPlayerId, tool: command.tool });
+      return;
+    case 'cycleSeed':
+      dispatch({ type: 'player/cycleSeed', playerId: localPlayerId });
+      return;
+    case 'act':
+      dispatch({ type: 'player/act', playerId: localPlayerId });
+  }
+}
+
+/** The server has seated this connection and handed over the current farm. */
+export function applyServerWelcome(playerId: PlayerId, farm: FarmState): void {
+  farmStore.setState({ farm, localPlayerId: playerId, message: INITIAL_MESSAGE, restored: false });
+  publish([{ kind: 'farmReplaced' }]);
+}
+
+/** A full authoritative farm: adopt it wholesale. */
+export function applyServerSync(farm: FarmState): void {
+  farmStore.setState({ farm });
+  publish([{ kind: 'farmReplaced' }]);
+}
+
+export function applyServerClock(clock: ClockMessage): void {
+  const { farm } = farmStore.getState();
+  farmStore.setState({
+    farm: { ...farm, time: clock.time, season: clock.season, weather: clock.weather },
+  });
+}
+
+/**
+ * Positions from the server.
+ *
+ * Remote players are placed exactly where the server says. The local player is
+ * left on its predicted position unless it has drifted too far, which keeps
+ * walking smooth while still letting the server have the final word.
+ */
+export function applyServerMoves(moves: MoveUpdate[]): void {
+  const { farm, localPlayerId } = farmStore.getState();
+  let players = farm.players;
+  let changed = false;
+
+  for (const move of moves) {
+    const player = players[move.id];
+    if (!player) continue;
+
+    if (move.id === localPlayerId) {
+      const drift = Math.hypot(player.x - move.x, player.y - move.y);
+      if (drift < RECONCILE_THRESHOLD) continue;
+    }
+
+    if (player.x === move.x && player.y === move.y && player.facing === move.facing) continue;
+
+    if (!changed) {
+      players = { ...players };
+      changed = true;
+    }
+    players[move.id] = { ...player, x: move.x, y: move.y, facing: move.facing };
+  }
+
+  if (changed) farmStore.setState({ farm: { ...farm, players } });
+}
+
+/** Events the server produced, including messages meant for this player. */
+export function applyServerEvents(events: GameEvent[]): void {
+  const { localPlayerId } = farmStore.getState();
+  const latest = events
+    .filter((event) => event.kind === 'message' && event.playerId === localPlayerId)
+    .at(-1);
+  if (latest && latest.kind === 'message') farmStore.setState({ message: latest.text });
+  publish(events);
 }

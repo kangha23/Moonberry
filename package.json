@@ -16,7 +16,10 @@
     "test:e2e:install": "playwright install chromium",
     "quality:fast": "npm run lint && npm run test && npm run build",
     "generate:assets": "node scripts/generate-assets.mjs",
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev:server": "tsx watch server/src/index.ts",
+    "server": "tsx server/src/index.ts",
+    "typecheck:server": "tsc --noEmit -p server/tsconfig.json"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.0.3",

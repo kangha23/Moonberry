@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "verbatimModuleSyntax": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  // Only the browser-free half of the game is shared with the server: the
+  // reducer, the world geometry, the rules, and the wire protocol.
+  "include": [
+    "src/**/*.ts",
+    "../src/game/state/**/*.ts",
+    "../src/game/world/**/*.ts",
+    "../src/game/systems/**/*.ts",
+    "../src/game/net/**/*.ts",
+    "../src/game/constants.ts"
+  ],
+  "exclude": [
+    "../src/game/**/*.test.ts",
+    // Browser-side halves of shared folders: the client's copy of the state,
+    // its HUD selectors, and the colyseus.js connection.
+    "../src/game/state/store.ts",
+    "../src/game/state/selectors.ts",
+    "../src/game/net/client.ts"
+  ]
+}
