@@ -13,3 +13,6 @@ npm-debug.log*
 .yarn-error.log*
 .pnpm-debug.log*
 *.tsbuildinfo
+# Hand-drawn override art (e.g. Sprout Lands free = non-commercial, no redistribution)
+public/assets/override/*.png
+public/assets/override/*.jpg

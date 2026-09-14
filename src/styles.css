@@ -2,7 +2,7 @@
   color: #f8f0d8;
   background: #17211a;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    Nunito, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -12,6 +12,10 @@
   --mint: #95e59a;
   --berry: #e787a6;
   --ink: #261a14;
+  --clay-border: #fed7aa;
+  --clay-shadow: 0 6px 0 rgba(154, 52, 18, 0.25), 0 24px 80px rgba(0, 0, 0, 0.32);
+  --font-display: Fredoka, Nunito, ui-rounded, sans-serif;
+  --font-pixel: "Press Start 2P", monospace;
 }
 
 * {
@@ -47,8 +51,8 @@ canvas {
 .play-layout,
 .hud-panel,
 .game-frame {
-  border: 1px solid rgba(255, 231, 173, 0.18);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.32);
+  border: 3px solid rgba(255, 231, 173, 0.22);
+  box-shadow: var(--clay-shadow);
 }
 
 .hero-panel {
@@ -58,7 +62,7 @@ canvas {
   gap: 24px;
   margin-bottom: 18px;
   padding: 24px;
-  border-radius: 28px;
+  border-radius: 24px;
   background: linear-gradient(135deg, rgba(48, 34, 25, 0.92), rgba(28, 46, 35, 0.9));
 }
 
@@ -80,9 +84,11 @@ p {
 h1 {
   max-width: 780px;
   margin-bottom: 10px;
+  font-family: var(--font-display);
   font-size: clamp(2rem, 4vw, 4.3rem);
-  line-height: 0.92;
-  letter-spacing: -0.07em;
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
 }
 
 .lede {
@@ -151,15 +157,18 @@ h1 {
 
 .hud-section {
   padding: 16px;
-  border: 1px solid rgba(255, 231, 173, 0.14);
-  border-radius: 18px;
+  border: 2px solid rgba(255, 231, 173, 0.16);
+  border-radius: 20px;
   background: rgba(255, 244, 207, 0.06);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.08), inset 0 -4px 0 rgba(0, 0, 0, 0.18);
 }
 
 .hud-section h2 {
   margin-bottom: 10px;
   color: #fff1c2;
-  font-size: 1rem;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
   letter-spacing: 0.01em;
 }
 
@@ -172,8 +181,15 @@ h1 {
 
 .inventory-grid div {
   padding: 10px;
-  border-radius: 14px;
+  border: 2px solid rgba(255, 231, 173, 0.12);
+  border-radius: 16px;
   background: rgba(31, 22, 17, 0.52);
+  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.22);
+  transition: transform 150ms ease-out;
+}
+
+.inventory-grid div:hover {
+  transform: translateY(-1px);
 }
 
 .inventory-grid dt {
