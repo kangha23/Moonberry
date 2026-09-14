@@ -206,6 +206,13 @@ h1 {
   font-weight: 800;
 }
 
+.hud-note {
+  margin: 12px 0 0;
+  color: rgba(248, 240, 216, 0.56);
+  font-size: 0.76rem;
+  line-height: 1.5;
+}
+
 .quest-card {
   background: linear-gradient(145deg, rgba(86, 58, 30, 0.58), rgba(39, 77, 46, 0.46));
 }

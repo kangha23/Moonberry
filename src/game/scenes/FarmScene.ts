@@ -1,105 +1,63 @@
 import Phaser from 'phaser';
 import { GAME_HEIGHT, GAME_WIDTH } from '../constants';
 import { createPixelArtTextures } from '../assets/createPixelArtTextures';
+import type { GameEvent } from '../state/intents';
+import { promptFor } from '../state/selectors';
+import { dispatch, farmStore, joinAsLocalPlayer, onGameEvent, resetFarm } from '../state/store';
+import { TOOL_LABELS, TOOL_ORDER, type PlayerId, type PlayerState } from '../state/types';
+import { CROP_DEFINITIONS } from '../systems/farming';
 import {
-  applyFarmAction,
-  advancePlotDay,
-  CROP_DEFINITIONS,
-  createPlot,
-  sellAllCrops,
-  type FarmAction,
-  type PlotState,
-} from '../systems/farming';
-import { createInventory, refillWater, type CropId, type InventoryState } from '../systems/inventory';
-import { claimQuestReward, createQuest, recordHarvest, type QuestState } from '../systems/quest';
-import {
-  advanceTime,
-  createTimeState,
-  isRainy,
-  seasonForDay,
-  weatherForDay,
-  type Season,
-  type TimeState,
-  type Weather,
-} from '../systems/time';
-import type { FarmSnapshot } from '../types/snapshot';
-
-const TILE_SIZE = 32;
-const MAP_WIDTH = GAME_WIDTH / TILE_SIZE;
-const MAP_HEIGHT = GAME_HEIGHT / TILE_SIZE;
-const PLOT_START_X = 9;
-const PLOT_START_Y = 7;
-const PLOT_COLS = 8;
-const PLOT_ROWS = 6;
-const PLAYER_SPEED = 132;
-
-type Direction = 'up' | 'down' | 'left' | 'right';
-type TileKind = 'grass' | 'path' | 'water' | 'plot';
-type Tool = 'hoe' | 'seed' | 'water' | 'harvest' | 'inspect';
+  LANDMARKS,
+  MAP_HEIGHT,
+  MAP_WIDTH,
+  TILE_SIZE,
+  createMap,
+  plotKey,
+  targetTile,
+  type Direction,
+  type TileKind,
+} from '../world/layout';
 
 type KeyMap = Record<string, Phaser.Input.Keyboard.Key>;
 
-const TOOL_ORDER: Tool[] = ['hoe', 'seed', 'water', 'harvest', 'inspect'];
-const TOOL_LABELS: Record<Tool, string> = {
-  hoe: 'Hoe',
-  seed: 'Seeds',
-  water: 'Watering Can',
-  harvest: 'Harvest Basket',
-  inspect: 'Inspect',
-};
-
-const TOOL_ACTIONS: Partial<Record<Tool, FarmAction>> = {
-  hoe: 'till',
-  seed: 'plant',
-  water: 'water',
-  harvest: 'harvest',
-};
-
-const SEED_ORDER: CropId[] = ['turnip', 'strawberry'];
-
-// LPC walkcycle rows: 0 = up, 1 = left, 2 = down, 3 = right (9 frames each).
+/** LPC walkcycle rows: 0 = up, 1 = left, 2 = down, 3 = right (9 frames each). */
 const WALK_ROW: Record<Direction, number> = { up: 0, left: 1, down: 2, right: 3 };
 
-function plotKey(x: number, y: number) {
-  return `${x},${y}`;
+const LOCAL_PLAYER_ID = 'local';
+
+interface Avatar {
+  sprite: Phaser.GameObjects.Sprite;
+  shadow: Phaser.GameObjects.Image;
+  lastX: number;
+  lastY: number;
 }
 
-function worldToTile(value: number) {
-  return Math.floor(value / TILE_SIZE);
-}
-
+/**
+ * Renders the farm and turns input into intents.
+ *
+ * The scene owns no game state. Everything it draws it reads from the farm
+ * store, and every change it makes it requests through `dispatch`. That keeps
+ * the simulation testable without Phaser and lets the server become the
+ * authority later without touching this file.
+ */
 export default class FarmScene extends Phaser.Scene {
   private map: TileKind[][] = [];
-  private plots = new Map<string, PlotState>();
   private plotSprites = new Map<string, Phaser.GameObjects.Image>();
   private cropSprites = new Map<string, Phaser.GameObjects.Image>();
-  private player!: Phaser.GameObjects.Sprite;
+  private avatars = new Map<PlayerId, Avatar>();
   private rowan!: Phaser.GameObjects.Sprite;
-  private playerShadow!: Phaser.GameObjects.Image;
   private rowanShadow!: Phaser.GameObjects.Image;
   private waterSprites: Phaser.GameObjects.Image[] = [];
   private questIcon!: Phaser.GameObjects.Image;
   private cursor!: Phaser.GameObjects.Image;
   private market!: Phaser.GameObjects.Image;
   private keys!: KeyMap;
-  private facing: Direction = 'down';
-  private selectedToolIndex = 0;
-  private selectedSeedIndex = 0;
-  private inventory: InventoryState = createInventory();
-  private quest: QuestState = createQuest();
-  private timeState: TimeState = createTimeState();
-  private season: Season = seasonForDay(1);
-  private weather: Weather = weatherForDay(1);
-  private timeAccumulator = 0;
-  private prompt = 'Wake up on Amberfall Farm.';
   private promptText!: Phaser.GameObjects.Text;
   private toolbarText!: Phaser.GameObjects.Text;
   private clockText!: Phaser.GameObjects.Text;
   private weatherText!: Phaser.GameObjects.Text;
   private dayNightOverlay!: Phaser.GameObjects.Rectangle;
   private sunsetOverlay!: Phaser.GameObjects.Rectangle;
-  private vignetteTop!: Phaser.GameObjects.Rectangle;
-  private vignetteBottom!: Phaser.GameObjects.Rectangle;
   private rainDrops: Phaser.GameObjects.Image[] = [];
   private fireflies: Phaser.GameObjects.Image[] = [];
   private clouds: Phaser.GameObjects.Image[] = [];
@@ -114,7 +72,8 @@ export default class FarmScene extends Phaser.Scene {
   private waterTimer = 0;
   private waterFrame = 0;
   private sparkles = new Map<string, Phaser.GameObjects.Image>();
-  private snapshotAccumulator = 0;
+  private lastWeather = '';
+  private unsubscribeEvents: (() => void) | null = null;
 
   constructor() {
     super('farm-scene');
@@ -152,7 +111,7 @@ export default class FarmScene extends Phaser.Scene {
 
   create() {
     createPixelArtTextures(this);
-    this.createMap();
+    this.map = createMap();
     this.renderMap();
     this.createScenery();
     this.createCharacters();
@@ -160,44 +119,133 @@ export default class FarmScene extends Phaser.Scene {
     this.createAmbient();
     this.createUi();
     this.bindInput();
+
+    resetFarm();
+    this.unsubscribeEvents = onGameEvent((events) => this.handleEvents(events));
+    joinAsLocalPlayer(LOCAL_PLAYER_ID, 'You');
+
+    this.events.once(Phaser.Scenes.Events.SHUTDOWN, () => {
+      this.unsubscribeEvents?.();
+      this.unsubscribeEvents = null;
+    });
+
+    this.refreshAllPlots();
     this.updateWeatherPresentation();
     this.refreshUi();
-    this.dispatchSnapshot();
   }
 
-  update(_time: number, delta: number) {
+  update(time: number, delta: number) {
     this.handleToolHotkeys();
-    this.handleMovement(delta, _time);
+    this.handleMovement(delta, time);
     this.handleInteractions();
+    dispatch({ type: 'world/tick', deltaMs: delta });
+    this.syncAvatars(delta);
     this.updateCursor();
-    this.advanceClock(delta);
     this.updateAtmosphere(delta);
-    this.snapshotAccumulator += delta;
-    if (this.snapshotAccumulator > 250) {
-      this.snapshotAccumulator = 0;
-      this.dispatchSnapshot();
+    this.refreshUi();
+  }
+
+  // --- state plumbing -------------------------------------------------------
+
+  private get farm() {
+    return farmStore.getState().farm;
+  }
+
+  private get localPlayer(): PlayerState | null {
+    return this.farm.players[LOCAL_PLAYER_ID] ?? null;
+  }
+
+  /** Turns simulation events into sprites, tweens, and re-renders. */
+  private handleEvents(events: GameEvent[]) {
+    for (const event of events) {
+      if (event.kind === 'plotChanged') {
+        const plot = this.farm.plots[event.key];
+        if (plot) this.refreshPlot(plot.x, plot.y);
+      } else if (event.kind === 'dayStarted') {
+        this.updateWeatherPresentation();
+      }
     }
   }
 
-  private createMap() {
-    this.map = Array.from({ length: MAP_HEIGHT }, (_, y) =>
-      Array.from({ length: MAP_WIDTH }, (_, x): TileKind => {
-        if (y >= 17 && x < 9) return 'water';
-        if (y === 4 || x === 14 || (x >= 3 && x <= 7 && y >= 4 && y <= 6)) return 'path';
-        if (
-          x >= PLOT_START_X &&
-          x < PLOT_START_X + PLOT_COLS &&
-          y >= PLOT_START_Y &&
-          y < PLOT_START_Y + PLOT_ROWS
-        ) {
-          const plot = createPlot(x, y);
-          this.plots.set(plotKey(x, y), plot);
-          return 'plot';
-        }
-        return 'grass';
-      }),
-    );
+  // --- input ----------------------------------------------------------------
+
+  private bindInput() {
+    const keyboard = this.input.keyboard;
+    if (!keyboard) return;
+    this.keys = keyboard.addKeys({
+      up: Phaser.Input.Keyboard.KeyCodes.W,
+      down: Phaser.Input.Keyboard.KeyCodes.S,
+      left: Phaser.Input.Keyboard.KeyCodes.A,
+      right: Phaser.Input.Keyboard.KeyCodes.D,
+      arrowUp: Phaser.Input.Keyboard.KeyCodes.UP,
+      arrowDown: Phaser.Input.Keyboard.KeyCodes.DOWN,
+      arrowLeft: Phaser.Input.Keyboard.KeyCodes.LEFT,
+      arrowRight: Phaser.Input.Keyboard.KeyCodes.RIGHT,
+      one: Phaser.Input.Keyboard.KeyCodes.ONE,
+      two: Phaser.Input.Keyboard.KeyCodes.TWO,
+      three: Phaser.Input.Keyboard.KeyCodes.THREE,
+      four: Phaser.Input.Keyboard.KeyCodes.FOUR,
+      five: Phaser.Input.Keyboard.KeyCodes.FIVE,
+      q: Phaser.Input.Keyboard.KeyCodes.Q,
+      space: Phaser.Input.Keyboard.KeyCodes.SPACE,
+      enter: Phaser.Input.Keyboard.KeyCodes.ENTER,
+    }) as KeyMap;
   }
+
+  private handleMovement(delta: number, time: number) {
+    if (!this.keys) return;
+    const left = this.keys.left.isDown || this.keys.arrowLeft.isDown;
+    const right = this.keys.right.isDown || this.keys.arrowRight.isDown;
+    const up = this.keys.up.isDown || this.keys.arrowUp.isDown;
+    const down = this.keys.down.isDown || this.keys.arrowDown.isDown;
+    const dx = (right ? 1 : 0) - (left ? 1 : 0);
+    const dy = (down ? 1 : 0) - (up ? 1 : 0);
+    if (dx === 0 && dy === 0) return;
+
+    dispatch({ type: 'player/move', playerId: LOCAL_PLAYER_ID, dx, dy, deltaMs: delta });
+
+    const player = this.localPlayer;
+    if (!player) return;
+
+    // Dust puffs are pure decoration, so they stay here rather than in state.
+    this.dustTimer += delta;
+    if (this.dustTimer > 220) {
+      this.dustTimer = 0;
+      const dust = this.add
+        .image(player.x + Phaser.Math.Between(-6, 6), player.y + 13, 'dust')
+        .setDepth(48)
+        .setScale(0.7)
+        .setAlpha(0.7);
+      this.tweens.add({ targets: dust, y: dust.y - 8, alpha: 0, scale: 1.1, duration: 420, onComplete: () => dust.destroy() });
+    }
+
+    const avatar = this.avatars.get(LOCAL_PLAYER_ID);
+    if (avatar && !this.anims.exists(`player-walk-${player.facing}`)) {
+      avatar.sprite.setAngle(Math.sin(time / 130) * 1.5);
+    }
+  }
+
+  private handleToolHotkeys() {
+    if (!this.keys) return;
+    const hotkeys = [this.keys.one, this.keys.two, this.keys.three, this.keys.four, this.keys.five];
+    hotkeys.forEach((key, index) => {
+      if (Phaser.Input.Keyboard.JustDown(key)) {
+        dispatch({ type: 'player/selectTool', playerId: LOCAL_PLAYER_ID, tool: TOOL_ORDER[index] });
+      }
+    });
+
+    if (Phaser.Input.Keyboard.JustDown(this.keys.q)) {
+      dispatch({ type: 'player/cycleSeed', playerId: LOCAL_PLAYER_ID });
+    }
+  }
+
+  private handleInteractions() {
+    if (!this.keys) return;
+    if (!Phaser.Input.Keyboard.JustDown(this.keys.space) && !Phaser.Input.Keyboard.JustDown(this.keys.enter)) return;
+    dispatch({ type: 'player/act', playerId: LOCAL_PLAYER_ID });
+  }
+
+  // --- rendering ------------------------------------------------------------
 
   private renderMap() {
     for (let y = 0; y < MAP_HEIGHT; y += 1) {
@@ -214,11 +262,11 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   private createScenery() {
-    this.add.image(4.5 * TILE_SIZE, 2.7 * TILE_SIZE, 'farmhouse').setDepth(4).setDisplaySize(150, 150);
-    this.add.image(4.5 * TILE_SIZE, 3.5 * TILE_SIZE, 'shadow-soft').setDepth(3).setScale(3.2, 2.4).setAlpha(0.85);
-    this.houseGlow = this.add.image(4.5 * TILE_SIZE, 2.9 * TILE_SIZE, 'glow').setDepth(6).setScale(2.6).setAlpha(0);
-    this.chimneyX = 4.5 * TILE_SIZE + 49;
-    this.chimneyY = 2.7 * TILE_SIZE - 50;
+    this.add.image(LANDMARKS.farmhouse.x, LANDMARKS.farmhouse.y, 'farmhouse').setDepth(4).setDisplaySize(150, 150);
+    this.add.image(LANDMARKS.farmhouse.x, 3.5 * TILE_SIZE, 'shadow-soft').setDepth(3).setScale(3.2, 2.4).setAlpha(0.85);
+    this.houseGlow = this.add.image(LANDMARKS.farmhouse.x, 2.9 * TILE_SIZE, 'glow').setDepth(6).setScale(2.6).setAlpha(0);
+    this.chimneyX = LANDMARKS.farmhouse.x + 49;
+    this.chimneyY = LANDMARKS.farmhouse.y - 50;
     const treePositions: Array<[number, number, number]> = [
       [2.5, 12.3, 13],
       [25.4, 3.7, 5],
@@ -247,7 +295,7 @@ export default class FarmScene extends Phaser.Scene {
         placed += 1;
       }
     }
-    this.market = this.add.image(23.6 * TILE_SIZE, 5.8 * TILE_SIZE, 'market-ribbon').setDepth(8).setScale(1.1);
+    this.market = this.add.image(LANDMARKS.market.x, LANDMARKS.market.y, 'market-ribbon').setDepth(8).setScale(1.1);
 
     const well = this.add.container(22 * TILE_SIZE, 8 * TILE_SIZE).setDepth(9);
     well.add(this.add.rectangle(0, 8, 48, 20, 0x6e5846).setStrokeStyle(2, 0x2e211b));
@@ -256,31 +304,84 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   private createCharacters() {
-    this.playerShadow = this.add.image(15.5 * TILE_SIZE, 15.5 * TILE_SIZE + 16, 'shadow').setDepth(49);
-    this.rowanShadow = this.add.image(22 * TILE_SIZE, 7.2 * TILE_SIZE + 16, 'shadow').setDepth(39);
-    // LPC walkcycles fall back to procedural single frames when sheets are missing.
-    const playerFrames = this.textures.exists('player-sheet');
+    this.rowanShadow = this.add.image(LANDMARKS.rowan.x, LANDMARKS.rowan.y + 16, 'shadow').setDepth(39);
     const rowanFrames = this.textures.exists('rowan-sheet');
-    this.player = this.add
-      .sprite(15.5 * TILE_SIZE, 15.5 * TILE_SIZE, playerFrames ? 'player-sheet' : 'player', playerFrames ? WALK_ROW.down * 9 : undefined)
-      .setDepth(50)
-      .setScale(playerFrames ? 0.62 : 1.2);
     this.rowan = this.add
-      .sprite(22 * TILE_SIZE, 7.2 * TILE_SIZE, rowanFrames ? 'rowan-sheet' : 'rowan', rowanFrames ? WALK_ROW.down * 9 : undefined)
+      .sprite(LANDMARKS.rowan.x, LANDMARKS.rowan.y, rowanFrames ? 'rowan-sheet' : 'rowan', rowanFrames ? WALK_ROW.down * 9 : undefined)
       .setDepth(40)
       .setScale(rowanFrames ? 0.6 : 1.15);
-    if (playerFrames) {
+
+    if (this.textures.exists('player-sheet')) {
       (['up', 'left', 'down', 'right'] as Direction[]).forEach((dir) => {
         const row = WALK_ROW[dir];
         const key = `player-walk-${dir}`;
         if (!this.anims.exists(key)) {
-          this.anims.create({ key, frames: this.anims.generateFrameNumbers('player-sheet', { start: row * 9 + 1, end: row * 9 + 8 }), frameRate: 10, repeat: -1 });
+          this.anims.create({
+            key,
+            frames: this.anims.generateFrameNumbers('player-sheet', { start: row * 9 + 1, end: row * 9 + 8 }),
+            frameRate: 10,
+            repeat: -1,
+          });
         }
       });
     }
-    this.questIcon = this.add.image(22 * TILE_SIZE, 6.45 * TILE_SIZE, 'quest-star').setDepth(45);
+
+    this.questIcon = this.add.image(LANDMARKS.rowan.x, 6.45 * TILE_SIZE, 'quest-star').setDepth(45);
     this.tweens.add({ targets: this.questIcon, y: this.questIcon.y - 6, yoyo: true, repeat: -1, duration: 900, ease: 'Sine.inOut' });
     this.cursor = this.add.image(15 * TILE_SIZE + 16, 14 * TILE_SIZE + 16, 'tile-cursor').setDepth(80).setAlpha(0.88);
+  }
+
+  /** Creates an avatar for a player who just joined the farm. */
+  private createAvatar(player: PlayerState): Avatar {
+    const hasSheet = this.textures.exists('player-sheet');
+    const shadow = this.add.image(player.x, player.y + 16, 'shadow').setDepth(49);
+    const sprite = this.add
+      .sprite(player.x, player.y, hasSheet ? 'player-sheet' : 'player', hasSheet ? WALK_ROW.down * 9 : undefined)
+      .setDepth(50)
+      .setScale(hasSheet ? 0.62 : 1.2);
+    // Remote players are tinted so they read as somebody else at a glance.
+    if (player.id !== LOCAL_PLAYER_ID) sprite.setTint(0xbfd8ff);
+    return { sprite, shadow, lastX: player.x, lastY: player.y };
+  }
+
+  /**
+   * Draws every player the farm currently holds, adding and removing avatars
+   * as people join and leave. Positions come from state, never the other way.
+   */
+  private syncAvatars(_delta: number) {
+    const players = this.farm.players;
+
+    for (const player of Object.values(players)) {
+      let avatar = this.avatars.get(player.id);
+      if (!avatar) {
+        avatar = this.createAvatar(player);
+        this.avatars.set(player.id, avatar);
+      }
+
+      const moved = Math.abs(player.x - avatar.lastX) > 0.01 || Math.abs(player.y - avatar.lastY) > 0.01;
+      avatar.sprite.setPosition(player.x, player.y);
+      avatar.sprite.setDepth(Math.floor(player.y / TILE_SIZE) + 40);
+      avatar.shadow.setPosition(player.x, player.y + 16);
+
+      const walkKey = `player-walk-${player.facing}`;
+      if (this.anims.exists(walkKey)) {
+        if (moved) avatar.sprite.anims.play(walkKey, true);
+        else {
+          avatar.sprite.anims.stop();
+          avatar.sprite.setFrame(WALK_ROW[player.facing] * 9);
+        }
+      }
+
+      avatar.lastX = player.x;
+      avatar.lastY = player.y;
+    }
+
+    for (const [id, avatar] of this.avatars) {
+      if (players[id]) continue;
+      avatar.sprite.destroy();
+      avatar.shadow.destroy();
+      this.avatars.delete(id);
+    }
   }
 
   private createWeatherSprites() {
@@ -330,7 +431,7 @@ export default class FarmScene extends Phaser.Scene {
     }
     for (let i = 0; i < 3; i += 1) {
       const b = this.add
-        .image(200 + i * 220, 200 + (i * 130) % 240, 'butterfly')
+        .image(200 + i * 220, 200 + ((i * 130) % 240), 'butterfly')
         .setDepth(93)
         .setScale(1.2);
       this.tweens.add({
@@ -388,160 +489,12 @@ export default class FarmScene extends Phaser.Scene {
       .setDepth(101);
     this.dayNightOverlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0x111733, 0).setDepth(95);
     this.sunsetOverlay = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT / 2, GAME_WIDTH, GAME_HEIGHT, 0xff8a4c, 0).setDepth(94);
-    this.vignetteTop = this.add.rectangle(GAME_WIDTH / 2, 8, GAME_WIDTH, 16, 0x000000, 0.22).setDepth(96);
-    this.vignetteBottom = this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 8, GAME_WIDTH, 16, 0x000000, 0.25).setDepth(96);
-  }
-
-  private bindInput() {
-    const keyboard = this.input.keyboard;
-    if (!keyboard) return;
-    this.keys = keyboard.addKeys({
-      up: Phaser.Input.Keyboard.KeyCodes.W,
-      down: Phaser.Input.Keyboard.KeyCodes.S,
-      left: Phaser.Input.Keyboard.KeyCodes.A,
-      right: Phaser.Input.Keyboard.KeyCodes.D,
-      arrowUp: Phaser.Input.Keyboard.KeyCodes.UP,
-      arrowDown: Phaser.Input.Keyboard.KeyCodes.DOWN,
-      arrowLeft: Phaser.Input.Keyboard.KeyCodes.LEFT,
-      arrowRight: Phaser.Input.Keyboard.KeyCodes.RIGHT,
-      one: Phaser.Input.Keyboard.KeyCodes.ONE,
-      two: Phaser.Input.Keyboard.KeyCodes.TWO,
-      three: Phaser.Input.Keyboard.KeyCodes.THREE,
-      four: Phaser.Input.Keyboard.KeyCodes.FOUR,
-      five: Phaser.Input.Keyboard.KeyCodes.FIVE,
-      q: Phaser.Input.Keyboard.KeyCodes.Q,
-      space: Phaser.Input.Keyboard.KeyCodes.SPACE,
-      enter: Phaser.Input.Keyboard.KeyCodes.ENTER,
-    }) as KeyMap;
-  }
-
-  private handleMovement(delta: number, _time = 0) {
-    if (!this.keys) return;
-    const left = this.keys.left.isDown || this.keys.arrowLeft.isDown;
-    const right = this.keys.right.isDown || this.keys.arrowRight.isDown;
-    const up = this.keys.up.isDown || this.keys.arrowUp.isDown;
-    const down = this.keys.down.isDown || this.keys.arrowDown.isDown;
-    const dx = (right ? 1 : 0) - (left ? 1 : 0);
-    const dy = (down ? 1 : 0) - (up ? 1 : 0);
-
-    if (dx === 0 && dy === 0) {
-      if (this.anims.exists(`player-walk-${this.facing}`)) {
-        this.player.anims.stop();
-        this.player.setFrame(WALK_ROW[this.facing] * 9);
-      }
-      return;
-    }
-
-    if (Math.abs(dx) > Math.abs(dy)) this.facing = dx > 0 ? 'right' : 'left';
-    else if (dy !== 0) this.facing = dy > 0 ? 'down' : 'up';
-
-    const length = Math.hypot(dx, dy) || 1;
-    const nextX = Phaser.Math.Clamp(this.player.x + (dx / length) * PLAYER_SPEED * (delta / 1000), 12, GAME_WIDTH - 12);
-    const nextY = Phaser.Math.Clamp(this.player.y + (dy / length) * PLAYER_SPEED * (delta / 1000), 18, GAME_HEIGHT - 66);
-
-    if (this.isWalkable(nextX, this.player.y)) this.player.x = nextX;
-    if (this.isWalkable(this.player.x, nextY)) this.player.y = nextY;
-    this.player.setDepth(Math.floor(this.player.y / TILE_SIZE) + 40);
-    this.playerShadow.setPosition(this.player.x, this.player.y + 16);
-    const walkKey = `player-walk-${this.facing}`;
-    if (this.anims.exists(walkKey)) this.player.anims.play(walkKey, true);
-    else this.player.setAngle(Math.sin(_time / 130) * 1.5);
-    // dust puffs throttled
-    this.dustTimer += delta;
-    if (this.dustTimer > 220) {
-      this.dustTimer = 0;
-      const dust = this.add.image(this.player.x + Phaser.Math.Between(-6, 6), this.player.y + 13, 'dust').setDepth(48).setScale(0.7).setAlpha(0.7);
-      this.tweens.add({ targets: dust, y: dust.y - 8, alpha: 0, scale: 1.1, duration: 420, onComplete: () => dust.destroy() });
-    }
-  }
-
-  private handleToolHotkeys() {
-    if (!this.keys) return;
-    const hotkeys = [this.keys.one, this.keys.two, this.keys.three, this.keys.four, this.keys.five];
-    hotkeys.forEach((key, index) => {
-      if (Phaser.Input.Keyboard.JustDown(key)) {
-        this.selectedToolIndex = index;
-        this.prompt = `${TOOL_LABELS[this.selectedTool]} equipped.`;
-        this.refreshUi();
-      }
-    });
-
-    if (Phaser.Input.Keyboard.JustDown(this.keys.q)) {
-      this.selectedSeedIndex = (this.selectedSeedIndex + 1) % SEED_ORDER.length;
-      this.prompt = `${CROP_DEFINITIONS[this.selectedSeed].label} seeds selected.`;
-      this.refreshUi();
-    }
-  }
-
-  private handleInteractions() {
-    if (!this.keys) return;
-    if (!Phaser.Input.Keyboard.JustDown(this.keys.space) && !Phaser.Input.Keyboard.JustDown(this.keys.enter)) return;
-
-    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, this.rowan.x, this.rowan.y) < 58) {
-      const reward = claimQuestReward(this.quest, this.inventory);
-      this.quest = reward.quest;
-      this.inventory = reward.inventory;
-      this.prompt = reward.message;
-      this.refreshUi();
-      this.dispatchSnapshot();
-      return;
-    }
-
-    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, this.market.x, this.market.y) < 58) {
-      const sale = sellAllCrops(this.inventory);
-      this.inventory = sale.inventory;
-      this.prompt = sale.message;
-      this.refreshUi();
-      this.dispatchSnapshot();
-      return;
-    }
-
-    const target = this.targetTile();
-    const plot = this.plots.get(plotKey(target.x, target.y));
-    const action = TOOL_ACTIONS[this.selectedTool];
-    if (!plot || !action) {
-      this.prompt = this.describeTile(target.x, target.y);
-      this.refreshUi();
-      return;
-    }
-
-    const result = applyFarmAction(plot, this.inventory, action, this.selectedSeed);
-    this.plots.set(plotKey(target.x, target.y), result.plot);
-    this.inventory = result.inventory;
-    if (result.harvestedCrop) this.quest = recordHarvest(this.quest, result.harvestedCrop);
-    this.prompt = result.message;
-    this.refreshPlot(target.x, target.y);
-    this.refreshUi();
-    this.dispatchSnapshot();
-  }
-
-  private advanceClock(delta: number) {
-    this.timeAccumulator += delta;
-    if (this.timeAccumulator < 1200) return;
-    this.timeAccumulator = 0;
-    const next = advanceTime(this.timeState, 10);
-    if (next.newDay) this.startNewDay();
-    else this.timeState = next.time;
-    this.refreshUi();
-  }
-
-  private startNewDay() {
-    const yesterdayRainy = isRainy(this.weather);
-    this.plots.forEach((plot, key) => {
-      const nextPlot = advancePlotDay(plot, yesterdayRainy);
-      this.plots.set(key, nextPlot);
-      this.refreshPlot(nextPlot.x, nextPlot.y);
-    });
-
-    this.timeState = createTimeState(this.timeState.day + 1);
-    this.season = seasonForDay(this.timeState.day);
-    this.weather = weatherForDay(this.timeState.day);
-    this.inventory = refillWater(this.inventory);
-    this.prompt = this.weather === 'Drizzle' ? 'Morning rain drums softly on the fields.' : 'A new day begins at Amberfall Farm.';
-    this.updateWeatherPresentation();
+    this.add.rectangle(GAME_WIDTH / 2, 8, GAME_WIDTH, 16, 0x000000, 0.22).setDepth(96);
+    this.add.rectangle(GAME_WIDTH / 2, GAME_HEIGHT - 8, GAME_WIDTH, 16, 0x000000, 0.25).setDepth(96);
   }
 
   private updateAtmosphere(delta: number) {
+    const farm = this.farm;
     const time = this.time.now / 1000;
     // water frame animation (LPC sparkle variants) + gentle shimmer
     this.waterTimer += delta;
@@ -560,7 +513,7 @@ export default class FarmScene extends Phaser.Scene {
       if (cloud.x > GAME_WIDTH + 100) cloud.x = -100;
     });
     // petals / ambient motes drift
-    const fireflyNight = this.weather === 'Firefly Shower' || this.timeState.hour >= 19 || this.timeState.hour < 6;
+    const fireflyNight = farm.weather === 'Firefly Shower' || farm.time.hour >= 19 || farm.time.hour < 6;
     this.petals.forEach((petal) => {
       const seed = Number(petal.getData('seed') ?? 0);
       const isPetal = Boolean(petal.getData('isPetal'));
@@ -580,7 +533,7 @@ export default class FarmScene extends Phaser.Scene {
       const smoke = this.add.image(this.chimneyX + Phaser.Math.Between(-2, 2), this.chimneyY, 'smoke').setDepth(7).setScale(0.5).setAlpha(0.6);
       this.tweens.add({ targets: smoke, y: smoke.y - 34, x: smoke.x + 10, scale: 1.2, alpha: 0, duration: 2400, onComplete: () => smoke.destroy() });
     }
-    const hour = this.timeState.hour + this.timeState.minute / 60;
+    const hour = farm.time.hour + farm.time.minute / 60;
     const eveningAlpha = Phaser.Math.Clamp((hour - 18) / 4, 0, 0.42);
     const dawnAlpha = Phaser.Math.Clamp((7 - hour) / 2, 0, 0.18);
     this.dayNightOverlay.setAlpha(Math.max(eveningAlpha, dawnAlpha));
@@ -591,10 +544,10 @@ export default class FarmScene extends Phaser.Scene {
     const nightGlow = hour >= 18 || hour < 6.5 ? 0.75 : hour >= 17 ? 0.35 : 0;
     this.houseGlow.setAlpha(nightGlow + Math.sin(time * 2.2) * 0.05);
     // hide butterflies at night / rain
-    const showB = this.weather !== 'Drizzle' && hour >= 8 && hour < 18;
+    const showB = farm.weather !== 'Drizzle' && hour >= 8 && hour < 18;
     this.butterflies.forEach((b) => b.setVisible(showB));
 
-    const rainy = this.weather === 'Drizzle';
+    const rainy = farm.weather === 'Drizzle';
     this.rainDrops.forEach((drop, index) => {
       if (!rainy) return;
       drop.y += delta * (0.28 + (index % 5) * 0.018);
@@ -607,28 +560,33 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   private updateWeatherPresentation() {
-    const rainy = this.weather === 'Drizzle';
-    const fireflyWeather = this.weather === 'Firefly Shower';
+    const { weather } = this.farm;
+    if (weather === this.lastWeather) return;
+    this.lastWeather = weather;
+    const rainy = weather === 'Drizzle';
+    const fireflyWeather = weather === 'Firefly Shower';
     this.rainDrops.forEach((drop) => drop.setAlpha(rainy ? 0.72 : 0));
     this.fireflies.forEach((fly) => fly.setAlpha(fireflyWeather ? 0.85 : 0));
     this.cameras.main.setBackgroundColor(
-      this.weather === 'Drizzle' ? '#203142' : this.weather === 'Firefly Shower' ? '#1c2636' : '#1a2d1c',
+      rainy ? '#203142' : fireflyWeather ? '#1c2636' : '#1a2d1c',
     );
+  }
+
+  private refreshAllPlots() {
+    for (const plot of Object.values(this.farm.plots)) this.refreshPlot(plot.x, plot.y);
   }
 
   private refreshPlot(x: number, y: number) {
     const key = plotKey(x, y);
-    const plot = this.plots.get(key);
+    const plot = this.farm.plots[key];
     const base = this.plotSprites.get(key);
     if (!plot || !base) return;
 
     base.setTexture(plot.wateredToday ? 'plot-watered' : plot.stage === 'wild' ? 'plot-wild' : 'plot-tilled');
 
-    const existing = this.cropSprites.get(key);
-    existing?.destroy();
+    this.cropSprites.get(key)?.destroy();
     this.cropSprites.delete(key);
-    const oldSparkle = this.sparkles.get(key);
-    oldSparkle?.destroy();
+    this.sparkles.get(key)?.destroy();
     this.sparkles.delete(key);
 
     if (!plot.crop) return;
@@ -656,107 +614,40 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   private refreshUi() {
-    const selectedSeed = CROP_DEFINITIONS[this.selectedSeed].label;
-    const tools = TOOL_ORDER.map((tool, index) => `${index + 1}${tool === this.selectedTool ? '▶' : ':'}${TOOL_LABELS[tool]}`).join('  ');
-    this.toolbarText.setText(`${tools}   Q: ${selectedSeed} seeds`);
-    this.promptText.setText(this.contextHint() ?? this.prompt);
-    this.clockText.setText(`Day ${this.timeState.day} ${this.formatClock()}\n${this.season}`);
-    this.weatherText.setText(`${this.weather}\nQuest ${this.quest.progress}/${this.quest.target}`);
-    this.questIcon.setVisible(!this.quest.rewarded);
-  }
+    const store = farmStore.getState();
+    const farm = store.farm;
+    const player = this.localPlayer;
+    if (!player) return;
 
-  private dispatchSnapshot() {
-    const snapshot: FarmSnapshot = {
-      inventory: this.inventory,
-      time: this.timeState,
-      season: this.season,
-      weather: this.weather,
-      quest: this.quest,
-      selectedTool: TOOL_LABELS[this.selectedTool],
-      selectedSeed: CROP_DEFINITIONS[this.selectedSeed].label,
-      prompt: this.contextHint() ?? this.prompt,
-      controlsHint: 'Move WASD/Arrows • Tools 1-5 • Seed Q • Space/Enter to act',
-    };
-    window.dispatchEvent(new CustomEvent('farm-snapshot', { detail: snapshot }));
-  }
-
-  private targetTile() {
-    const px = worldToTile(this.player.x);
-    const py = worldToTile(this.player.y);
-    const offsets: Record<Direction, { x: number; y: number }> = {
-      up: { x: 0, y: -1 },
-      down: { x: 0, y: 1 },
-      left: { x: -1, y: 0 },
-      right: { x: 1, y: 0 },
-    };
-    const offset = offsets[this.facing];
-    return {
-      x: Phaser.Math.Clamp(px + offset.x, 0, MAP_WIDTH - 1),
-      y: Phaser.Math.Clamp(py + offset.y, 0, MAP_HEIGHT - 1),
-    };
+    const seedLabel = CROP_DEFINITIONS[player.seed].label;
+    const tools = TOOL_ORDER.map(
+      (tool, index) => `${index + 1}${tool === player.tool ? '▶' : ':'}${TOOL_LABELS[tool]}`,
+    ).join('  ');
+    this.toolbarText.setText(`${tools}   Q: ${seedLabel} seeds`);
+    this.promptText.setText(promptFor(store));
+    this.clockText.setText(`Day ${farm.time.day} ${this.formatClock()}\n${farm.season}`);
+    this.weatherText.setText(`${farm.weather}\nQuest ${farm.quest.progress}/${farm.quest.target}`);
+    this.questIcon.setVisible(!farm.quest.rewarded);
   }
 
   private updateCursor() {
-    const target = this.targetTile();
+    const player = this.localPlayer;
+    if (!player) return;
+    const target = targetTile(player, player.facing);
     const tx = target.x * TILE_SIZE + 16;
     const ty = target.y * TILE_SIZE + 16;
     this.cursor.x = Phaser.Math.Linear(this.cursor.x, tx, 0.35);
     this.cursor.y = Phaser.Math.Linear(this.cursor.y, ty, 0.35);
     this.cursor.setVisible(this.map[target.y][target.x] !== 'water');
-    const pulse = 0.82 + Math.sin(this.time.now / 280) * 0.1;
-    this.cursor.setAlpha(pulse);
+    this.cursor.setAlpha(0.82 + Math.sin(this.time.now / 280) * 0.1);
     this.cursor.setAngle(Math.sin(this.time.now / 900) * 2);
   }
 
-  private isWalkable(x: number, y: number) {
-    const tileX = worldToTile(x);
-    const tileY = worldToTile(y);
-    if (tileX < 0 || tileX >= MAP_WIDTH || tileY < 0 || tileY >= MAP_HEIGHT) return false;
-    if (this.map[tileY][tileX] === 'water') return false;
-    if (tileX >= 2 && tileX <= 7 && tileY >= 1 && tileY <= 4) return false;
-    if (Phaser.Math.Distance.Between(x, y, this.rowan.x, this.rowan.y) < 22) return false;
-    return true;
-  }
-
-  private describeTile(x: number, y: number) {
-    const tile = this.map[y][x];
-    if (tile === 'water') return 'The pond reflects the sky. Water refills automatically each morning.';
-    if (tile === 'plot') return 'Choose a farming tool to work this plot.';
-    if (tile === 'path') return 'A packed path leads between the farmhouse, fields, and Rowan.';
-    return 'Wild grass waves in the valley breeze.';
-  }
-
-  private nearRowanHint() {
-    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, this.rowan.x, this.rowan.y) >= 58) return null;
-    if (this.quest.rewarded) return 'Rowan: The village market is watching Amberfall now.';
-    if (this.quest.completed) return 'Rowan: Those turnips look perfect. Press Space to collect your reward.';
-    return `Rowan: Bring me ${this.quest.target - this.quest.progress} more turnip${this.quest.target - this.quest.progress === 1 ? '' : 's'} and I will pay well.`;
-  }
-
-  private nearMarketHint() {
-    if (Phaser.Math.Distance.Between(this.player.x, this.player.y, this.market.x, this.market.y) >= 58) return null;
-    const basket = this.inventory.crops.turnip + this.inventory.crops.strawberry;
-    if (basket <= 0) return 'Market stall: harvest crops, then press Space/Enter here to sell your basket.';
-    return `Market stall: press Space/Enter to sell ${basket} crop${basket === 1 ? '' : 's'} for coins.`;
-  }
-
-  private contextHint() {
-    return this.nearRowanHint() ?? this.nearMarketHint();
-  }
-
   private formatClock() {
-    const hours = this.timeState.hour;
-    const minutes = this.timeState.minute.toString().padStart(2, '0');
-    const suffix = hours >= 12 ? 'PM' : 'AM';
-    const displayHours = hours % 12 === 0 ? 12 : hours % 12;
+    const { time } = this.farm;
+    const minutes = time.minute.toString().padStart(2, '0');
+    const suffix = time.hour >= 12 ? 'PM' : 'AM';
+    const displayHours = time.hour % 12 === 0 ? 12 : time.hour % 12;
     return `${displayHours}:${minutes} ${suffix}`;
-  }
-
-  private get selectedTool() {
-    return TOOL_ORDER[this.selectedToolIndex];
-  }
-
-  private get selectedSeed() {
-    return SEED_ORDER[this.selectedSeedIndex];
   }
 }

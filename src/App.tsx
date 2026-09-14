@@ -1,55 +1,21 @@
-import { useEffect, useState } from 'react';
+import { useStore } from 'zustand';
 import GameCanvas from './components/GameCanvas';
-import type { FarmSnapshot } from './game/types/snapshot';
-
-const initialSnapshot: FarmSnapshot = {
-  inventory: {
-    seeds: { turnip: 8, strawberry: 2 },
-    crops: { turnip: 0, strawberry: 0 },
-    coins: 24,
-    water: 12,
-    wood: 5,
-  },
-  time: { day: 1, hour: 6, minute: 0, totalMinutes: 360 },
-  season: 'Spring',
-  weather: 'Sunny',
-  quest: {
-    id: 'first-harvest',
-    title: 'First Harvest',
-    description: 'Harvest 3 turnips for Rowan by the well.',
-    targetCrop: 'turnip',
-    target: 3,
-    progress: 0,
-    completed: false,
-    rewarded: false,
-  },
-  selectedTool: 'Hoe',
-  selectedSeed: 'Turnip',
-  prompt: 'Wake up on Amberfall Farm.',
-  controlsHint: 'Move WASD/Arrows • Tools 1-5 • Seed Q • Space/Enter to act',
-};
-
-function formatClock(totalMinutes: number) {
-  const hours = Math.floor(totalMinutes / 60) % 24;
-  const minutes = totalMinutes % 60;
-  const suffix = hours >= 12 ? 'PM' : 'AM';
-  const displayHours = hours % 12 === 0 ? 12 : hours % 12;
-  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${suffix}`;
-}
+import { CONTROLS_HINT, formatClock, localPlayer, promptFor, seedLabel, toolLabel } from './game/state/selectors';
+import { farmStore } from './game/state/store';
 
 export default function App() {
-  const [snapshot, setSnapshot] = useState<FarmSnapshot>(initialSnapshot);
+  // Individually selected so a change to one slice does not re-render the rest.
+  const time = useStore(farmStore, (store) => store.farm.time);
+  const season = useStore(farmStore, (store) => store.farm.season);
+  const weather = useStore(farmStore, (store) => store.farm.weather);
+  const coins = useStore(farmStore, (store) => store.farm.coins);
+  const quest = useStore(farmStore, (store) => store.farm.quest);
+  const playerCount = useStore(farmStore, (store) => Object.keys(store.farm.players).length);
+  const player = useStore(farmStore, localPlayer);
+  const prompt = useStore(farmStore, promptFor);
 
-  useEffect(() => {
-    const handleSnapshot = (event: CustomEvent<FarmSnapshot>) => {
-      setSnapshot(event.detail);
-    };
-
-    window.addEventListener('farm-snapshot', handleSnapshot);
-    return () => window.removeEventListener('farm-snapshot', handleSnapshot);
-  }, []);
-
-  const questPercent = Math.min(100, Math.round((snapshot.quest.progress / snapshot.quest.target) * 100));
+  const satchel = player?.satchel;
+  const questPercent = Math.min(100, Math.round((quest.progress / quest.target) * 100));
 
   return (
     <main className="shell">
@@ -63,10 +29,10 @@ export default function App() {
           </p>
         </div>
         <div className="day-card" aria-label="Current farm conditions">
-          <span>Day {snapshot.time.day}</span>
-          <strong>{formatClock(snapshot.time.totalMinutes)}</strong>
+          <span>Day {time.day}</span>
+          <strong>{formatClock(time.totalMinutes)}</strong>
           <em>
-            {snapshot.season} • {snapshot.weather}
+            {season} • {weather}
           </em>
         </div>
       </section>
@@ -79,41 +45,47 @@ export default function App() {
             <h2>Satchel</h2>
             <dl className="inventory-grid">
               <div>
-                <dt>Coins</dt>
-                <dd>{snapshot.inventory.coins}g</dd>
+                <dt>Farm coins</dt>
+                <dd>{coins}g</dd>
               </div>
               <div>
                 <dt>Water</dt>
-                <dd>{snapshot.inventory.water}</dd>
+                <dd>{satchel?.water ?? 0}</dd>
               </div>
               <div>
                 <dt>Wood</dt>
-                <dd>{snapshot.inventory.wood}</dd>
+                <dd>{satchel?.wood ?? 0}</dd>
               </div>
               <div>
                 <dt>Turnips</dt>
-                <dd>{snapshot.inventory.crops.turnip}</dd>
+                <dd>{satchel?.crops.turnip ?? 0}</dd>
               </div>
               <div>
                 <dt>Seeds</dt>
                 <dd>
-                  {snapshot.inventory.seeds.turnip} turnip • {snapshot.inventory.seeds.strawberry} berry
+                  {satchel?.seeds.turnip ?? 0} turnip • {satchel?.seeds.strawberry ?? 0} berry
                 </dd>
               </div>
               <div>
                 <dt>Equipped</dt>
-                <dd>{snapshot.selectedTool}</dd>
+                <dd>
+                  {toolLabel(player)} • {seedLabel(player)}
+                </dd>
               </div>
             </dl>
+            <p className="hud-note">
+              Coins are the farm&apos;s shared wallet. Seeds, crops, and water are yours alone.
+              {playerCount > 1 ? ` ${playerCount} farmhands on the farm.` : ''}
+            </p>
           </div>
 
           <div className="hud-section quest-card">
             <div className="quest-heading">
-              <span>Rowan's request</span>
-              <strong>{snapshot.quest.completed ? 'Ready' : `${snapshot.quest.progress}/${snapshot.quest.target}`}</strong>
+              <span>Rowan&apos;s request</span>
+              <strong>{quest.completed ? 'Ready' : `${quest.progress}/${quest.target}`}</strong>
             </div>
-            <h2>{snapshot.quest.title}</h2>
-            <p>{snapshot.quest.description}</p>
+            <h2>{quest.title}</h2>
+            <p>{quest.description}</p>
             <div className="progress-track" aria-label={`Quest progress ${questPercent}%`}>
               <span style={{ width: `${questPercent}%` }} />
             </div>
@@ -121,8 +93,8 @@ export default function App() {
 
           <div className="hud-section prompt-card">
             <h2>Hint</h2>
-            <p>{snapshot.prompt}</p>
-            <small>{snapshot.controlsHint}</small>
+            <p>{prompt}</p>
+            <small>{CONTROLS_HINT}</small>
           </div>
         </aside>
       </section>

@@ -1,5 +1,5 @@
-import type { CropId, InventoryState } from './inventory';
-import { addCrop, cloneInventory, spendSeed, spendWater } from './inventory';
+import type { CropId, Satchel } from './satchel';
+import { addCrop, cloneSatchel, spendSeed, spendWater } from './satchel';
 
 export type PlotStage = 'wild' | 'tilled' | 'seeded' | 'sprout' | 'mature';
 export type FarmAction = 'till' | 'plant' | 'water' | 'harvest';
@@ -28,27 +28,28 @@ export interface PlotState {
 
 export interface FarmActionResult {
   plot: PlotState;
-  inventory: InventoryState;
+  satchel: Satchel;
   message: string;
   changed: boolean;
   harvestedCrop?: CropId;
 }
 
 export interface SellResult {
-  inventory: InventoryState;
+  satchel: Satchel;
+  /** Credit this to the farm's shared wallet; the satchel itself holds no coins. */
   coinsEarned: number;
   soldCount: number;
   changed: boolean;
   message: string;
 }
 
-export function sellAllCrops(inventory: InventoryState): SellResult {
-  const crops = Object.keys(inventory.crops) as CropId[];
+export function sellAllCrops(satchel: Satchel): SellResult {
+  const crops = Object.keys(satchel.crops) as CropId[];
   let coinsEarned = 0;
   let soldCount = 0;
 
   for (const crop of crops) {
-    const quantity = inventory.crops[crop];
+    const quantity = satchel.crops[crop];
     if (quantity > 0) {
       coinsEarned += quantity * CROP_DEFINITIONS[crop].sellPrice;
       soldCount += quantity;
@@ -57,7 +58,7 @@ export function sellAllCrops(inventory: InventoryState): SellResult {
 
   if (soldCount === 0) {
     return {
-      inventory,
+      satchel,
       coinsEarned: 0,
       soldCount: 0,
       changed: false,
@@ -65,12 +66,11 @@ export function sellAllCrops(inventory: InventoryState): SellResult {
     };
   }
 
-  const next = cloneInventory(inventory);
+  const next = cloneSatchel(satchel);
   for (const crop of crops) next.crops[crop] = 0;
-  next.coins += coinsEarned;
 
   return {
-    inventory: next,
+    satchel: next,
     coinsEarned,
     soldCount,
     changed: true,
@@ -120,52 +120,52 @@ export function harvestPlot(plot: PlotState): { plot: PlotState; crop: CropId } 
 
 export function applyFarmAction(
   plot: PlotState,
-  inventory: InventoryState,
+  satchel: Satchel,
   action: FarmAction,
   selectedCrop: CropId = 'turnip',
 ): FarmActionResult {
   if (action === 'till') {
     const nextPlot = tillPlot(plot);
     return nextPlot === plot
-      ? { plot, inventory, changed: false, message: 'This soil is already prepared.' }
-      : { plot: nextPlot, inventory, changed: true, message: 'The earth turns soft and ready.' };
+      ? { plot, satchel, changed: false, message: 'This soil is already prepared.' }
+      : { plot: nextPlot, satchel, changed: true, message: 'The earth turns soft and ready.' };
   }
 
   if (action === 'plant') {
-    const nextInventory = spendSeed(inventory, selectedCrop);
-    if (!nextInventory) {
-      return { plot, inventory, changed: false, message: `No ${CROP_DEFINITIONS[selectedCrop].label} seeds left.` };
+    const nextSatchel = spendSeed(satchel, selectedCrop);
+    if (!nextSatchel) {
+      return { plot, satchel, changed: false, message: `No ${CROP_DEFINITIONS[selectedCrop].label} seeds left.` };
     }
     const nextPlot = plantCrop(plot, selectedCrop);
-    if (!nextPlot) return { plot, inventory, changed: false, message: 'Seeds need a tilled empty plot.' };
+    if (!nextPlot) return { plot, satchel, changed: false, message: 'Seeds need a tilled empty plot.' };
     return {
       plot: nextPlot,
-      inventory: nextInventory,
+      satchel: nextSatchel,
       changed: true,
       message: `${CROP_DEFINITIONS[selectedCrop].label} seeds tucked into the soil.`,
     };
   }
 
   if (action === 'water') {
-    if (!plot.crop) return { plot, inventory, changed: false, message: 'Plant seeds before watering this plot.' };
-    if (plot.wateredToday) return { plot, inventory, changed: false, message: 'This crop is already watered.' };
-    if (plot.stage === 'mature') return { plot, inventory, changed: false, message: 'This crop is ready to harvest.' };
-    const nextInventory = spendWater(inventory);
-    if (!nextInventory) return { plot, inventory, changed: false, message: 'The watering can is empty. It refills tomorrow.' };
+    if (!plot.crop) return { plot, satchel, changed: false, message: 'Plant seeds before watering this plot.' };
+    if (plot.wateredToday) return { plot, satchel, changed: false, message: 'This crop is already watered.' };
+    if (plot.stage === 'mature') return { plot, satchel, changed: false, message: 'This crop is ready to harvest.' };
+    const nextSatchel = spendWater(satchel);
+    if (!nextSatchel) return { plot, satchel, changed: false, message: 'The watering can is empty. It refills tomorrow.' };
     return {
       plot: waterPlot(plot),
-      inventory: nextInventory,
+      satchel: nextSatchel,
       changed: true,
       message: 'Water beads on the young leaves.',
     };
   }
 
   const harvest = harvestPlot(plot);
-  if (!harvest) return { plot, inventory, changed: false, message: 'Nothing ripe here yet.' };
+  if (!harvest) return { plot, satchel, changed: false, message: 'Nothing ripe here yet.' };
 
   return {
     plot: harvest.plot,
-    inventory: addCrop(inventory, harvest.crop),
+    satchel: addCrop(satchel, harvest.crop),
     changed: true,
     harvestedCrop: harvest.crop,
     message: `${CROP_DEFINITIONS[harvest.crop].label} harvested!`,

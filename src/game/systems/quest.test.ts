@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { createInventory } from './inventory';
-import { claimQuestReward, createQuest, recordHarvest } from './quest';
+import { QUEST_REWARD_COINS, claimQuestReward, createQuest, recordHarvest } from './quest';
 
 describe('quest system', () => {
   it('tracks only the requested crop and pays once', () => {
     let quest = createQuest();
-    let inventory = createInventory();
 
     quest = recordHarvest(quest, 'strawberry');
     expect(quest.progress).toBe(0);
@@ -17,15 +15,14 @@ describe('quest system', () => {
     expect(quest.completed).toBe(true);
     expect(quest.progress).toBe(3);
 
-    const firstClaim = claimQuestReward(quest, inventory);
+    const firstClaim = claimQuestReward(quest);
     quest = firstClaim.quest;
-    inventory = firstClaim.inventory;
 
     expect(firstClaim.claimed).toBe(true);
-    expect(inventory.coins).toBe(99);
+    expect(firstClaim.reward).toBe(QUEST_REWARD_COINS);
 
-    const secondClaim = claimQuestReward(quest, inventory);
+    const secondClaim = claimQuestReward(quest);
     expect(secondClaim.claimed).toBe(false);
-    expect(secondClaim.inventory.coins).toBe(99);
+    expect(secondClaim.reward).toBe(0);
   });
 });

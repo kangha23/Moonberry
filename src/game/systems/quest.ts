@@ -1,6 +1,11 @@
-import type { CropId, InventoryState } from './inventory';
-import { addCoins } from './inventory';
+import type { CropId } from './satchel';
 
+export const QUEST_REWARD_COINS = 75;
+
+/**
+ * Quest progress belongs to the farm, not to an individual player: any player
+ * harvesting the target crop advances it, and any player may claim the reward.
+ */
 export interface QuestState {
   id: 'first-harvest';
   title: string;
@@ -31,17 +36,26 @@ export function recordHarvest(quest: QuestState, crop: CropId): QuestState {
   return { ...quest, progress, completed: progress >= quest.target };
 }
 
-export function claimQuestReward(
-  quest: QuestState,
-  inventory: InventoryState,
-): { quest: QuestState; inventory: InventoryState; message: string; claimed: boolean } {
-  if (!quest.completed) return { quest, inventory, message: 'Rowan still needs a few more turnips.', claimed: false };
-  if (quest.rewarded) return { quest, inventory, message: 'Rowan is already planning the next market day.', claimed: false };
+export interface QuestRewardResult {
+  quest: QuestState;
+  /** Credit this to the farm's shared wallet. Zero unless `claimed` is true. */
+  reward: number;
+  message: string;
+  claimed: boolean;
+}
+
+export function claimQuestReward(quest: QuestState): QuestRewardResult {
+  if (!quest.completed) {
+    return { quest, reward: 0, claimed: false, message: 'Rowan still needs a few more turnips.' };
+  }
+  if (quest.rewarded) {
+    return { quest, reward: 0, claimed: false, message: 'Rowan is already planning the next market day.' };
+  }
 
   return {
     quest: { ...quest, rewarded: true },
-    inventory: addCoins(inventory, 75),
-    message: 'Rowan pays 75g and promises to spread the word about Amberfall Farm.',
+    reward: QUEST_REWARD_COINS,
     claimed: true,
+    message: `Rowan pays ${QUEST_REWARD_COINS}g and promises to spread the word about Amberfall Farm.`,
   };
 }
