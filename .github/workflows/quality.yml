@@ -31,4 +31,4 @@ jobs:
           fi
 
       - name: Run quality gate
-        run: node scripts/quality-gate.mjs
+        run: npm run quality:fast

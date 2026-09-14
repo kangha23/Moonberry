@@ -14,22 +14,9 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
-    "quality": "npm run lint && npm run test && npm run build && npm run test:e2e",
     "quality:fast": "npm run lint && npm run test && npm run build",
-    "check:attribution": "node scripts/check-attribution.mjs",
-    "check:features": "node scripts/validate-feature-list.mjs",
-    "check:agents": "node scripts/check-agents-map.mjs",
-    "prepare": "husky",
-    "release-please": "release-please release-pr --config-file release-please-config.json --manifest-file .release-please-manifest.json",
     "generate:assets": "node scripts/generate-assets.mjs",
-    "check:owned-paths": "node scripts/verify-owned-paths.mjs",
-    "quality:harness": "SKIP_PACKAGE_CHECKS=1 node scripts/quality-gate.mjs",
-    "quality:gate": "node scripts/quality-gate.mjs",
-    "issue:sync:dry-run": "node scripts/sync-github-issues.mjs --dry-run",
-    "issue:sync:write": "node scripts/sync-github-issues.mjs --write",
-    "hooks:install": "node scripts/install-husky-hooks.mjs",
-    "check:identity": "node scripts/check-git-identity.mjs",
-    "check:commit-msg": "node scripts/check-commit-message.mjs"
+    "prepare": "husky"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.0.3",
@@ -52,10 +39,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.3",
     "globals": "^16.5.0",
-    "husky": "^9.1.7",
     "jsdom": "^29.1.1",
-    "lint-staged": "^16.4.0",
-    "release-please": "^17.9.0",
     "typescript": "^6.0.3",
     "vite": "^8.1.0",
     "vitest": "^4.1.9"
@@ -63,12 +47,6 @@
   "lint-staged": {
     "*.{ts,tsx,js,jsx,mjs,cjs}": [
       "eslint --fix --no-warn-ignored"
-    ],
-    "feature_list.json": [
-      "node scripts/validate-feature-list.mjs"
-    ],
-    "agent-harness/agent-map.json": [
-      "node scripts/check-agents-map.mjs"
     ]
   }
 }

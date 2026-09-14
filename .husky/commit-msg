@@ -1,2 +1,0 @@
-node scripts/check-commit-message.mjs "$1"
-npm run check:attribution

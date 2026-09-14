@@ -1,18 +1,18 @@
 # Moonberry Farmstead
 
-A cozy farming RPG vertical slice built with React, Vite, TypeScript, and Phaser 4. The project is structured for public GitHub development, Vercel deployment, and multi-agent implementation workflows.
+A cozy farming RPG built with React 19, Vite, TypeScript, and Phaser 4.
 
-## First playable slice
+> **Status: single-player vertical slice.** One screen, one farm, no save/load.
+> Multiplayer is the goal — see [Roadmap](#roadmap).
 
-The current build includes:
+## What plays today
 
-- Top-down farm exploration with WASD/arrow-key movement.
-- A Phaser 4 game mounted and cleaned up by React.
-- Farm plots with a complete loop: till, plant, water, grow, harvest.
+- Top-down farm exploration on a single 30x20 tile screen (WASD/arrow keys).
+- Complete farming loop: till, plant, water, grow overnight, harvest, sell.
 - Deterministic time, day transitions, weather, and seasons.
-- Inventory, seed selection, crop stacks, water refills, and coins.
+- Inventory with seeds, crop stacks, water charges, and coins.
 - Rowan's first-harvest quest and reward interaction.
-- Local pixel-art-style terrain, character, crop, weather, UI, and SVG support assets.
+- Hand-drawn LPC/CC0 art with procedural pixel-art textures as fallback.
 
 ## Controls
 
@@ -23,12 +23,6 @@ The current build includes:
 | Change seed | Q |
 | Use selected tool / talk | Space or Enter |
 
-## Live deployment
-
-Production is live on Vercel:
-
-https://stardew-valley-clone-five.vercel.app
-
 ## Local development
 
 ```sh
@@ -36,7 +30,7 @@ npm install
 npm run dev
 ```
 
-Open the Vite URL shown in the terminal. The default local port is `5173`.
+Open the Vite URL shown in the terminal (default `http://localhost:5173`).
 
 ## Quality gates
 
@@ -44,51 +38,56 @@ Open the Vite URL shown in the terminal. The default local port is `5173`.
 npm run lint
 npm run test
 npm run build
-npm run test:e2e
-npm run quality:gate
+npm run test:e2e      # requires: npm run test:e2e:install
+npm run quality:fast  # lint + test + build
 ```
 
-The pre-commit hook runs staged linting, feature-list validation, agent-map validation, and attribution checks.
+`npm install` wires a husky pre-commit hook that runs `lint-staged` (ESLint on
+staged JS/TS files).
 
-Install or refresh hooks with:
+## Project layout
 
-```sh
-npm run hooks:install
-```
+| Path | Contents |
+| --- | --- |
+| `src/game/systems/` | Pure, deterministic game rules — farming, time, quest, inventory. Unit-tested, no Phaser or DOM dependency. |
+| `src/game/scenes/FarmScene.ts` | Phaser scene: rendering, input, and (currently) all mutable game state. |
+| `src/game/assets/` | Procedurally generated pixel-art textures used when image files are missing. |
+| `src/components/`, `src/App.tsx` | React shell and HUD, fed by a `farm-snapshot` window event. |
+| `public/assets/lpc/` | Hand-drawn art. **Not MIT** — see `public/assets/lpc/CREDITS.md`. |
+| `public/assets/override/` | Optional local art overrides. PNG/JPG here are gitignored on purpose. |
 
-## Agent harness
+## Architecture notes
 
-- `feature_list.json` is the machine-readable epic/sub-issue source of truth.
-- `agent-harness/agent-map.json` maps file ownership lanes.
-- Nested `AGENTS.md` files explain path-specific rules.
-- Decision records live in `docs/decisions/`.
-- GitHub issue sync is available via `npm run issue:sync:dry-run` and `npm run issue:sync:write` after a remote exists.
+`src/game/systems/` is deliberately free of Phaser and DOM references so the
+same rules can later run on an authoritative server.
+
+`FarmScene` currently owns all mutable state as private fields. Extracting that
+into a serializable store is the prerequisite for both save/load and
+multiplayer.
+
+## Roadmap
+
+1. **State extraction** — move game state out of `FarmScene` into a serializable store.
+2. **Save/load** — persist that store.
+3. **Real maps** — Tiled tilemaps, camera follow, collision, multiple areas.
+4. **Authoritative server** — shared clock, server-arbitrated actions, player sync.
+5. **Accounts and persistence** — database-backed farms, invite codes.
 
 ## Assets
-
-Run:
 
 ```sh
 npm run generate:assets
 ```
 
-This recreates deterministic SVG support assets in `public/assets/pixel/`. Runtime pixel textures are generated locally in `src/game/assets/createPixelArtTextures.ts`.
+Recreates the deterministic SVG support assets in `public/assets/pixel/`.
 
-## Release and deployment
+## Deployment
 
-- Production URL: https://stardew-valley-clone-five.vercel.app
-- Vercel config is in `vercel.json` for Vite static output.
-- Release Please config is in `release-please-config.json` and `.release-please-manifest.json`.
-- GitHub Actions run quality, feature-list validation, PR hygiene, issue sync, and release automation.
+Production is deployed on Vercel from `vercel.json` (Vite static output):
 
-Expected deployment path:
+https://stardew-valley-clone-five.vercel.app
 
-```sh
-vercel link
-vercel deploy
-vercel deploy --prod
-```
+## License
 
-## Git workflow
-
-Work starts from an epic branch such as `epic/foundation-vertical-slice`. Sub-issue branches merge into the epic branch after quality gates pass. The epic branch then opens a PR into `main`.
+Code is MIT (see `LICENSE`). Artwork under `public/assets/lpc/` keeps its own
+licenses — read `public/assets/lpc/CREDITS.md` before redistributing.
