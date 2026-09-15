@@ -553,6 +553,7 @@ test('no group is a catch-all and none is starved', () => {
     .map((row) => Number(row.split(':')[1]));
   assert.ok(Math.max(...shares) < 0.45, `a group took ${Math.max(...shares)} of the art`);
 });
+```
 
 - [ ] **Step 2: Run the test to verify it fails**
 
