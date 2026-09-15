@@ -72,3 +72,26 @@ test('kmeans weights pull a centroid toward the heavy colour', () => {
   const [centroid] = kmeans([heavy, light], 1, 3);
   assert.ok(distance(centroid, heavy) < distance(centroid, light));
 });
+
+test('kmeans returns sorted input when fewer points than k', () => {
+  // When a colour bucket holds fewer distinct colours than its ramp has steps,
+  // kmeans returns what there is, sorted by lightness. This is not hypothetical:
+  // palette derivation (Task 3) runs kmeans with k = ramp size, and a bucket can
+  // genuinely hold fewer colours than steps. Callers name entries by position, so
+  // an unsorted result would come out light-to-dark in the middle of a palette
+  // that is dark-to-light everywhere else. The ordering is essential.
+  // Use intentionally reverse-ordered input: bright, medium, dark. The sort must
+  // reorder to dark, medium, bright or the test does not catch the defect.
+  const points = [
+    { ...srgbToOklab(255, 255, 255), weight: 1 }, // white, brightest
+    { ...srgbToOklab(128, 128, 128), weight: 1 }, // grey, medium
+    { ...srgbToOklab(0, 0, 0), weight: 1 },       // black, darkest
+  ];
+  const result = kmeans(points, 6, 42);
+  assert.equal(result.length, 3, 'returned count equals input count, not k');
+  // Verify ordering by lightness: result[0] must be darkest, result[2] brightest.
+  // If the sort were missing, result would be [white, grey, black] instead of
+  // [black, grey, white], and this check would fail.
+  assert.ok(result[0].L <= result[1].L, 'first entry darker than second');
+  assert.ok(result[1].L <= result[2].L, 'second entry darker than third');
+});
