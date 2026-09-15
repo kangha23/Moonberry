@@ -18,7 +18,18 @@ export const HUD = {
   /** The smallest a cell is ever drawn, however narrow the window gets. */
   cellMin: 14,
   gap: 4,
-  iconScale: 1.75,
+  /**
+   * The wood round one cell, and the air inside it.
+   *
+   * `slotBorder` is the nine-slice's corner size, which does not stretch when
+   * the cell does — so it is 4px of frame at every cell size, and the space a
+   * picture actually has is the cell less twice that. `iconPad` is the gap
+   * left inside the wood so the icon reads as sitting in the slot rather than
+   * jammed against it: without it a tool drawn to the full width of its own
+   * 16px tile crossed the frame and overlapped the cell next door.
+   */
+  slotBorder: 4,
+  iconPad: 2,
   clock: { width: 196, height: 92 },
   quest: { width: 196, height: 72, bar: 6 },
   energy: { width: 24, height: 132, minHeight: 48 },
@@ -44,6 +55,24 @@ export interface HudLayout {
   area: { x: number; y: number; maxWidth: number };
   /** The energy tube, filled from the bottom up. */
   energy: Box;
+}
+
+/**
+ * How big an icon is drawn in a hotbar cell of this size.
+ *
+ * A size rather than a scale, so it does not matter whether the item's picture
+ * is a 16px generated icon or something else that got assigned to it later: a
+ * cell is a fixed hole and everything put in it is drawn to fit. The previous
+ * arrangement multiplied a 16px icon by 1.75 to get 28, which is the inside of
+ * a 36px cell to the pixel — no border, no margin, and any picture that used
+ * its full tile ran over the frame onto its neighbour.
+ *
+ * Whole pixels, because half a pixel of a nearest-neighbour sprite is a row of
+ * it that is twice as thick as the rest.
+ */
+export function hotbarIconSize(cell: number): number {
+  const inner = cell - HUD.slotBorder * 2;
+  return Math.max(6, Math.floor(inner - HUD.iconPad * 2));
 }
 
 function clamp(value: number, low: number, high: number): number {

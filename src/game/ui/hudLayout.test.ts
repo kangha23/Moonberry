@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { HUD, hudLayout, hudZones } from './hudLayout';
+import { HUD, hotbarIconSize, hudLayout, hudZones } from './hudLayout';
 import { HOTBAR_SIZE } from '../systems/inventory';
 
 /** Every window worth caring about, plus a few nobody should have to. */
@@ -66,6 +66,21 @@ describe('hudLayout', () => {
 
   it('never grows the cells past their design size on a huge screen', () => {
     expect(hudLayout(3840, 2160).hotbar.cell).toBe(HUD.cell);
+  });
+
+  it('keeps every icon inside the wood of its own cell', () => {
+    // The bug this replaces: a scale, not a size. Sixteen pixels of icon at
+    // 1.75x is 28, the inside of a 36px cell to the pixel, so a picture drawn
+    // to the edge of its own tile sat on the frame and spilled into the slot
+    // next door. An icon has to fit inside the border with room to spare at
+    // every cell size the bar is ever drawn at, not just the design one.
+    for (const [width, height] of SIZES) {
+      const { hotbar } = hudLayout(width, height);
+      const icon = hotbarIconSize(hotbar.cell);
+      expect(icon).toBeLessThanOrEqual(hotbar.cell - HUD.slotBorder * 2);
+      expect(icon).toBeGreaterThan(0);
+      expect(Number.isInteger(icon)).toBe(true);
+    }
   });
 
   it('gives the energy tube a height even when there is no room for one', () => {
