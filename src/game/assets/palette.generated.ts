@@ -57,56 +57,19 @@ export const PALETTE = {
   'light.7': '#f8dbbd',
 } as const;
 
-/** The name of any colour. A hex string is not a colour; this is. */
-export type PaletteName =
-  | 'soil.0'
-  | 'soil.1'
-  | 'soil.2'
-  | 'soil.3'
-  | 'soil.4'
-  | 'soil.5'
-  | 'soil.6'
-  | 'outline.0'
-  | 'outline.1'
-  | 'outline.2'
-  | 'outline.3'
-  | 'shadow.0'
-  | 'shadow.1'
-  | 'shadow.2'
-  | 'shadow.3'
-  | 'clothDeep.0'
-  | 'clothDeep.1'
-  | 'clothDeep.2'
-  | 'clothDeep.3'
-  | 'foliage.0'
-  | 'foliage.1'
-  | 'foliage.2'
-  | 'foliage.3'
-  | 'foliage.4'
-  | 'clothWarm.0'
-  | 'clothWarm.1'
-  | 'clothWarm.2'
-  | 'clothWarm.3'
-  | 'water.0'
-  | 'water.1'
-  | 'water.2'
-  | 'water.3'
-  | 'leaf.0'
-  | 'leaf.1'
-  | 'leaf.2'
-  | 'leaf.3'
-  | 'building.0'
-  | 'building.1'
-  | 'building.2'
-  | 'building.3'
-  | 'light.0'
-  | 'light.1'
-  | 'light.2'
-  | 'light.3'
-  | 'light.4'
-  | 'light.5'
-  | 'light.6'
-  | 'light.7';
+/**
+ * The name of any colour. A hex string is not a colour; this is.
+ *
+ * Derived from PALETTE's own keys (`keyof typeof PALETTE`) rather than
+ * written out as a second, hand-duplicated list of the same 48 names. Both
+ * used to come from one pass over `colours` in this generator, which kept
+ * them in sync as long as nobody touched one without the other — but that
+ * is a rule a future edit to this file could break without anyone noticing,
+ * since a stale union would still typecheck against whatever names remained
+ * in PALETTE, just silently reject any name added after it went stale.
+ * Deriving the type from the value it names removes the chance to desync.
+ */
+export type PaletteName = keyof typeof PALETTE;
 
 /** The same colours as a flat list, for the quantiser and the lock test. */
 export const PALETTE_HEXES: readonly string[] = Object.values(PALETTE);

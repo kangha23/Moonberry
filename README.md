@@ -435,6 +435,38 @@ Tranh có nguồn và có đích, và đó là hai thư mục khác nhau:
 Đừng sửa gì trong `public/assets/lpc/`. Nó được dựng lại từ `art/raw/lpc/`, và
 mọi màu trong đó bị ép về đúng bảng màu trong `art/palette.json`.
 
+### Màu sắc
+
+Mọi màu trong game đến từ `art/palette.json` — 48 màu, chia thành mười nhóm
+(`soil`, `outline`, `shadow`, `clothDeep`, `foliage`, `clothWarm`, `water`,
+`leaf`, `building`, `light`), mỗi màu tên `nhóm.bậc` với bậc là số nguyên bắt
+đầu từ 0 (`soil.0`, `soil.1`, …). Bảng màu được suy ra (derive) từ chính tranh
+trong `art/raw/`, không lấy từ một bảng có sẵn — xem đầu file
+`scripts/derive-palette.mjs` để biết vì sao. Ramp `soil` là ngoại lệ: nó được
+neo (pin) sẵn trong `art/ramps.json` thay vì để thuật toán gom cụm tự chọn,
+vì đất là bề mặt lớn nhất trong game và cần một dải màu liền mạch, không phải
+kết quả của việc gom các điểm nâu rải rác. `art/raw/intent/` tồn tại vì một lý
+do hẹp: nó giữ các màu mà `scripts/generate-plot-art.mjs` từng được thiết kế
+theo trước khi có bảng màu, để những màu đó được "bỏ phiếu" khi
+`derive-palette.mjs` tính lại bảng màu — mà không bị chính bảng màu đó lượng
+tử hoá lại, vì `apply-palette.mjs` chỉ đọc `art/raw/lpc/`, không bao giờ đọc
+thư mục này.
+
+Dùng `PALETTE` từ `src/game/assets/palette.generated.ts` trong code của game,
+hoặc từ `scripts/lib/palette-data.mjs` trong một build script. Một hex viết
+tay ở bất cứ đâu trong `src/` hoặc `scripts/` làm `npm test` thất bại, một PNG
+trong `public/assets/` (kể cả `plot-*.png`) mang màu ngoài bảng cũng vậy —
+xem `scripts/palette-lock.test.mjs`.
+
+Để đổi một màu, sửa `art/palette.json`, rồi chạy cả ba lệnh:
+
+    npm run palette:module    # module TypeScript mà game import
+    npm run palette:apply     # lượng tử lại tranh đã import
+    npm run generate:plots    # vẽ lại các ô đất
+
+Ba lệnh này ghi vào ba nơi khác nhau và độc lập với nhau — chạy theo thứ tự
+nào cũng được.
+
 ## Triển khai
 
 Bản chính thức chạy trên Vercel theo `vercel.json` (đầu ra tĩnh của Vite):

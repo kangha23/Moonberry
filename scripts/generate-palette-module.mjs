@@ -19,7 +19,6 @@ const OUT_FILE = path.join('src', 'game', 'assets', 'palette.generated.ts');
 const { colours } = JSON.parse(fs.readFileSync(IN_FILE, 'utf8'));
 
 const entries = colours.map((c) => `  '${c.name}': '${c.hex}',`).join('\n');
-const names = colours.map((c) => `  | '${c.name}'`).join('\n');
 
 fs.writeFileSync(
   OUT_FILE,
@@ -35,9 +34,19 @@ export const PALETTE = {
 ${entries}
 } as const;
 
-/** The name of any colour. A hex string is not a colour; this is. */
-export type PaletteName =
-${names};
+/**
+ * The name of any colour. A hex string is not a colour; this is.
+ *
+ * Derived from PALETTE's own keys (\`keyof typeof PALETTE\`) rather than
+ * written out as a second, hand-duplicated list of the same 48 names. Both
+ * used to come from one pass over \`colours\` in this generator, which kept
+ * them in sync as long as nobody touched one without the other — but that
+ * is a rule a future edit to this file could break without anyone noticing,
+ * since a stale union would still typecheck against whatever names remained
+ * in PALETTE, just silently reject any name added after it went stale.
+ * Deriving the type from the value it names removes the chance to desync.
+ */
+export type PaletteName = keyof typeof PALETTE;
 
 /** The same colours as a flat list, for the quantiser and the lock test. */
 export const PALETTE_HEXES: readonly string[] = Object.values(PALETTE);
