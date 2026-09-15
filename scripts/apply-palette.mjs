@@ -48,13 +48,107 @@ export function quantise(image, palette) {
   return { width: image.width, height: image.height, pixels };
 }
 
+/** How the fix for every case below is spelled, since the palette is generated. */
+const REGENERATE_HINT = 'Run `npm run palette:derive` to regenerate it.';
+
+/**
+ * Loads and validates `art/palette.json`.
+ *
+ * This script rewrites every piece of art in the game from whatever this
+ * function returns, so a malformed entry has to fail loudly here rather than
+ * degrade quietly downstream. Two ways it degrades matter enough to guard
+ * against by name:
+ *
+ *   - A hex missing its `#` (or otherwise off-shape) is not rejected by
+ *     `parseInt` — `hex.slice(1)` just drops a different character and
+ *     produces a plausible-but-wrong RGB triple. No error, wrong colour.
+ *   - A hex that fails to parse at all becomes `NaN` in every OkLab
+ *     coordinate. In `nearestIndex` (`./lib/colour.mjs`), `d < bestDistance`
+ *     is always false when `d` is `NaN`, so that entry can never win a
+ *     comparison — not an error, just a palette that is silently one colour
+ *     short, with every pixel that should have snapped to it landing on its
+ *     nearest surviving neighbour instead.
+ *
+ * Deliberately not folded into `nearestIndex` or anything in `colour.mjs`:
+ * that module is pure arithmetic with no notion of a JSON file on disk, and
+ * "is this palette file well-formed" is this loader's concern, not its.
+ */
 export function loadPalette(file = PALETTE_FILE) {
-  const { colours } = JSON.parse(fs.readFileSync(file, 'utf8'));
-  return colours.map(({ hex }) => {
+  const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
+  const colours = parsed && Array.isArray(parsed.colours) ? parsed.colours : null;
+  if (!colours || colours.length === 0) {
+    throw new Error(`${file} has no non-empty "colours" array. ${REGENERATE_HINT}`);
+  }
+
+  return colours.map((entry, index) => {
+    const { name, hex } = entry ?? {};
+    if (!name || !hex) {
+      throw new Error(
+        `${file}: entry ${index} is missing a "name" or "hex" (got ${JSON.stringify(entry)}). ` +
+          REGENERATE_HINT,
+      );
+    }
+    if (!/^#[0-9a-f]{6}$/.test(hex)) {
+      throw new Error(
+        `${file}: entry ${index} ("${name}") has a malformed hex "${hex}" — expected ` +
+          `"#rrggbb" in lowercase hex. ${REGENERATE_HINT}`,
+      );
+    }
+
     const n = Number.parseInt(hex.slice(1), 16);
     const rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    for (const channel of rgb) {
+      if (!Number.isInteger(channel) || channel < 0 || channel > 255) {
+        throw new Error(
+          `${file}: entry ${index} ("${name}") has hex "${hex}", which does not decode to a ` +
+            `valid 0-255 RGB triple. ${REGENERATE_HINT}`,
+        );
+      }
+    }
+
     return { ...srgbToOklab(...rgb), rgb };
   });
+}
+
+/**
+ * Files this quantiser must never call stale, even though they have no
+ * source in `art/raw/lpc/`.
+ *
+ * `scripts/generate-plot-art.mjs` writes these nine PNGs straight into
+ * `public/assets/lpc/` — that is precisely why they were kept out of
+ * `art/raw/` in the first place (see task 2's brief): a path with two
+ * producers would have whichever ran last silently reverting the other. An
+ * orphan check that did not know about them would flag Task 8's migration as
+ * broken every single run.
+ *
+ * Not imported from `generate-plot-art.mjs` itself, on purpose: that module
+ * calls its own `main()` unconditionally at the bottom of the file, with no
+ * `argv`-based guard the way this script has. Importing it — even just to
+ * read its exported `PLOT_VARIANTS` — would run `main()` as a side effect and
+ * regenerate every plot tile every time this script (or its tests) load.
+ * `scripts/generate-plot-art.mjs` remains the source of truth for what it
+ * writes; keep this list in sync with it by hand.
+ */
+const GENERATED_PLOT_NAMES = new Set(
+  ['plot-tilled', 'plot-watered', 'plot-wild'].flatMap((base) =>
+    [0, 1, 2].map((variant) => `${base}${variant === 0 ? '' : `-${variant + 1}`}.png`),
+  ),
+);
+
+/**
+ * `.png` files sitting in `dir` with no source and no known generator.
+ *
+ * Reported, never deleted: deleting on a guess is exactly the mistake the
+ * `GENERATED_PLOT_NAMES` list above exists to prevent from happening again by
+ * a different route. A human who sees the warning can tell a genuine rename
+ * casualty from a file some other generator is still responsible for; an
+ * automatic deleter cannot.
+ */
+export function findOrphans(dir, sourceNames) {
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((name) => name.endsWith('.png') && !sourceNames.has(name) && !GENERATED_PLOT_NAMES.has(name));
 }
 
 // --- CLI ---------------------------------------------------------------------
@@ -63,9 +157,10 @@ if (process.argv[1] && process.argv[1].endsWith('apply-palette.mjs')) {
   const palette = loadPalette();
   fs.mkdirSync(OUT_DIR, { recursive: true });
 
+  const sourceNames = new Set(fs.readdirSync(IN_DIR).filter((name) => name.endsWith('.png')));
+
   let changed = 0;
-  for (const name of fs.readdirSync(IN_DIR)) {
-    if (!name.endsWith('.png')) continue;
+  for (const name of sourceNames) {
     const image = decodePng(fs.readFileSync(path.join(IN_DIR, name)));
     const out = encodeImage(quantise(image, palette));
     const target = path.join(OUT_DIR, name);
@@ -77,4 +172,12 @@ if (process.argv[1] && process.argv[1].endsWith('apply-palette.mjs')) {
   // CREDITS travels with the art it describes.
   fs.copyFileSync(path.join(IN_DIR, 'CREDITS.md'), path.join(OUT_DIR, 'CREDITS.md'));
   console.log(`quantised ${IN_DIR} -> ${OUT_DIR}; ${changed} files changed`);
+
+  const orphans = findOrphans(OUT_DIR, sourceNames);
+  if (orphans.length > 0) {
+    console.warn(
+      `warning: ${OUT_DIR} has ${orphans.length} PNG(s) with no source in ${IN_DIR} and no known ` +
+        `generator — they may be stale and worth checking by hand: ${orphans.join(', ')}`,
+    );
+  }
 }
