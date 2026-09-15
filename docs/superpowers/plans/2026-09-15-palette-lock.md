@@ -1316,20 +1316,20 @@ and replace the table body, mapping each tone to the name Step 2 reported — fo
  */
 const SOIL = {
   dry: {
-    trough: PALETTE['earth.0'],
-    low: PALETTE['earth.1'],
-    base: PALETTE['earth.2'],
-    high: PALETTE['earth.3'],
-    crown: PALETTE['skin.0'],
-    clod: PALETTE['earth.1'],
+    trough: PALETTE['soil.2'],
+    low: PALETTE['soil.3'],
+    base: PALETTE['soil.4'],
+    high: PALETTE['soil.5'],
+    crown: PALETTE['soil.6'],
+    clod: PALETTE['soil.2'],
   },
   wet: {
-    trough: PALETTE['wood.0'],
-    low: PALETTE['wood.shade'],
-    base: PALETTE['wood.base'],
-    high: PALETTE['wood.2'],
-    crown: PALETTE['wood.3'],
-    clod: PALETTE['warmDeep.0'],
+    trough: PALETTE['soil.0'],
+    low: PALETTE['soil.1'],
+    base: PALETTE['soil.2'],
+    high: PALETTE['soil.3'],
+    crown: PALETTE['soil.4'],
+    clod: PALETTE['soil.0'],
   },
 };
 ```
