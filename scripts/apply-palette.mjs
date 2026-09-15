@@ -151,6 +151,55 @@ export function findOrphans(dir, sourceNames) {
     .filter((name) => name.endsWith('.png') && !sourceNames.has(name) && !GENERATED_PLOT_NAMES.has(name));
 }
 
+/**
+ * The CC-BY-SA modification notice this script owes the LPC art it rewrites.
+ *
+ * A licence review confirmed CC-BY-SA requires stating that the art has been
+ * modified, how, and where the unmodified originals live. Kept as a constant
+ * here — rather than, say, duplicated into a doc — so the notice text and the
+ * script that performs the modification cannot drift apart.
+ */
+const NOTICE_HEADING = '## Modification notice';
+
+const MODIFICATION_NOTICE = `${NOTICE_HEADING}
+
+Every PNG in this folder has been colour-reduced to the 48-colour palette in
+\`art/palette.json\`. No shape, frame or layout was altered — only the colour of
+individual pixels, by nearest-neighbour matching in OkLab. The unmodified
+originals are kept in \`art/raw/lpc/\` and are what the CC-BY-SA attributions
+above describe. Rebuild this folder with \`npm run palette:apply\`.
+`;
+
+/**
+ * The credits this script writes to `public/assets/lpc/`, built from the raw
+ * file rather than copied verbatim.
+ *
+ * The bare `fs.copyFileSync` this replaced quietly undid its own compliance:
+ * a human appended the notice below to the output by hand once, and the next
+ * `palette:apply` run copied the un-notated raw file straight over it. That
+ * made "rebuild the art" and "stay licence-compliant" mutually exclusive,
+ * which is backwards — the quantiser is the thing performing the
+ * modification, so the quantiser is what has to say so, every time it runs,
+ * not just the time someone remembered to say it by hand.
+ *
+ * `art/raw/lpc/CREDITS.md` itself is never touched: it describes the
+ * unmodified originals, and the licence review confirmed that file is
+ * correct to leave the notice off.
+ *
+ * Idempotent primarily by construction: the CLI always calls this with
+ * `art/raw/lpc/CREDITS.md`'s own content, never with the file this function
+ * previously wrote, so there is normally no existing notice to double up on.
+ * It also strips anything from a pre-existing notice heading onward before
+ * appending a fresh one, so a second notice cannot appear even if that
+ * assumption were ever broken — belt, and braces.
+ */
+export function creditsWithNotice(rawText) {
+  const noticeAt = rawText.indexOf(NOTICE_HEADING);
+  const withoutOldNotice = noticeAt === -1 ? rawText : rawText.slice(0, noticeAt);
+  const trimmed = withoutOldNotice.replace(/\s+$/, '');
+  return `${trimmed}\n\n${MODIFICATION_NOTICE}`;
+}
+
 // --- CLI ---------------------------------------------------------------------
 
 if (process.argv[1] && process.argv[1].endsWith('apply-palette.mjs')) {
@@ -169,8 +218,10 @@ if (process.argv[1] && process.argv[1].endsWith('apply-palette.mjs')) {
     fs.writeFileSync(target, out);
   }
 
-  // CREDITS travels with the art it describes.
-  fs.copyFileSync(path.join(IN_DIR, 'CREDITS.md'), path.join(OUT_DIR, 'CREDITS.md'));
+  // CREDITS travels with the art it describes, plus the modification notice
+  // CC-BY-SA requires for the colour-reduction this script itself performs.
+  const rawCredits = fs.readFileSync(path.join(IN_DIR, 'CREDITS.md'), 'utf8');
+  fs.writeFileSync(path.join(OUT_DIR, 'CREDITS.md'), creditsWithNotice(rawCredits));
   console.log(`quantised ${IN_DIR} -> ${OUT_DIR}; ${changed} files changed`);
 
   const orphans = findOrphans(OUT_DIR, sourceNames);

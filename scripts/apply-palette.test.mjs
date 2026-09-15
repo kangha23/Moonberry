@@ -12,7 +12,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { srgbToOklab, distance, nearestIndex } from './lib/colour.mjs';
-import { quantise, loadPalette, findOrphans } from './apply-palette.mjs';
+import { quantise, loadPalette, findOrphans, creditsWithNotice } from './apply-palette.mjs';
 
 /** A scratch `art/palette.json`-shaped file, cleaned up by the caller. */
 function paletteFile(contents) {
@@ -216,4 +216,56 @@ test('a non-png file is never reported as an orphan', () => {
 test('a missing output directory has no orphans', () => {
   const missing = path.join(os.tmpdir(), 'lpc-out-does-not-exist');
   assert.deepEqual(findOrphans(missing, new Set()), []);
+});
+
+// --- CREDITS.md and the CC-BY-SA modification notice --------------------------
+//
+// A bare copy of art/raw/lpc/CREDITS.md, once out the door, was silently
+// undoing its own licence compliance: a human appended the notice to the
+// output by hand, and the very next `palette:apply` run copied the
+// un-notated raw file straight back over it. `creditsWithNotice` is built
+// fresh from the raw text on every call instead, so the notice appears
+// exactly once by construction rather than by a human remembering.
+
+const RAW_CREDITS = 'Some upstream attribution text.\nMore of it here.\n';
+
+test('the notice is appended to the raw credits, which survive in full', () => {
+  const out = creditsWithNotice(RAW_CREDITS);
+  assert.match(out, /Some upstream attribution text\.\nMore of it here\./);
+  assert.match(out, /## Modification notice/);
+  // The upstream attributions are the actual licence obligation; the notice
+  // is additional, not a replacement.
+  assert.equal(out.indexOf('Some upstream attribution text.') < out.indexOf('## Modification notice'), true);
+});
+
+test('running the copy step three times leaves exactly one notice', () => {
+  // This is what makes running palette:apply three times safe: the CLI
+  // calls creditsWithNotice(rawCredits) fresh on every run — it always
+  // reads art/raw/lpc/CREDITS.md, never public/assets/lpc/CREDITS.md — so
+  // there is no "previous output" for the notice to accumulate onto. Three
+  // independent calls on the same raw input must be byte-identical, each
+  // with exactly one notice.
+  const runs = [creditsWithNotice(RAW_CREDITS), creditsWithNotice(RAW_CREDITS), creditsWithNotice(RAW_CREDITS)];
+  for (const out of runs) {
+    assert.equal(out.split('## Modification notice').length - 1, 1);
+  }
+  assert.equal(runs[0], runs[1]);
+  assert.equal(runs[1], runs[2]);
+});
+
+test('feeding creditsWithNotice its own output does not add a second notice', () => {
+  // Belt-and-braces: even if some future caller broke the "always from raw"
+  // rule this script relies on, the notice heading must not be able to
+  // appear twice in one file.
+  const once = creditsWithNotice(RAW_CREDITS);
+  const twice = creditsWithNotice(once);
+  assert.equal(twice.split('## Modification notice').length - 1, 1);
+});
+
+test('the notice names the palette file, the OkLab method, and the rebuild command', () => {
+  const out = creditsWithNotice(RAW_CREDITS);
+  assert.match(out, /art\/palette\.json/);
+  assert.match(out, /OkLab/);
+  assert.match(out, /art\/raw\/lpc\//);
+  assert.match(out, /npm run palette:apply/);
 });
