@@ -7,6 +7,7 @@ import {
   interactableAt,
   isAreaId,
   isWalkable,
+  isWithinReach,
   plotKey,
   plotTiles,
   portalAt,
@@ -15,6 +16,7 @@ import {
   spawnPoints,
   targetTile,
   tileAt,
+  worldToTile,
   type AreaId,
 } from './areas';
 import { parseTiledMap, type TiledMap, type TiledTileset } from './tiled';
@@ -185,28 +187,50 @@ describe('targeting', () => {
 });
 
 describe('interactive props', () => {
-  it('finds Rowan and the market in the village, not on the farm', () => {
+  it('finds the market and the forge in the village, and a bed on the farm', () => {
+    // The villagers are not in here any more. They walk schedules out of
+    // `FarmState` and are drawn over the map, so what the map still owns is
+    // the counters and the doorways rather than the people.
     const village = areaMap('village');
-    const rowan = village.props.find((prop) => prop.interact === 'rowan');
+    const blacksmith = village.props.find((prop) => prop.interact === 'blacksmith');
     const market = village.props.find((prop) => prop.interact === 'market');
 
-    expect(rowan).toBeDefined();
+    expect(blacksmith).toBeDefined();
     expect(market).toBeDefined();
-    expect(areaMap('farm').props.some((prop) => prop.interact)).toBe(false);
+    expect(areaMap('farm').props.some((prop) => prop.interact === 'bed')).toBe(true);
+  });
+
+  it('leaves somewhere to stand next to every interactive prop', () => {
+    // Proximity is measured to a prop's footprint, and this is why: the
+    // farmhouse is five tiles across, so nobody can ever stand at its centre.
+    for (const area of AREA_LIST) {
+      for (const prop of areaMap(area).props) {
+        if (!prop.interact) continue;
+        const map = areaMap(area);
+        let reachable = false;
+        for (let y = 0; y < map.height && !reachable; y += 1) {
+          for (let x = 0; x < map.width && !reachable; x += 1) {
+            const spot = { x: x * TILE_SIZE + 16, y: y * TILE_SIZE + 16 };
+            reachable = isWalkable(area, spot.x, spot.y) && interactableAt(area, spot) === prop;
+          }
+        }
+        expect(reachable, `nowhere to stand to use "${prop.interact}"`).toBe(true);
+      }
+    }
   });
 
   it('only reports a prop when the player is standing close to it', () => {
-    const rowan = areaMap('village').props.find((prop) => prop.interact === 'rowan')!;
-    const centre = propCentre(rowan);
+    const market = areaMap('village').props.find((prop) => prop.interact === 'market')!;
+    const centre = propCentre(market);
 
-    expect(interactableAt('village', { x: centre.x, y: centre.y + 20 })?.interact).toBe('rowan');
+    expect(interactableAt('village', { x: centre.x, y: centre.y + 20 })?.interact).toBe('market');
     expect(interactableAt('village', { x: centre.x + 400, y: centre.y })).toBeNull();
   });
 
   it('does not reach across areas', () => {
-    const rowan = propCentre(areaMap('village').props.find((prop) => prop.interact === 'rowan')!);
+    const market = propCentre(areaMap('village').props.find((prop) => prop.interact === 'market')!);
 
-    expect(interactableAt('farm', rowan)).toBeNull();
+    expect(interactableAt('farm', market)).toBeNull();
   });
 });
 
@@ -315,5 +339,62 @@ describe('parseTiledMap', () => {
     expect(portal.toX).toBe(3 * 32 + 16);
     expect(portal.toY).toBe(4 * 32 + 16);
     expect(portal.label).toBe('door');
+  });
+});
+
+/**
+ * Reach.
+ *
+ * The rule the mouse made necessary: a tile you can click is not a tile you
+ * can act on. It is tested here rather than only through the reducer because
+ * the client draws the cursor from the same function, and the two agreeing is
+ * the whole point — a grey tile that the server would have accepted, or a lit
+ * one it refuses, is worse than having no cursor at all.
+ */
+describe('how far a farmhand can reach', () => {
+  /** The world-pixel centre of a tile, which is where a player stands. */
+  function standingOn(tileX: number, tileY: number) {
+    return { x: tileX * TILE_SIZE + TILE_SIZE / 2, y: tileY * TILE_SIZE + TILE_SIZE / 2 };
+  }
+
+  it('accepts the tile underfoot and all eight neighbours', () => {
+    const from = standingOn(10, 8);
+
+    for (let dy = -1; dy <= 1; dy += 1) {
+      for (let dx = -1; dx <= 1; dx += 1) {
+        expect(isWithinReach(from, 10 + dx, 8 + dy)).toBe(true);
+      }
+    }
+  });
+
+  it('refuses two tiles out, on every axis and the diagonal', () => {
+    const from = standingOn(10, 8);
+
+    expect(isWithinReach(from, 12, 8)).toBe(false);
+    expect(isWithinReach(from, 8, 8)).toBe(false);
+    expect(isWithinReach(from, 10, 10)).toBe(false);
+    expect(isWithinReach(from, 10, 6)).toBe(false);
+    expect(isWithinReach(from, 12, 10)).toBe(false);
+  });
+
+  it('measures from the tile a player stands on, not from their exact pixel', () => {
+    // Standing in the far corner of a tile must not stretch the reach into the
+    // next one along, or where you can act would depend on sub-pixel drift.
+    const corner = { x: 10 * TILE_SIZE + TILE_SIZE - 1, y: 8 * TILE_SIZE + TILE_SIZE - 1 };
+
+    expect(worldToTile(corner.x)).toBe(10);
+    expect(isWithinReach(corner, 11, 9)).toBe(true);
+    expect(isWithinReach(corner, 12, 8)).toBe(false);
+  });
+
+  it('always reaches the tile the keyboard would act on', () => {
+    // The faced tile is one step away by construction, so the reach check can
+    // never refuse the keyboard path. Checked from a spawn in every direction.
+    const [spawn] = spawnPoints();
+
+    for (const facing of ['up', 'down', 'left', 'right'] as const) {
+      const tile = targetTile(START_AREA, spawn, facing);
+      expect(isWithinReach(spawn, tile.x, tile.y)).toBe(true);
+    }
   });
 });

@@ -59,7 +59,7 @@ server.on('connection', (socket: WebSocket, request) => {
   const token = presentedToken ?? createToken();
   const identity =
     (presentedToken ? db.findIdentity(presentedToken) : null) ??
-    db.createIdentity(token, randomUUID(), `Farmhand ${db.worldCount() + 1}`);
+    db.createIdentity(token, randomUUID(), `Nông dân ${db.worldCount() + 1}`);
 
   const connection: Connection = {
     id: identity.playerId,

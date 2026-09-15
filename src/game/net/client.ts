@@ -32,8 +32,8 @@ const CONNECT_TIMEOUT_MS = 4000;
 
 /** Why the server hung up, and what to tell the player about it. */
 const CLOSE_REASONS: Record<number, string> = {
-  4001: 'That farm already has four farmhands. Playing offline instead.',
-  4002: 'No farm with that code. Check the invite link, or clear it to start your own.',
+  4001: 'Nông trại đó đã đủ bốn nông dân. Chuyển sang chơi ngoại tuyến.',
+  4002: 'Không có nông trại nào mang mã đó. Kiểm tra lại liên kết mời, hoặc xóa nó đi để tự mở nông trại riêng.',
 };
 
 /**

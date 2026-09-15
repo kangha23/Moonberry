@@ -18,10 +18,37 @@ const outDir = 'maps';
  * An image-collection tileset: every tile keeps its own PNG, so the existing
  * per-tile art is used as-is with no atlas to pack or keep in sync.
  */
+/**
+ * Twelve grass tiles, which is three drawings and their mirrors.
+ *
+ * Three was not three. Measured against each other the three grass tiles
+ * differ by about four parts in 255 — the same green, the same density, a
+ * slightly different sprinkle of specks — so a field of them read as one tile
+ * repeating, and the eye picks a 32px grid out of that in seconds.
+ *
+ * Mirroring is the fix that costs nothing. Grass has no light direction in it,
+ * so a flipped tile is the same art with the specks somewhere else: identical
+ * colour histogram, so the fringe overlays drawn in `FRINGE_PALETTES` still
+ * match it exactly, and four times as many arrangements before anything
+ * repeats.
+ */
+const GRASS_TEXTURES = [
+  'tile-grass',
+  'tile-grass-1x',
+  'tile-grass-1y',
+  'tile-grass-1xy',
+  'tile-grass-2',
+  'tile-grass-2x',
+  'tile-grass-2y',
+  'tile-grass-2xy',
+  'tile-grass-3',
+  'tile-grass-3x',
+  'tile-grass-3y',
+  'tile-grass-3xy',
+];
+
 const TILES = [
-  { texture: 'tile-grass', kind: 'grass', solid: false },
-  { texture: 'tile-grass-2', kind: 'grass', solid: false },
-  { texture: 'tile-grass-3', kind: 'grass', solid: false },
+  ...GRASS_TEXTURES.map((texture) => ({ texture, kind: 'grass', solid: false })),
   { texture: 'tile-path', kind: 'path', solid: false },
   { texture: 'tile-water', kind: 'water', solid: true },
   { texture: 'plot-wild', kind: 'plot', solid: false },
@@ -57,11 +84,104 @@ function tileset() {
   };
 }
 
-/** Deterministic grass variety, so the same map always looks the same. */
+/**
+ * Deterministic grass variety, so the same map always looks the same.
+ *
+ * Evenly across all twelve rather than weighted towards the first: the old
+ * weighting existed because two of the three variants were meant to be
+ * occasional accents, and they were never different enough to be accents.
+ */
 function grassGid(x, y) {
-  const variant = (x * 31 + y * 17) % 10;
-  if (variant < 6) return GID['tile-grass'];
-  return variant < 8 ? GID['tile-grass-2'] : GID['tile-grass-3'];
+  return GID[GRASS_TEXTURES[Math.floor(hash(x, y, 3) * GRASS_TEXTURES.length) % GRASS_TEXTURES.length]];
+}
+
+/** Deterministic pseudo-random from coords, so a seeded map is always the same map. */
+function hash(x, y, seed = 1) {
+  let h = (x * 374761393 + y * 668265263 + seed * 974634211) | 0;
+  h = Math.imul(h ^ (h >>> 13), 1274126177);
+  return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
+}
+
+const GRASS_GIDS = new Set(GRASS_TEXTURES.map((texture) => GID[texture]));
+
+/**
+ * What gets sprinkled across the empty grass, and how often.
+ *
+ * Repeats are the weighting: a field wants far more tufts than tree stumps,
+ * and a table of counts would be the same thing said less plainly.
+ */
+const SCATTER = [
+  'tuft-tall',
+  'tuft-tall',
+  'tuft-tall',
+  'bush',
+  'bush',
+  'flowers-red',
+  'flowers-gold',
+  'flowers-white',
+  'stump',
+  'log',
+  'stump-flowers',
+];
+
+/** The ones you walk around rather than over. Flowers and tufts are underfoot. */
+const SCATTER_SOLID = new Set(['bush', 'stump', 'stump-flowers']);
+
+/** Roughly what share of eligible grass tiles gets something on it. */
+const SCATTER_DENSITY = 0.07;
+
+/**
+ * Sprinkles decoration over the grass.
+ *
+ * The farm was four trees in a field the size of a car park, and an empty
+ * lawn reads as unfinished however well the tiles under it are drawn. This is
+ * the cheapest fix there is: no new systems, no map editing by hand, and the
+ * seed makes it the same field every time so a screenshot is reproducible.
+ *
+ * Two rules keep it from being in the way. A tile is only eligible if it and
+ * all eight of its neighbours are grass, which puts a clear tile between every
+ * prop and every path, shore or field edge — so nothing solid can ever pinch a
+ * route. And anything the map already placed is excluded outright, with a
+ * tile of margin, so a bush never grows through a doorway.
+ */
+function scatterProps(ground, width, height, keepClear, firstId, seed, density = SCATTER_DENSITY) {
+  const gidAt = (x, y) => (x < 0 || y < 0 || x >= width || y >= height ? 0 : ground[y * width + x]);
+  const isGrass = (x, y) => GRASS_GIDS.has(gidAt(x, y));
+
+  const objects = [];
+  let id = firstId;
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      let open = true;
+      for (let dy = -1; dy <= 1 && open; dy += 1) {
+        for (let dx = -1; dx <= 1 && open; dx += 1) open = isGrass(x + dx, y + dy);
+      }
+      if (!open) continue;
+      if (keepClear.some((r) => x >= r.x0 && x <= r.x1 && y >= r.y0 && y <= r.y1)) continue;
+      if (hash(x, y, seed) >= density) continue;
+
+      const texture = SCATTER[Math.floor(hash(x, y, seed + 11) * SCATTER.length) % SCATTER.length];
+      objects.push(
+        rectObject(id, texture, 'prop', x, y, 1, 1, {
+          properties: props({ texture, solid: SCATTER_SOLID.has(texture), depth: y }),
+        }),
+      );
+      id += 1;
+    }
+  }
+
+  return { objects, nextId: id };
+}
+
+/** An object's tiles plus a tile of margin, as a keep-clear rectangle. */
+function clearance(object) {
+  return {
+    x0: object.x / TILE - 1,
+    y0: object.y / TILE - 1,
+    x1: (object.x + object.width) / TILE,
+    y1: (object.y + object.height) / TILE,
+  };
 }
 
 function buildLayer(width, height, pick) {
@@ -95,7 +215,7 @@ function props(list) {
   }));
 }
 
-function map({ width, height, layers, nextobjectid, displayName }) {
+function map({ width, height, layers, nextobjectid, displayName, music }) {
   return {
     compressionlevel: -1,
     height,
@@ -104,7 +224,7 @@ function map({ width, height, layers, nextobjectid, displayName }) {
     nextlayerid: layers.length + 1,
     nextobjectid,
     orientation: 'orthogonal',
-    properties: props({ displayName }),
+    properties: props({ displayName, music }),
     renderorder: 'right-down',
     tiledversion: '1.10.2',
     tileheight: TILE,
@@ -143,13 +263,24 @@ function farmMap() {
     if (y === 7 || y === 22) return GID['tile-path'];
     if (x === 11 || x === 22) return GID['tile-path'];
     if (y === 14 && x >= 22) return GID['tile-path'];
+    // And the lane west to the woods, which is the same lane on the other
+    // side: the landing tile from a portal must be something the scatter never
+    // touches, and a path is the only ground that qualifies.
+    if (y === 14 && x <= 11) return GID['tile-path'];
     return grassGid(x, y);
   });
 
   let id = 1;
   const objects = [
-    rectObject(id++, 'farmhouse', 'prop', 3, 2, 5, 5, {
-      properties: props({ texture: 'farmhouse', solid: true, depth: 4 }),
+    // Five wide and four tall, with its bottom edge on the ring road.
+    //
+    // A prop is drawn to the width of its footprint and stands on the bottom
+    // edge, so the footprint is the house's own box rather than a round five
+    // by five: `farmhouse.png` is 160x109, which is five tiles across and a
+    // little under three and a half down. The extra row this used to have sat
+    // above the roof as a wall you bumped into with nothing drawn on it.
+    rectObject(id++, 'farmhouse', 'prop', 3, 3, 5, 4, {
+      properties: props({ texture: 'farmhouse', solid: true, depth: 4, interact: 'bed' }),
     }),
     rectObject(id++, 'tree-west', 'prop', 2, 16, 2, 2, {
       properties: props({ texture: 'tree', solid: true, depth: 16 }),
@@ -176,16 +307,32 @@ function farmMap() {
     rectObject(id++, 'to-village', 'portal', 39, 12, 1, 5, {
       properties: props({ toArea: 'village', toTileX: 2, toTileY: 12, label: 'the village lane' }),
     }),
+    rectObject(id++, 'to-forest', 'portal', 0, 12, 1, 5, {
+      properties: props({ toArea: 'forest', toTileX: 31, toTileY: 13, label: 'Hollowpine Wood' }),
+    }),
   ];
+
+  // Everything the map places by hand is off limits to the scatter, so a
+  // doorway, a landing spot or a tree never ends up with a bush in it.
+  const scattered = scatterProps(
+    ground,
+    FARM_W,
+    FARM_H,
+    [...objects, ...spawns, ...portals].map(clearance),
+    id,
+    5,
+  );
+  id = scattered.nextId;
 
   return map({
     displayName: 'Amberfall Farm',
+    music: 'day-farm-loop',
     width: FARM_W,
     height: FARM_H,
     nextobjectid: id,
     layers: [
       tileLayer(1, 'ground', FARM_W, FARM_H, ground),
-      objectLayer(2, 'props', objects),
+      objectLayer(2, 'props', [...objects, ...scattered.objects]),
       objectLayer(3, 'spawns', spawns),
       objectLayer(4, 'portals', portals),
     ],
@@ -193,8 +340,12 @@ function farmMap() {
 }
 
 // --- the village ------------------------------------------------------------
-// Where crops are sold and Rowan waits, so selling means a walk rather than a
-// stall parked next to the field.
+// Where crops are sold and the five villagers live, so selling means a walk
+// rather than a stall parked next to the field.
+//
+// Nobody is a prop any more. The villagers walk schedules out of `FarmState`
+// and are drawn on top of the map, exactly as the farm's buildings are; what
+// the map still owns is the places they walk between.
 
 const VILLAGE_W = 30;
 const VILLAGE_H = 24;
@@ -215,8 +366,39 @@ function villageMap() {
     rectObject(id++, 'well', 'prop', 12, 8, 2, 2, {
       properties: props({ texture: 'well', solid: true, depth: 9 }),
     }),
-    rectObject(id++, 'rowan', 'prop', 12, 7, 1, 1, {
-      properties: props({ texture: 'rowan', solid: true, depth: 40, interact: 'rowan' }),
+    // The forge. South of the lane so it is a walk from the stall rather than
+    // a second counter beside it: the two errands are different errands.
+    rectObject(id++, 'blacksmith', 'prop', 14, 14, 3, 2, {
+      properties: props({ texture: 'blacksmith', solid: true, depth: 16, interact: 'blacksmith' }),
+    }),
+    // Four cottages, so the schedules have somewhere to send people home to.
+    // A villager who stands outdoors at midnight is a villager on a timer
+    // rather than one with a life, and a door is the cheapest way to say so.
+    rectObject(id++, 'cottage-tobias', 'prop', 3, 2, 3, 2, {
+      properties: props({ texture: 'cottage', solid: true, depth: 4 }),
+    }),
+    rectObject(id++, 'cottage-juniper', 'prop', 23, 2, 3, 2, {
+      properties: props({ texture: 'cottage', solid: true, depth: 4 }),
+    }),
+    rectObject(id++, 'cottage-rowan', 'prop', 2, 9, 3, 2, {
+      properties: props({ texture: 'cottage', solid: true, depth: 11 }),
+    }),
+    rectObject(id++, 'cottage-maeve', 'prop', 23, 14, 3, 2, {
+      properties: props({ texture: 'cottage', solid: true, depth: 16 }),
+    }),
+    rectObject(id++, 'cottage-bram', 'prop', 5, 20, 3, 2, {
+      properties: props({ texture: 'cottage', solid: true, depth: 22 }),
+    }),
+    // The stock pen, where animals are bought. Not solid: it is a rail fence
+    // and a trough, and a counter you cannot walk up to is not a counter.
+    //
+    // Down at the southern end, away from everything else. Two reasons, and
+    // the second is the one that bites: buying a cow and selling a crop should
+    // be two errands rather than two ends of one aisle — and an interactive
+    // prop within `INTERACT_RADIUS` of anywhere a villager stands would start
+    // stealing keypresses from them, because the nearest thing wins.
+    rectObject(id++, 'ranch', 'prop', 10, 20, 3, 2, {
+      properties: props({ texture: 'ranch-pen', solid: false, depth: 22, interact: 'rancher' }),
     }),
     rectObject(id++, 'tree-lane', 'prop', 22, 9, 2, 2, {
       properties: props({ texture: 'tree', solid: true, depth: 9 }),
@@ -232,14 +414,95 @@ function villageMap() {
     }),
   ];
 
+  // A thinner sprinkle than the farm: the village is where people are, and a
+  // green that has to be walked across for five different errands should read
+  // as tended rather than as scrubland.
+  const scattered = scatterProps(ground, VILLAGE_W, VILLAGE_H, [...objects, ...portals].map(clearance), id, 9);
+  id = scattered.nextId;
+
   return map({
     displayName: 'Moonberry Village',
+    music: 'day-village-loop',
     width: VILLAGE_W,
     height: VILLAGE_H,
     nextobjectid: id,
     layers: [
       tileLayer(1, 'ground', VILLAGE_W, VILLAGE_H, ground),
-      objectLayer(2, 'props', objects),
+      objectLayer(2, 'props', [...objects, ...scattered.objects]),
+      objectLayer(3, 'portals', portals),
+    ],
+  });
+}
+
+// --- the wood ---------------------------------------------------------------
+// The third area, and the one spec 10 exists to make worth walking to.
+//
+// It is deliberately almost empty as a *map*: some grass, a lane, and a pond.
+// Everything you actually go there for — the trees, the boulders, the forage —
+// is `ResourceNode` state rather than Tiled props, because a tree you have
+// felled is per-world and `maps/*.json` is identical in every world. Putting
+// them here would mean every farm looks at the same four trees for ever.
+//
+// The pond is the other half of the reason. Spec 12 needs somewhere to fish
+// that is not the farm's own corner puddle, and cutting the water now costs
+// nothing and saves editing this map again later.
+
+const FOREST_W = 34;
+const FOREST_H = 26;
+
+function forestMap() {
+  const ground = buildLayer(FOREST_W, FOREST_H, (x, y) => {
+    // The pond, north-east, with a shore wide enough to stand and cast from.
+    if (x >= 22 && x <= 30 && y >= 3 && y <= 10) return GID['tile-water'];
+    // One lane in from the farm gate, running the width of the wood.
+    if (y === 13) return GID['tile-path'];
+    // And a spur south, so the bottom half is somewhere rather than nowhere.
+    if (x === 12 && y >= 13) return GID['tile-path'];
+    return grassGid(x, y);
+  });
+
+  let id = 1;
+  const objects = [
+    // A forester's hut, empty, solid, and nobody's home. It is scenery with a
+    // job: it tells you somebody used to work this wood, which is why there
+    // are stumps in the farm's own field.
+    rectObject(id++, 'cottage-woodcutter', 'prop', 4, 4, 3, 2, {
+      properties: props({ texture: 'cottage', solid: true, depth: 6 }),
+    }),
+    rectObject(id++, 'well-forest', 'prop', 15, 18, 2, 2, {
+      properties: props({ texture: 'well', solid: true, depth: 19 }),
+    }),
+  ];
+
+  const portals = [
+    rectObject(id++, 'to-farm', 'portal', 33, 11, 1, 5, {
+      properties: props({ toArea: 'farm', toTileX: 2, toTileY: 14, label: 'Amberfall Farm' }),
+    }),
+  ];
+
+  // Barely any scatter. The wood is drawn by its nodes, and a Tiled bush is a
+  // permanent fixture standing in the way of something a player could have
+  // cleared — which is exactly the frustration this spec is here to remove.
+  const scattered = scatterProps(
+    ground,
+    FOREST_W,
+    FOREST_H,
+    [...objects, ...portals].map(clearance),
+    id,
+    17,
+    0.015,
+  );
+  id = scattered.nextId;
+
+  return map({
+    displayName: 'Hollowpine Wood',
+    music: 'day-farm-loop',
+    width: FOREST_W,
+    height: FOREST_H,
+    nextobjectid: id,
+    layers: [
+      tileLayer(1, 'ground', FOREST_W, FOREST_H, ground),
+      objectLayer(2, 'props', [...objects, ...scattered.objects]),
       objectLayer(3, 'portals', portals),
     ],
   });
@@ -251,6 +514,7 @@ const files = {
   'tileset.json': tileset(),
   'farm.json': farmMap(),
   'village.json': villageMap(),
+  'forest.json': forestMap(),
 };
 
 for (const [name, contents] of Object.entries(files)) {

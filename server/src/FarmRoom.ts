@@ -158,6 +158,12 @@ export class FarmRoom {
       this.farm.players !== before.players ||
       this.farm.quest !== before.quest ||
       this.farm.coins !== before.coins ||
+      this.farm.buildings !== before.buildings ||
+      // The ground. A felled tree also moves `players` — the planks went into
+      // somebody's satchel — so this is belt and braces, but a cut of grass
+      // that fills the silo and nothing else would otherwise reach nobody.
+      this.farm.nodes !== before.nodes ||
+      this.farm.hay !== before.hay ||
       this.farm.season !== before.season ||
       this.farm.weather !== before.weather;
     const clockChanged = this.farm.time !== before.time;
@@ -212,11 +218,87 @@ export class FarmRoom {
 /** Widens a validated client command into the intent the reducer understands. */
 function toIntent(playerId: PlayerId, command: ActionCommand): Parameters<typeof applyIntent>[1] {
   switch (command.type) {
-    case 'selectTool':
-      return { type: 'player/selectTool', playerId, tool: command.tool };
-    case 'cycleSeed':
-      return { type: 'player/cycleSeed', playerId };
+    case 'selectSlot':
+      return { type: 'player/selectSlot', playerId, slot: command.slot };
+    case 'moveStack':
+      return { type: 'player/moveStack', playerId, from: command.from, to: command.to };
+    case 'splitStack':
+      return { type: 'player/splitStack', playerId, from: command.from, to: command.to };
     case 'act':
-      return { type: 'player/act', playerId };
+      // The target is carried through as the client sent it. It has been
+      // checked for shape, not for permission — the reducer measures it
+      // against where the server thinks this player is standing.
+      return { type: 'player/act', playerId, target: command.target };
+    case 'sleep':
+      return { type: 'player/sleep', playerId };
+    case 'buy':
+      return { type: 'shop/buy', playerId, item: command.item, count: command.count };
+    case 'closePanel':
+      return { type: 'panel/close', playerId };
+    case 'upgradeTool':
+      return { type: 'player/upgradeTool', playerId, item: command.item };
+    case 'collectTool':
+      return { type: 'player/collectTool', playerId };
+    case 'placeBuilding':
+      // The spot is carried through as the client proposed it. It has been
+      // checked for shape, not for permission — the reducer re-derives the
+      // ground, the crops, the wallet and which map this player is on.
+      return { type: 'player/placeBuilding', playerId, kind: command.kind, x: command.x, y: command.y };
+    case 'buyAnimal':
+      // The house and the kind are carried through as proposed. Whether the
+      // farm has that building, whether it is finished, whether it is the
+      // right sort and whether the wallet covers the animal are all re-derived
+      // in the reducer against this server's own farm.
+      return {
+        type: 'player/buyAnimal',
+        playerId,
+        kind: command.kind,
+        home: command.home,
+        name: command.name,
+      };
+    case 'sellAnimal':
+      return { type: 'player/sellAnimal', playerId, animalId: command.animalId };
+    case 'buyHay':
+      return { type: 'player/buyHay', playerId, count: command.count };
+    case 'petAnimal':
+      return { type: 'player/petAnimal', playerId, animalId: command.animalId };
+    case 'collectProduce':
+      return { type: 'player/collectProduce', playerId, animalId: command.animalId };
+    case 'feedAnimal':
+      return { type: 'player/feedAnimal', playerId, animalId: command.animalId };
+    case 'toggleDoor':
+      return { type: 'animals/toggleDoor', playerId, buildingId: command.buildingId };
+    case 'craft':
+      return { type: 'player/craft', playerId, recipe: command.recipe, count: command.count };
+    case 'placeItem':
+      // Carried through as proposed, exactly like `placeBuilding` above: the
+      // reducer re-derives the ground, the crops, the reach and the satchel.
+      return { type: 'player/placeItem', playerId, item: command.item, x: command.x, y: command.y };
+    case 'pickUpItem':
+      return { type: 'player/pickUpItem', playerId, x: command.x, y: command.y };
+    case 'chestMoveStack':
+      return {
+        type: 'chest/moveStack',
+        playerId,
+        chestId: command.chestId,
+        from: command.from,
+        to: command.to,
+      };
+    case 'chestStow':
+      return { type: 'chest/stow', playerId, chestId: command.chestId };
+    case 'loadMachine':
+      return { type: 'machine/load', playerId, machineId: command.machineId };
+    case 'collectMachine':
+      return { type: 'machine/collect', playerId, machineId: command.machineId };
+    case 'cast':
+      // Carried through as proposed. Whether it is water, whether it is in
+      // reach, whether a rod is in hand and whether there is energy for it
+      // are all re-derived against this server's own map and its own idea of
+      // where this player is standing.
+      return { type: 'player/cast', playerId, target: command.target };
+    case 'reel':
+      return { type: 'player/reel', playerId, down: command.down };
+    case 'cancelCast':
+      return { type: 'player/cancelCast', playerId };
   }
 }

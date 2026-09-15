@@ -1,4 +1,4 @@
-import type { CropId } from './satchel';
+import type { CropId } from './items';
 
 export const QUEST_REWARD_COINS = 75;
 
@@ -20,8 +20,8 @@ export interface QuestState {
 export function createQuest(): QuestState {
   return {
     id: 'first-harvest',
-    title: 'First Harvest',
-    description: 'Harvest 3 turnips for Rowan by the well.',
+    title: 'Vụ thu hoạch đầu tiên',
+    description: 'Thu hoạch 3 củ cải cho Rowan ở bên giếng.',
     targetCrop: 'turnip',
     target: 3,
     progress: 0,
@@ -46,16 +46,16 @@ export interface QuestRewardResult {
 
 export function claimQuestReward(quest: QuestState): QuestRewardResult {
   if (!quest.completed) {
-    return { quest, reward: 0, claimed: false, message: 'Rowan still needs a few more turnips.' };
+    return { quest, reward: 0, claimed: false, message: 'Rowan vẫn còn thiếu vài củ cải nữa.' };
   }
   if (quest.rewarded) {
-    return { quest, reward: 0, claimed: false, message: 'Rowan is already planning the next market day.' };
+    return { quest, reward: 0, claimed: false, message: 'Rowan đã đang tính đến phiên chợ tới rồi.' };
   }
 
   return {
     quest: { ...quest, rewarded: true },
     reward: QUEST_REWARD_COINS,
     claimed: true,
-    message: `Rowan pays ${QUEST_REWARD_COINS}g and promises to spread the word about Amberfall Farm.`,
+    message: `Rowan trả ${QUEST_REWARD_COINS}g và hứa sẽ đồn tiếng lành về Nông trại Amberfall.`,
   };
 }

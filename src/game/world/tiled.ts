@@ -115,6 +115,13 @@ export interface AreaMap {
   id: string;
   /** What the map calls itself, set as a map property in Tiled. */
   name: string;
+  /**
+   * The music bed this area plays by day, set as a map property in Tiled.
+   * Null when the map names none, which the audio layer reads as "the
+   * default bed". Named rather than enumerated so a new area can bring its
+   * own track with an audio file and a map property, and no code change.
+   */
+  music: string | null;
   /** Size in tiles. */
   width: number;
   height: number;
@@ -129,6 +136,80 @@ export interface AreaMap {
   spawns: Point[];
   /** Every cell whose tile is farmable, in row-major order. */
   plotTiles: Point[];
+}
+
+// --- edges -------------------------------------------------------------------
+
+/**
+ * The four sides of a tile, as bits of an edge mask.
+ *
+ * Clockwise from the top, so a mask reads the way a compass does and the
+ * sixteen texture variants can be named by the number alone.
+ */
+export const EDGE_NORTH = 1;
+export const EDGE_EAST = 2;
+export const EDGE_SOUTH = 4;
+export const EDGE_WEST = 8;
+
+/** Every mask that draws something. 0 is a tile surrounded by its own kind. */
+export const EDGE_MASKS: readonly number[] = Array.from({ length: 15 }, (_, i) => i + 1);
+
+/**
+ * Which sides of a tile meet a different kind of ground, as 0-15.
+ *
+ * Four directions rather than eight: sixteen variants need sixteen tiles in
+ * the set, where the 47 of an eight-way bitmask look better and are three
+ * times the drawing. At this camera distance the difference is all but
+ * invisible.
+ *
+ * `kindAt` returns null off the edge of the map, and a null neighbour sets no
+ * bit: the world carries on past the border as far as anyone looking at it is
+ * concerned, and a fringe drawn along the map boundary would say otherwise.
+ *
+ * Pure, so the renderer can run it once per tile when an area is built rather
+ * than once per tile per frame — and so this file can be the only place the
+ * rule lives, whichever boundary it is asked about.
+ */
+export function edgeMask(
+  kindAt: (x: number, y: number) => TileKind | null,
+  x: number,
+  y: number,
+): number {
+  const here = kindAt(x, y);
+  if (here === null) return 0;
+
+  const differs = (nx: number, ny: number): boolean => {
+    const neighbour = kindAt(nx, ny);
+    return neighbour !== null && neighbour !== here;
+  };
+
+  return (
+    (differs(x, y - 1) ? EDGE_NORTH : 0) |
+    (differs(x + 1, y) ? EDGE_EAST : 0) |
+    (differs(x, y + 1) ? EDGE_SOUTH : 0) |
+    (differs(x - 1, y) ? EDGE_WEST : 0)
+  );
+}
+
+/**
+ * Reads a map as if only two kinds of ground existed.
+ *
+ * `edgeMask` answers "which sides are not me", which on a tile that touches
+ * both grass and water is one mask for two different boundaries. Flattening
+ * everything that is not `other` into `self` first turns the same function
+ * into "which sides are water" — so one boundary can be drawn at a time, and
+ * the three of them stack.
+ */
+export function pairKindAt(
+  kindAt: (x: number, y: number) => TileKind | null,
+  self: TileKind,
+  other: TileKind,
+): (x: number, y: number) => TileKind | null {
+  return (x, y) => {
+    const kind = kindAt(x, y);
+    if (kind === null) return null;
+    return kind === other ? other : self;
+  };
 }
 
 // --- parsing -----------------------------------------------------------------
@@ -254,6 +335,7 @@ export function parseTiledMap(id: string, map: TiledMap, tileset: TiledTileset, 
   return {
     id,
     name: asString(propertyMap(map.properties).displayName, id),
+    music: asString(propertyMap(map.properties).music) || null,
     width: map.width,
     height: map.height,
     pixelWidth: map.width * map.tilewidth,

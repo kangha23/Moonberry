@@ -19,6 +19,7 @@ const outFile = path.join('src', 'game', 'world', 'maps.generated.ts');
 const AREA_FILES = {
   farm: 'farm.json',
   village: 'village.json',
+  forest: 'forest.json',
 };
 
 function readJson(name) {

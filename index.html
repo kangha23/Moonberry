@@ -1,20 +1,33 @@
 <!doctype html>
-<html lang="en">
+<html lang="vi">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#17251c" />
+    <!--
+      Two typefaces, and the split between them is deliberate.
+
+      VT323 for the clock, the coins, the energy and every short label: it is
+      one of exactly two pixel faces on Google Fonts that carry the Vietnamese
+      tone marks (U+1EA0-U+1EF9), and the only one of those two whose stacked
+      diacritics stay apart at HUD sizes. Press Start 2P used to be loaded
+      here and cannot be used at all now the game speaks Vietnamese - it has
+      none of that block, and a missing glyph is not a box but a mid-word
+      fallback into another face, which reads as a careless bug.
+
+      Nunito stays for anything that is a sentence.
+    -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&family=Press+Start+2P&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&family=VT323&display=swap"
       rel="stylesheet"
     />
     <meta
       name="description"
-      content="Moonberry Farmstead: a cozy farming RPG prototype built with React, Vite, and Phaser 4."
+      content="Trang trại Moonberry: nguyên mẫu game nhập vai nông trại ấm cúng, dựng bằng React, Vite và Phaser 4."
     />
-    <title>Moonberry Farmstead</title>
+    <title>Trang trại Moonberry</title>
   </head>
   <body>
     <div id="root"></div>

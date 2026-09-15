@@ -1,8 +1,24 @@
 import { AREA_IDS, MAP_SOURCES, TILESET, type AreaId } from './maps.generated';
-import { parseTiledMap, type AreaMap, type AreaPortal, type AreaProp, type Point, type TileDef } from './tiled';
+import {
+  parseTiledMap,
+  type AreaMap,
+  type AreaPortal,
+  type AreaProp,
+  type Point,
+  type TileDef,
+} from './tiled';
 
+export { AREA_IDS };
 export type { AreaId };
 export type { AreaMap, AreaPortal, AreaProp, Point, TileDef, TileKind } from './tiled';
+export {
+  EDGE_EAST,
+  EDGE_NORTH,
+  EDGE_SOUTH,
+  EDGE_WEST,
+  edgeMask,
+  pairKindAt,
+} from './tiled';
 
 export const TILE_SIZE = 32;
 export const PLAYER_SPEED = 132;
@@ -66,14 +82,61 @@ export function spawnPoints(): Point[] {
   return [{ x: map.pixelWidth / 2, y: map.pixelHeight / 2 }];
 }
 
-function contains(rect: { x: number; y: number; width: number; height: number }, point: Point): boolean {
+/**
+ * A solid rectangle in world pixels that the map knows nothing about.
+ *
+ * The farm's buildings are state rather than map data, so collision stopped
+ * being purely a map property the moment they existed. Rather than teach this
+ * module what a building is — which would make the map depend on the farm —
+ * callers hand it the footprints, and it treats them exactly like a solid prop.
+ */
+export interface Blocker {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+function contains(rect: Blocker, point: Point): boolean {
   return (
     point.x >= rect.x && point.x < rect.x + rect.width && point.y >= rect.y && point.y < rect.y + rect.height
   );
 }
 
+/**
+ * Everything in the way that the map knows nothing about.
+ *
+ * An object with named fields rather than a second, third and fourth list
+ * parameter, and that is the whole reason it exists. Spec 06 opened this door
+ * by handing `isWalkable` the buildings; spec 10 has resource nodes to add and
+ * spec 13 will have whatever the mine turns out to need. One more parameter
+ * each time ends with a five-argument call nobody can read at the site.
+ *
+ * Passed in rather than read from a module-level store, because this is called
+ * from the reducer, which is pure, and from the server's movement path. The
+ * empty set is the map on its own, which is what every caller outside the farm
+ * wants.
+ */
+export interface Blockers {
+  buildings: readonly Blocker[];
+  nodes: readonly Blocker[];
+  /**
+   * Chests, machines and fences. Spec 11's, and the third source exactly as
+   * this type was written expecting: a field here, not a third parameter at
+   * every call site.
+   */
+  placeables: readonly Blocker[];
+}
+
+export const NO_BLOCKERS: Blockers = { buildings: [], nodes: [], placeables: [] };
+
 /** Whether a world-pixel position is somewhere a player may stand. */
-export function isWalkable(area: AreaId, x: number, y: number): boolean {
+export function isWalkable(
+  area: AreaId,
+  x: number,
+  y: number,
+  blocked: Blockers = NO_BLOCKERS,
+): boolean {
   const map = AREAS[area];
   if (x < 0 || y < 0 || x >= map.pixelWidth || y >= map.pixelHeight) return false;
 
@@ -83,11 +146,44 @@ export function isWalkable(area: AreaId, x: number, y: number): boolean {
   for (const prop of map.props) {
     if (prop.solid && contains(prop, { x, y })) return false;
   }
+  for (const rect of blocked.buildings) {
+    if (contains(rect, { x, y })) return false;
+  }
+  for (const rect of blocked.nodes) {
+    if (contains(rect, { x, y })) return false;
+  }
+  for (const rect of blocked.placeables) {
+    if (contains(rect, { x, y })) return false;
+  }
   return true;
 }
 
 function distance(a: Point, b: Point): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
+}
+
+/**
+ * How far a point is from the nearest edge of a rectangle, and 0 inside it.
+ *
+ * Proximity is measured to the footprint rather than to the centre because
+ * props are not all the same size: a farmhouse is five tiles across, and its
+ * centre is somewhere nobody can stand.
+ */
+function distanceToRect(rect: { x: number; y: number; width: number; height: number }, point: Point): number {
+  const dx = Math.max(rect.x - point.x, 0, point.x - (rect.x + rect.width));
+  const dy = Math.max(rect.y - point.y, 0, point.y - (rect.y + rect.height));
+  return Math.hypot(dx, dy);
+}
+
+/**
+ * How far a player is standing from a prop, in world pixels.
+ *
+ * Exported because a villager and a counter can both be in reach at once, and
+ * whichever is nearer should win — the same rule two props already follow.
+ * Measuring both against the same function is what keeps that rule one rule.
+ */
+export function propGap(prop: AreaProp, point: Point): number {
+  return distanceToRect(prop, point);
 }
 
 /** The centre of a prop, which is what proximity is measured against. */
@@ -109,7 +205,7 @@ export function interactableAt(area: AreaId, point: Point, radius = INTERACT_RAD
 
   for (const prop of AREAS[area].props) {
     if (!prop.interact) continue;
-    const gap = distance(point, propCentre(prop));
+    const gap = distanceToRect(prop, point);
     if (gap < bestDistance) {
       best = prop;
       bestDistance = gap;
@@ -148,31 +244,130 @@ export function targetTile(area: AreaId, position: Point, facing: Direction): Po
 }
 
 /**
+ * The tiles a swing works: a rectangle centred on the tile that was aimed at.
+ *
+ * Centred rather than swept out in front, so a click means the same rectangle
+ * however the farmhand happens to be standing — and so the translucent
+ * footprint the client draws under the cursor is the truth rather than an
+ * approximation of it. Even sides round towards the top-left, which never
+ * comes up: every tier is odd on both axes.
+ *
+ * Tiles off the edge of the map are simply absent; the caller looks each one
+ * up and skips what is not there.
+ */
+export function areaOfEffectTiles(
+  centre: Point,
+  size: { width: number; height: number },
+  area: AreaId,
+): Point[] {
+  const map = AREAS[area];
+  const left = centre.x - Math.floor((size.width - 1) / 2);
+  const top = centre.y - Math.floor((size.height - 1) / 2);
+  const tiles: Point[] = [];
+  for (let y = top; y < top + size.height; y += 1) {
+    for (let x = left; x < left + size.width; x += 1) {
+      if (x < 0 || y < 0 || x >= map.width || y >= map.height) continue;
+      tiles.push({ x, y });
+    }
+  }
+  return tiles;
+}
+
+/**
+ * How far a player can reach, in tiles.
+ *
+ * 1.5 is Stardew's feel: the eight neighbours and the tile underfoot, and
+ * nothing across the fence. The diagonal is 1.41 and so is included; two tiles
+ * out is 2 and so is not.
+ */
+export const REACH_TILES = 1.5;
+
+/**
+ * Whether a player standing at `from` may act on a tile.
+ *
+ * Measured tile to tile rather than in pixels, which matters: the tile a
+ * player faces is then always exactly one away, so the keyboard path can never
+ * be refused by a reach check that its own standing position failed.
+ */
+export function isWithinReach(from: Point, tileX: number, tileY: number): boolean {
+  const dx = tileX - worldToTile(from.x);
+  const dy = tileY - worldToTile(from.y);
+  return Math.hypot(dx, dy) <= REACH_TILES;
+}
+
+/**
+ * The largest tile coordinate any area has.
+ *
+ * This is as much as the protocol can check about a target, since validating
+ * off the wire happens before anyone knows which map the sender is standing
+ * on. It is a shape check, not a permission: the reducer still asks whether
+ * the tile is in *this* area and within *this* player's reach.
+ */
+export const MAX_AREA_TILES = Math.max(
+  ...AREA_IDS.map((id) => Math.max(AREAS[id].width, AREAS[id].height)),
+);
+
+/**
  * Applies a movement step with per-axis collision, so sliding along a wall
  * still works, and keeps the player inside the area.
+ *
+ * `speed` is a parameter rather than a constant because an exhausted player
+ * walks slower, and the client predicts movement with the very same call the
+ * server makes — a local flag would drift the two apart.
  */
-export function resolveMove(area: AreaId, from: Point, dx: number, dy: number, deltaMs: number): Point {
+export function resolveMove(
+  area: AreaId,
+  from: Point,
+  dx: number,
+  dy: number,
+  deltaMs: number,
+  speed = PLAYER_SPEED,
+  blocked: Blockers = NO_BLOCKERS,
+): Point {
   const length = Math.hypot(dx, dy);
   if (length === 0) return from;
 
   const map = AREAS[area];
-  const step = (PLAYER_SPEED * deltaMs) / 1000;
+  const step = (speed * deltaMs) / 1000;
   // Half a tile of margin keeps the sprite from hanging off the edge.
   const margin = TILE_SIZE / 2;
   const nextX = clamp(from.x + (dx / length) * step, margin, map.pixelWidth - margin);
   const nextY = clamp(from.y + (dy / length) * step, margin, map.pixelHeight - margin);
 
   const resolved = { ...from };
-  if (isWalkable(area, nextX, resolved.y)) resolved.x = nextX;
-  if (isWalkable(area, resolved.x, nextY)) resolved.y = nextY;
+  if (isWalkable(area, nextX, resolved.y, blocked)) resolved.x = nextX;
+  if (isWalkable(area, resolved.x, nextY, blocked)) resolved.y = nextY;
   return resolved;
 }
 
 export function describeTile(area: AreaId, tileX: number, tileY: number): string {
   const tile = tileAt(area, tileX, tileY);
-  if (!tile) return 'The world ends here.';
-  if (tile.kind === 'water') return 'Still water reflects the sky. Watering cans refill each morning.';
-  if (tile.kind === 'plot') return 'Choose a farming tool to work this plot.';
-  if (tile.kind === 'path') return 'A packed path winds between the farm and the village.';
-  return 'Wild grass waves in the valley breeze.';
+  if (!tile) return 'Thế giới kết thúc ở đây.';
+  if (tile.kind === 'water') return 'Mặt nước lặng phản chiếu bầu trời. Bình tưới đầy lại mỗi sáng.';
+  if (tile.kind === 'plot') return 'Hãy chọn một nông cụ để làm luống đất này.';
+  if (tile.kind === 'path') return 'Con đường mòn nện chặt lượn giữa nông trại và ngôi làng.';
+  return 'Cỏ dại đung đưa trong làn gió thung lũng.';
+}
+
+/**
+ * What a map object is called in Vietnamese.
+ *
+ * Prop names in the Tiled maps are identifiers — `tree-west`, `cottage-rowan` —
+ * and are matched on by prefix rather than listed one by one, so a sixth
+ * cottage or a ninth tree needs no edit here. Anything unrecognised falls back
+ * to the id with its hyphens opened out, which is ugly but never wrong.
+ */
+const PROP_LABELS: ReadonlyArray<[prefix: string, label: string]> = [
+  ['farmhouse', 'Ngôi nhà nông trại'],
+  ['market', 'Sạp chợ'],
+  ['blacksmith', 'Lò rèn'],
+  ['cottage', 'Căn nhà nhỏ'],
+  ['tree', 'Cái cây'],
+  ['well', 'Cái giếng'],
+  ['ranch', 'Bãi quây gia súc'],
+];
+
+export function propLabel(name: string): string {
+  const match = PROP_LABELS.find(([prefix]) => name === prefix || name.startsWith(`${prefix}-`));
+  return match ? match[1] : name.replace(/-/g, ' ');
 }

@@ -312,7 +312,7 @@ export function kmeans(points, k, seed) {
 - [ ] **Step 4: Run the test to verify it passes**
 
 Run: `node --test scripts/lib/colour.test.mjs`
-Expected: PASS, 7 tests.
+Expected: PASS, 8 tests.
 
 - [ ] **Step 5: Commit**
 

@@ -1,21 +1,36 @@
+/**
+ * One visual language.
+ *
+ * The game is pixel art; this stylesheet used to be a web app — 22 to 30px
+ * corner radii, a blurred backdrop, soft gradients, a rounded display face.
+ * Two languages arguing over one screen. The border here is a picture of a
+ * plank, drawn by `scripts/generate-ui.mjs`, and it is the same file the
+ * canvas nine-slices for its own boxes. Square corners, no blur.
+ */
 :root {
   color: #f8f0d8;
-  background: #17211a;
+  background: #0d120f;
   font-family:
     Nunito, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --panel: rgba(43, 31, 24, 0.84);
-  --panel-strong: rgba(71, 48, 30, 0.94);
+  --panel: #2b1f18;
   --gold: #ffd36d;
   --mint: #95e59a;
-  --berry: #e787a6;
-  --ink: #261a14;
-  --clay-border: #fed7aa;
-  --clay-shadow: 0 6px 0 rgba(154, 52, 18, 0.25), 0 24px 80px rgba(0, 0, 0, 0.32);
-  --font-display: Fredoka, Nunito, ui-rounded, sans-serif;
-  --font-pixel: "Press Start 2P", monospace;
+  --ink: #140d08;
+  --rim: #c9924f;
+  /*
+   * VT323 for anything short: labels, counts, headings, the invite code. One
+   * of exactly two pixel faces on Google Fonts carrying the Vietnamese tone
+   * marks, and the readable one of the two at these sizes. It has no bold, so
+   * emphasis anywhere it is used is a colour and never a weight — and it wants
+   * at least 16px or the stacked marks run into the letters above them.
+   */
+  --font-pixel: VT323, "Courier New", monospace;
+  --font-prose: Nunito, ui-sans-serif, system-ui, sans-serif;
+  --frame-panel: url("/assets/ui/frame-wood.png");
+  --frame-slot: url("/assets/ui/frame-slot.png");
 }
 
 * {
@@ -25,15 +40,10 @@
 html,
 body,
 #root {
-  min-height: 100%;
+  height: 100%;
   margin: 0;
-}
-
-body {
-  background:
-    radial-gradient(circle at 18% 6%, rgba(249, 206, 115, 0.24), transparent 28rem),
-    radial-gradient(circle at 92% 18%, rgba(128, 221, 182, 0.16), transparent 32rem),
-    linear-gradient(135deg, #17241b 0%, #111a18 48%, #2a1f22 100%);
+  /* The page is the game. There is nothing to scroll to, in either direction. */
+  overflow: hidden;
 }
 
 button,
@@ -41,219 +51,219 @@ canvas {
   font: inherit;
 }
 
-.shell {
-  width: min(1360px, calc(100vw - 32px));
-  margin: 0 auto;
-  padding: 28px 0 36px;
-}
-
-.hero-panel,
-.play-layout,
-.hud-panel,
-.game-frame {
-  border: 3px solid rgba(255, 231, 173, 0.22);
-  box-shadow: var(--clay-shadow);
-}
-
-.hero-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 18px;
-  padding: 24px;
-  border-radius: 24px;
-  background: linear-gradient(135deg, rgba(48, 34, 25, 0.92), rgba(28, 46, 35, 0.9));
-}
-
-.eyebrow {
-  margin: 0 0 8px;
-  color: var(--gold);
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-}
-
-h1,
-h2,
-p {
-  margin-top: 0;
-}
-
-h1 {
-  max-width: 780px;
-  margin-bottom: 10px;
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 4vw, 4.3rem);
-  font-weight: 600;
-  line-height: 0.95;
-  letter-spacing: -0.02em;
-}
-
-.lede {
-  max-width: 720px;
-  margin-bottom: 0;
-  color: rgba(248, 240, 216, 0.78);
-  font-size: 1rem;
-  line-height: 1.7;
-}
-
-.day-card {
-  min-width: 190px;
-  padding: 18px;
-  border-radius: 22px;
-  background: rgba(255, 211, 109, 0.12);
-  text-align: right;
-}
-
-.day-card span,
-.day-card em {
-  display: block;
-  color: rgba(248, 240, 216, 0.74);
-  font-style: normal;
-}
-
-.day-card strong {
-  display: block;
-  margin: 6px 0;
-  color: var(--gold);
-  font-size: 2rem;
-  line-height: 1;
-}
-
-.play-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 960px) minmax(290px, 1fr);
-  gap: 18px;
-  padding: 18px;
-  border-radius: 30px;
-  background: rgba(11, 19, 15, 0.52);
-}
-
-.game-frame {
+/*
+ * The whole page: the canvas, and whatever is laid over it.
+ *
+ * It used to be a hero panel, a two-column layout and a sidebar, and the game
+ * started 300 pixels down. Now it is the viewport.
+ */
+.stage {
   position: relative;
+  width: 100vw;
+  height: 100dvh;
   overflow: hidden;
-  min-height: 640px;
-  border-radius: 22px;
-  background: #152313;
+  background: #0d120f;
+}
+
+.game-frame {
+  position: absolute;
+  inset: 0;
+}
+
+.game-frame:focus-visible {
+  outline: none;
 }
 
 .game-frame canvas {
   display: block;
-  width: 100%;
-  height: auto;
   image-rendering: pixelated;
 }
 
-.hud-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px;
-  border-radius: 22px;
-  background: var(--panel);
+/**
+ * Read by a screen reader, drawn for nobody.
+ *
+ * Not `display: none` and not `visibility: hidden`, either of which would take
+ * it out of the accessibility tree along with the pixels — which is the one
+ * thing this element exists to stay in.
+ */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.hud-section {
-  padding: 16px;
-  border: 2px solid rgba(255, 231, 173, 0.16);
-  border-radius: 20px;
-  background: rgba(255, 244, 207, 0.06);
-  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.08), inset 0 -4px 0 rgba(0, 0, 0, 0.18);
-}
+/* --- the wooden frame ------------------------------------------------------
+ *
+ * `border-image` with the same PNG the canvas uses, sliced at a third. No
+ * radius and no blur: a rounded, frosted panel over pixel art is the exact
+ * seam this pass exists to close.
+ */
 
-.hud-section h2 {
-  margin-bottom: 10px;
-  color: #fff1c2;
-  font-family: var(--font-display);
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
-
-.inventory-grid {
+.overlay,
+.inventory-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  place-items: center;
+  padding: 16px;
+  background: rgba(8, 12, 9, 0.74);
+}
+
+.panel,
+.inventory-panel,
+.shop-panel {
+  width: min(100%, 560px);
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 18px;
+  border: 12px solid transparent;
+  border-image: var(--frame-panel) 12 fill repeat;
+  image-rendering: pixelated;
+  color: #f8f0d8;
+}
+
+.panel:focus-visible,
+.inventory-panel:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.inventory-panel {
+  width: min(100%, 520px);
+}
+
+.menu-panel {
+  width: min(100%, 520px);
+}
+
+/* Headings are short, so they are set in the pixel face. */
+h1,
+h2,
+h3 {
+  margin: 0 0 10px;
+  color: #fff1c2;
+  font-family: var(--font-pixel);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+h2 {
+  font-size: 1.7rem;
+  line-height: 1.1;
+}
+
+h3 {
+  font-size: 1.3rem;
+  color: var(--gold);
+}
+
+p {
+  margin-top: 0;
+}
+
+.panel-header,
+.inventory-header {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.panel-header h2,
+.inventory-header h2 {
+  flex: 1;
   margin: 0;
 }
 
-.inventory-grid div {
-  padding: 10px;
-  border: 2px solid rgba(255, 231, 173, 0.12);
-  border-radius: 16px;
-  background: rgba(31, 22, 17, 0.52);
-  box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.22);
-  transition: transform 150ms ease-out;
+.menu-section {
+  margin-bottom: 18px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid rgba(201, 146, 79, 0.24);
 }
 
-.inventory-grid div:hover {
-  transform: translateY(-1px);
+.menu-section:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: 0;
 }
 
-.inventory-grid dt {
-  color: rgba(248, 240, 216, 0.58);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-}
-
-.inventory-grid dd {
-  margin: 4px 0 0;
-  color: #fff5d2;
-  font-weight: 800;
-}
-
-.hud-note {
-  margin: 12px 0 0;
-  color: rgba(248, 240, 216, 0.56);
-  font-size: 0.76rem;
-  line-height: 1.5;
-}
-
-.quest-card {
-  background: linear-gradient(145deg, rgba(86, 58, 30, 0.58), rgba(39, 77, 46, 0.46));
-}
-
-.quest-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-  color: var(--gold);
-  font-size: 0.78rem;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-}
-
-.quest-card p,
-.prompt-card p {
-  color: rgba(248, 240, 216, 0.8);
+/* Sentences stay in Nunito. A terminal face set in paragraphs is a chore. */
+.note,
+.hud-note,
+.controls-hint {
+  margin: 10px 0 0;
+  color: rgba(248, 240, 216, 0.62);
+  font-family: var(--font-prose);
+  font-size: 0.8rem;
   line-height: 1.55;
 }
 
-.progress-track {
-  height: 10px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(17, 11, 8, 0.55);
+/* --- controls --------------------------------------------------------------
+ *
+ * Every one of these keeps a visible focus ring. The game is playable by
+ * keyboard alone, and a control you cannot see yourself standing on is a
+ * control a keyboard player does not have.
+ */
+
+.ghost-button {
+  padding: 7px 12px;
+  border: 4px solid transparent;
+  border-image: var(--frame-slot) 4 fill repeat;
+  background: transparent;
+  color: #f8f0d8;
+  font-family: var(--font-pixel);
+  font-size: 1.05rem;
+  line-height: 1.1;
+  cursor: pointer;
+  image-rendering: pixelated;
 }
 
-.progress-track span {
-  display: block;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--mint), var(--gold));
-  transition: width 220ms ease;
+.ghost-button:hover {
+  color: var(--gold);
 }
 
-.prompt-card small {
-  display: block;
-  color: rgba(248, 240, 216, 0.58);
-  line-height: 1.45;
+.ghost-button:disabled {
+  opacity: 0.36;
+  cursor: not-allowed;
+}
+
+/* No bold to reach for, so a pressed control is said in colour. */
+.ghost-button[aria-pressed='true'],
+.ghost-button.is-active {
+  color: var(--gold);
+}
+
+.danger-button {
+  margin-top: 10px;
+  width: 100%;
+  padding: 9px 14px;
+  border: 4px solid transparent;
+  border-image: var(--frame-slot) 4 fill repeat;
+  background: transparent;
+  color: #ff9f8a;
+  font-family: var(--font-pixel);
+  font-size: 1.05rem;
+  cursor: pointer;
+  image-rendering: pixelated;
+}
+
+.danger-button:hover {
+  color: #ffc4b5;
+}
+
+.ghost-button:focus-visible,
+.danger-button:focus-visible,
+.inventory-slot:focus-visible,
+.mixer-row input[type='range']:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
 }
 
 .invite {
@@ -264,111 +274,366 @@ h1 {
   margin-top: 12px;
 }
 
-.invite-label {
-  flex-basis: 100%;
-  color: rgba(248, 240, 216, 0.58);
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.11em;
+.invite-label,
+.inventory-free,
+.mixer-label {
+  color: rgba(248, 240, 216, 0.62);
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
+.invite-label {
+  flex-basis: 100%;
+}
+
 .invite-code {
-  padding: 6px 12px;
-  border: 2px solid rgba(255, 231, 173, 0.24);
-  border-radius: 10px;
-  background: rgba(31, 22, 17, 0.62);
+  padding: 5px 10px;
+  border: 4px solid transparent;
+  border-image: var(--frame-slot) 4 fill repeat;
   color: var(--gold);
-  font-family: var(--font-pixel), monospace;
-  font-size: 0.86rem;
-  letter-spacing: 0.14em;
+  font-family: var(--font-pixel);
+  font-size: 1.15rem;
+  letter-spacing: 0.16em;
+  image-rendering: pixelated;
 }
 
-.ghost-button {
-  padding: 7px 12px;
-  border: 1px solid rgba(255, 231, 173, 0.28);
-  border-radius: 10px;
-  background: transparent;
-  color: rgba(248, 240, 216, 0.84);
-  font: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: background 140ms ease, border-color 140ms ease;
+.mixer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.ghost-button:hover {
-  background: rgba(255, 231, 173, 0.1);
-  border-color: rgba(255, 231, 173, 0.5);
+.mixer-row {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr 3rem;
+  align-items: center;
+  gap: 10px;
 }
 
-.ghost-button:focus-visible,
-.danger-button:focus-visible {
-  outline: 2px solid #f1cc7b;
-  outline-offset: 2px;
-}
-
-.danger-button {
-  margin-top: 10px;
+.mixer-row input[type='range'] {
   width: 100%;
-  padding: 9px 14px;
-  border: 1px solid rgba(233, 137, 111, 0.42);
-  border-radius: 10px;
-  background: rgba(120, 52, 40, 0.32);
-  color: #ffd9c7;
-  font: inherit;
-  font-size: 0.82rem;
-  font-weight: 800;
+  min-width: 0;
+  accent-color: var(--gold);
   cursor: pointer;
-  transition: background 140ms ease, border-color 140ms ease;
 }
 
-.danger-button:hover {
-  background: rgba(150, 62, 46, 0.46);
-  border-color: rgba(233, 137, 111, 0.7);
+.mixer-row input[type='range']:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
 }
 
-.danger-button:focus-visible {
-  outline: 2px solid #f1cc7b;
-  outline-offset: 2px;
+.mixer-value {
+  color: #fff5d2;
+  font-family: var(--font-pixel);
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
 }
 
-@media (max-width: 1120px) {
-  .play-layout {
+.mixer-mute {
+  margin-top: 12px;
+}
+
+/* --- the satchel ---------------------------------------------------------- */
+
+/* Pixel art must stay pixels at any size. */
+.item-icon {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.inventory-slots {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.inventory-slot {
+  position: relative;
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  border: 4px solid transparent;
+  border-image: var(--frame-slot) 4 fill repeat;
+  cursor: pointer;
+  image-rendering: pixelated;
+}
+
+/* The hotbar half of the grid, marked so "the first twelve" is visible rather
+   than something the player has to be told. */
+.inventory-slot.is-hotbar {
+  filter: brightness(1.25);
+}
+
+.inventory-slot:hover {
+  filter: brightness(1.35);
+}
+
+.inventory-slot.is-selected {
+  outline: 2px solid var(--gold);
+  outline-offset: -2px;
+}
+
+.inventory-slot.is-dragging {
+  opacity: 0.42;
+}
+
+.inventory-slot.is-target {
+  outline: 2px solid var(--mint);
+  outline-offset: -2px;
+}
+
+.slot-index {
+  position: absolute;
+  top: 1px;
+  left: 4px;
+  color: rgba(255, 231, 173, 0.5);
+  font-family: var(--font-pixel);
+  font-size: 0.95rem;
+}
+
+.slot-count {
+  position: absolute;
+  right: 4px;
+  bottom: 0;
+  color: #fff5d2;
+  font-family: var(--font-pixel);
+  font-size: 1.05rem;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
+}
+
+.slot-count.is-empty {
+  color: #e08a8a;
+}
+
+/* --- the market stall, and the forge ---------------------------------------
+ *
+ * Borrows the satchel's overlay and panel wholesale; only the rows are new.
+ * One stall row is an icon, a name with its growing terms, a price, and the
+ * two buttons, and it has to stay readable when a season stocks four of them.
+ */
+
+.shop-list {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 14px;
+  padding: 0;
+  list-style: none;
+}
+
+.shop-row {
+  display: grid;
+  grid-template-columns: 32px 1fr auto auto;
+  gap: 12px;
+  align-items: center;
+  padding: 8px 10px;
+  border: 4px solid transparent;
+  border-image: var(--frame-slot) 4 fill repeat;
+  image-rendering: pixelated;
+}
+
+/* Not disabled, only warned: planting something that cannot ripen in time is
+   a choice a player is allowed to make, and sometimes the right one. */
+.shop-row.is-late {
+  outline: 2px solid rgba(233, 137, 111, 0.5);
+  outline-offset: -2px;
+}
+
+/* A row with nothing to picture — a building has a footprint, not an icon. */
+.shop-row.is-plain {
+  grid-template-columns: 1fr auto auto;
+}
+
+.shop-row-text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.shop-row-text strong {
+  color: #fff1c2;
+  font-family: var(--font-pixel);
+  font-size: 1.15rem;
+  font-weight: 400;
+}
+
+/* A description is a sentence, so it stays in the prose face. */
+.shop-row-text small {
+  color: rgba(248, 240, 216, 0.6);
+  font-family: var(--font-prose);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.shop-warning {
+  color: #ffb59c !important;
+}
+
+.shop-price {
+  color: #ffd98a;
+  font-family: var(--font-pixel);
+  font-size: 1.2rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.shop-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.shop-buttons .ghost-button {
+  padding: 5px 9px;
+  font-size: 0.95rem;
+}
+
+.workshop-tabs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+/* --- the rancher's counter -------------------------------------------------
+ *
+ * The one panel in the game with a form in it, because an animal gets a name
+ * and a house and neither is a thing a button can say. Two fields side by
+ * side above the rows, so what a purchase will do is readable before it is
+ * made — and they stack on a narrow screen like everything else here.
+ */
+
+.ranch-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.ranch-field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.ranch-field span {
+  color: rgba(248, 240, 216, 0.6);
+  font-family: var(--font-prose);
+  font-size: 0.72rem;
+}
+
+.ranch-field input,
+.ranch-field select {
+  min-width: 0;
+  padding: 7px 9px;
+  border: 4px solid transparent;
+  border-image: var(--frame-slot) 4 fill repeat;
+  background: transparent;
+  color: #fff1c2;
+  font-family: var(--font-pixel);
+  font-size: 1.05rem;
+  image-rendering: pixelated;
+}
+
+.ranch-field input::placeholder {
+  color: rgba(248, 240, 216, 0.35);
+}
+
+.ranch-field input:focus-visible,
+.ranch-field select:focus-visible {
+  outline: 2px solid #ffd98a;
+  outline-offset: -2px;
+}
+
+/* The native menu is drawn by the browser, so its own list needs a ground
+   that is not the page's transparent one. */
+.ranch-field select option {
+  background: #2a2119;
+  color: #fff1c2;
+}
+
+.shop-empty {
+  margin: 0 0 14px;
+  padding: 20px 16px;
+  border: 2px dashed rgba(201, 146, 79, 0.4);
+  color: rgba(248, 240, 216, 0.6);
+  text-align: center;
+  font-family: var(--font-prose);
+  font-size: 0.84rem;
+}
+
+@media (max-width: 540px) {
+  .inventory-slots {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .shop-row {
+    grid-template-columns: 32px 1fr auto;
+  }
+
+  .shop-buttons {
+    grid-column: 2 / -1;
+  }
+
+  .ranch-form {
     grid-template-columns: 1fr;
   }
 
-  .game-frame {
-    min-height: auto;
-  }
-
-  .hud-panel {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+  .mixer-row {
+    grid-template-columns: 4.5rem 1fr 2.6rem;
   }
 }
 
-@media (max-width: 760px) {
-  .shell {
-    width: min(100% - 18px, 1360px);
-    padding-top: 10px;
-  }
+/* --- spec 11: crafting and chests ------------------------------------------ */
 
-  .hero-panel {
-    align-items: stretch;
-    flex-direction: column;
-    padding: 18px;
-  }
+/* A recipe that is known and cannot be afforded yet. Dimmed rather than
+   hidden: it is a shopping list, and the numbers below it say what for. */
+.shop-row.is-dim {
+  opacity: 0.62;
+}
 
-  .day-card {
-    text-align: left;
-  }
+.recipe-needs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  margin-top: 2px;
+}
 
-  .play-layout {
-    padding: 10px;
-  }
+.recipe-need {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  white-space: nowrap;
+}
 
-  .hud-panel {
-    grid-template-columns: 1fr;
-  }
+/* The one ingredient you are short of, picked out in the same warm red the
+   withering crops use — the palette's single "this is the problem" colour. */
+.recipe-need.is-short {
+  color: #e9896f;
+}
+
+/* Two grids need room that one does not. */
+.chest-panel {
+  width: min(100%, 860px);
+}
+
+.chest-columns {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.chest-heading {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+/* Denser than the satchel's, because a big chest is seventy-two of them and
+   the panel still has to fit a laptop screen without scrolling. */
+.inventory-slots.is-chest {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 4px;
 }

@@ -1,168 +1,89 @@
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { useStore } from 'zustand';
+import ChestPanel from './components/ChestPanel';
 import GameCanvas from './components/GameCanvas';
-import { inviteLink } from './game/net/identity';
-import {
-  CONTROLS_HINT,
-  formatClock,
-  localPlayer,
-  onlineCount,
-  promptFor,
-  seedLabel,
-  toolLabel,
-} from './game/state/selectors';
-import { farmStore, startNewFarm } from './game/state/store';
+import InventoryScreen from './components/InventoryScreen';
+import MenuScreen from './components/MenuScreen';
+import RanchPanel from './components/RanchPanel';
+import ShopPanel from './components/ShopPanel';
+import WorkshopPanel from './components/WorkshopPanel';
+import { promptFor } from './game/state/selectors';
+import { farmStore, pressEscape } from './game/state/store';
 
+/**
+ * The page around the game, which is now no page at all.
+ *
+ * It used to be a product landing page with a game embedded in it: a title, a
+ * blurb, and a column of settings beside the canvas. On a 1440x900 screen the
+ * heading took the top 270 pixels and the hotbar fell below the fold — a
+ * player had to scroll to see what was in their hand. That was a bug, not a
+ * layout choice.
+ *
+ * So the page is the canvas. Everything that column held — the mixer, the
+ * invite code, starting over — is behind Escape now, in `MenuScreen`.
+ *
+ * The dividing line that survives all of this is the one from the HUD spec:
+ * in-world information — the clock, the season, the weather, the hotbar,
+ * energy, the quest — is drawn in the canvas and only in the canvas. What is
+ * left here is the frame, the panels that are documents rather than pictures,
+ * and the live region that reads the game out loud.
+ */
 export default function App() {
-  // Individually selected so a change to one slice does not re-render the rest.
-  const time = useStore(farmStore, (store) => store.farm.time);
-  const season = useStore(farmStore, (store) => store.farm.season);
-  const weather = useStore(farmStore, (store) => store.farm.weather);
-  const coins = useStore(farmStore, (store) => store.farm.coins);
-  const quest = useStore(farmStore, (store) => store.farm.quest);
-  const playerCount = useStore(farmStore, (store) => onlineCount(store.farm));
-  const player = useStore(farmStore, localPlayer);
   const prompt = useStore(farmStore, promptFor);
-  const restored = useStore(farmStore, (store) => store.restored);
-  const online = useStore(farmStore, (store) => store.online);
-  const inviteCode = useStore(farmStore, (store) => store.inviteCode);
-  const connectionError = useStore(farmStore, (store) => store.connectionError);
-  const [copied, setCopied] = useState(false);
+  const sceneReady = useStore(farmStore, (store) => store.sceneReady);
 
-  const satchel = player?.satchel;
-  const questPercent = Math.min(100, Math.round((quest.progress / quest.target) * 100));
+  /**
+   * Escape, read in one place.
+   *
+   * It means three things depending on what is open, and the order between
+   * them is a decision: a placement is cancelled before a panel is closed, and
+   * a panel is closed before the menu is opened. That order lives in the store
+   * so it is the same order whichever panel happens to be mounted — it used to
+   * be spread across the scene and three components, each claiming the key for
+   * itself, and adding a fourth claimant to that is how a ladder ends up with
+   * its rungs in a different order depending on what is on screen.
+   *
+   * Capturing, so it runs before anything else that might be listening.
+   */
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      event.preventDefault();
+      pressEscape();
+    };
+    globalThis.addEventListener('keydown', onKey, true);
+    return () => globalThis.removeEventListener('keydown', onKey, true);
+  }, []);
 
   return (
-    <main className="shell">
-      <section className="hero-panel" aria-label="Game overview">
-        <div>
-          <p className="eyebrow">
-            Amberfall Farm
-            {online ? ' • shared farm' : restored ? ' • saved progress restored' : ''}
-          </p>
-          <h1>Restore a little hillside farm before moonrise.</h1>
-          <p className="lede">
-            A first playable slice with farming, movement, weather, time pressure, a neighbor quest,
-            and commit-ready pixel-art-style assets.
-          </p>
-        </div>
-        <div className="day-card" aria-label="Current farm conditions">
-          <span>Day {time.day}</span>
-          <strong>{formatClock(time.totalMinutes)}</strong>
-          <em>
-            {season} • {weather}
-          </em>
-        </div>
-      </section>
+    <main className="stage">
+      <GameCanvas />
+      <InventoryScreen />
+      <ShopPanel />
+      <WorkshopPanel />
+      <RanchPanel />
+      <ChestPanel />
+      <MenuScreen />
 
-      <section className="play-layout">
-        <GameCanvas />
+      {/*
+        The prompt bar, mirrored for a screen reader.
 
-        <aside className="hud-panel" aria-label="Farm status">
-          <div className="hud-section">
-            <h2>Satchel</h2>
-            <dl className="inventory-grid">
-              <div>
-                <dt>Farm coins</dt>
-                <dd>{coins}g</dd>
-              </div>
-              <div>
-                <dt>Water</dt>
-                <dd>{satchel?.water ?? 0}</dd>
-              </div>
-              <div>
-                <dt>Wood</dt>
-                <dd>{satchel?.wood ?? 0}</dd>
-              </div>
-              <div>
-                <dt>Turnips</dt>
-                <dd>{satchel?.crops.turnip ?? 0}</dd>
-              </div>
-              <div>
-                <dt>Seeds</dt>
-                <dd>
-                  {satchel?.seeds.turnip ?? 0} turnip • {satchel?.seeds.strawberry ?? 0} berry
-                </dd>
-              </div>
-              <div>
-                <dt>Equipped</dt>
-                <dd>
-                  {toolLabel(player)} • {seedLabel(player)}
-                </dd>
-              </div>
-            </dl>
-            <p className="hud-note">
-              Coins are the farm&apos;s shared wallet. Seeds, crops, and water are yours alone.
-              {playerCount > 1 ? ` ${playerCount} farmhands here right now.` : ''}
-            </p>
-          </div>
+        The bar along the bottom of the canvas is pixels; this is the same
+        words as text, so somebody who cannot see the farm is still told that
+        the turnip came up, that the satchel is full, and that Rowan is waiting
+        for three more. Not a second HUD: it says what the game just said, and
+        a polite live region only speaks when that changes.
 
-          <div className="hud-section quest-card">
-            <div className="quest-heading">
-              <span>Rowan&apos;s request</span>
-              <strong>{quest.completed ? 'Ready' : `${quest.progress}/${quest.target}`}</strong>
-            </div>
-            <h2>{quest.title}</h2>
-            <p>{quest.description}</p>
-            <div className="progress-track" aria-label={`Quest progress ${questPercent}%`}>
-              <span style={{ width: `${questPercent}%` }} />
-            </div>
-          </div>
+        Empty until the scene is up, so the first thing the game says arrives
+        as a change and is announced rather than sitting there unread.
 
-          <div className="hud-section prompt-card">
-            <h2>Hint</h2>
-            <p>{prompt}</p>
-            <small>{CONTROLS_HINT}</small>
-          </div>
-
-          <div className="hud-section">
-            <h2>{online ? 'Connection' : 'Save'}</h2>
-            {online ? (
-              <>
-                <p className="hud-note">
-                  The server keeps this farm, its clock, and its wallet, so everyone here sees the
-                  same fields and it is all still here tomorrow.
-                </p>
-                {inviteCode ? (
-                  <div className="invite">
-                    <span className="invite-label">Invite code</span>
-                    <code className="invite-code">{inviteCode}</code>
-                    <button
-                      type="button"
-                      className="ghost-button"
-                      onClick={() => {
-                        void navigator.clipboard
-                          ?.writeText(inviteLink(inviteCode))
-                          .then(() => setCopied(true))
-                          .catch(() => setCopied(false));
-                      }}
-                    >
-                      {copied ? 'Link copied' : 'Copy invite link'}
-                    </button>
-                  </div>
-                ) : null}
-              </>
-            ) : (
-              <>
-                <p className="hud-note">
-                  {connectionError ?? 'Playing offline. The farm saves itself as you play, in this browser only.'}
-                </p>
-                <button
-                  type="button"
-                  className="danger-button"
-                  onClick={() => {
-                    if (window.confirm('Start a new farm? This erases the saved farm for good.')) {
-                      startNewFarm();
-                    }
-                  }}
-                >
-                  Start a new farm
-                </button>
-              </>
-            )}
-          </div>
-        </aside>
-      </section>
+        It is the only thing on this page that is not the canvas, and it must
+        stay that way: taking the React shell away and leaving this behind
+        would have been a silent way to make the game unplayable without sight.
+      */}
+      <p className="sr-only prompt-live" role="status" aria-live="polite" aria-label="Thông báo trong game">
+        {sceneReady ? prompt : ''}
+      </p>
     </main>
   );
 }

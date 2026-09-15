@@ -8,7 +8,7 @@
   "margin": 0,
   "name": "moonberry",
   "spacing": 0,
-  "tilecount": 6,
+  "tilecount": 15,
   "tiledversion": "1.10.2",
   "tileheight": 32,
   "tilewidth": 32,
@@ -40,6 +40,75 @@
     },
     {
       "id": 1,
+      "image": "../public/assets/lpc/tile-grass-1x.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-grass-1x"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "grass"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "image": "../public/assets/lpc/tile-grass-1y.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-grass-1y"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "grass"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "image": "../public/assets/lpc/tile-grass-1xy.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-grass-1xy"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "grass"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 4,
       "image": "../public/assets/lpc/tile-grass-2.png",
       "imageheight": 32,
       "imagewidth": 32,
@@ -62,7 +131,76 @@
       ]
     },
     {
-      "id": 2,
+      "id": 5,
+      "image": "../public/assets/lpc/tile-grass-2x.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-grass-2x"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "grass"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "image": "../public/assets/lpc/tile-grass-2y.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-grass-2y"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "grass"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "image": "../public/assets/lpc/tile-grass-2xy.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-grass-2xy"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "grass"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 8,
       "image": "../public/assets/lpc/tile-grass-3.png",
       "imageheight": 32,
       "imagewidth": 32,
@@ -85,7 +223,76 @@
       ]
     },
     {
-      "id": 3,
+      "id": 9,
+      "image": "../public/assets/lpc/tile-grass-3x.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-grass-3x"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "grass"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "image": "../public/assets/lpc/tile-grass-3y.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-grass-3y"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "grass"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "image": "../public/assets/lpc/tile-grass-3xy.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-grass-3xy"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "grass"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 12,
       "image": "../public/assets/lpc/tile-path.png",
       "imageheight": 32,
       "imagewidth": 32,
@@ -108,7 +315,7 @@
       ]
     },
     {
-      "id": 4,
+      "id": 13,
       "image": "../public/assets/lpc/tile-water.png",
       "imageheight": 32,
       "imagewidth": 32,
@@ -131,7 +338,7 @@
       ]
     },
     {
-      "id": 5,
+      "id": 14,
       "image": "../public/assets/lpc/plot-wild.png",
       "imageheight": 32,
       "imagewidth": 32,

@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import type { ClientCommand, ClockMessage, MoveUpdate } from '../net/protocol';
+import type { BuildingKind } from '../systems/buildings';
 import type { GameEvent, Intent } from './intents';
 import { clearSave, loadFarm, saveFarm, type SaveStorage } from './persistence';
 import { applyIntent, createFarmState } from './reducer';
@@ -19,10 +20,53 @@ export interface FarmStoreState {
   inviteCode: string | null;
   /** Set when the server refused the connection, with something to show. */
   connectionError: string | null;
+  /**
+   * Whether the full inventory grid is open over the canvas.
+   *
+   * Kept here rather than in React state because the scene has to know: while
+   * it is open the game takes no keyboard input, so the key that drags a stack
+   * does not also swing a hoe.
+   */
+  inventoryOpen: boolean;
+  /**
+   * The building this client is looking for a spot for, or null.
+   *
+   * Purely local, and deliberately so: choosing what to build is not something
+   * that has happened on the farm, it is a mode this one player's mouse is in.
+   * Nothing is spent and nothing is shared until a spot is clicked, and the
+   * spot is then re-checked by the reducer. The scene has to know, because
+   * while it is set a click places a building rather than swinging a hoe.
+   */
+  buildKind: BuildingKind | null;
+  /**
+   * True once the Phaser scene has finished starting up.
+   *
+   * A readiness flag, not game information: the shell uses it to stop
+   * announcing a farm nobody can play yet, and the end-to-end tests use it
+   * instead of watching a clock that no longer exists in the DOM.
+   */
+  sceneReady: boolean;
+  /**
+   * Whether the Escape menu is open over the canvas.
+   *
+   * The one part of the interface that is allowed to be a document rather than
+   * a picture of the world, because it is about the program: the volume, the
+   * invite code, full screen, starting over. Everything the page used to keep
+   * in a column beside the game lives here now, and the game got the screen.
+   */
+  menuOpen: boolean;
+  /**
+   * Whether the morning summary is up in the canvas.
+   *
+   * Here for the same reason `inventoryOpen` is: something outside the scene
+   * has to know. Escape must not open the menu over a panel that is already
+   * open, and the scene is the only thing that can see this one.
+   */
+  summaryOpen: boolean;
 }
 
-const INITIAL_MESSAGE = 'Wake up on Amberfall Farm.';
-const RESTORED_MESSAGE = 'Welcome back to Amberfall Farm.';
+const INITIAL_MESSAGE = 'Thức dậy ở Nông trại Amberfall.';
+const RESTORED_MESSAGE = 'Chào mừng trở lại Nông trại Amberfall.';
 
 /** How long the farm must sit unchanged before it is written to storage. */
 const AUTOSAVE_DEBOUNCE_MS = 1000;
@@ -39,6 +83,11 @@ export const farmStore = createStore<FarmStoreState>(() => ({
   online: false,
   inviteCode: null,
   connectionError: null,
+  inventoryOpen: false,
+  buildKind: null,
+  sceneReady: false,
+  menuOpen: false,
+  summaryOpen: false,
 }));
 
 /**
@@ -121,7 +170,7 @@ export function startNewFarm(storage?: SaveStorage): void {
     message: INITIAL_MESSAGE,
     restored: false,
   });
-  if (localPlayerId) joinAsLocalPlayer(localPlayerId, 'You');
+  if (localPlayerId) joinAsLocalPlayer(localPlayerId, 'Bạn');
   publish([{ kind: 'farmReplaced' }]);
 }
 
@@ -186,6 +235,112 @@ export function setConnectionError(message: string | null): void {
   farmStore.setState({ connectionError: message });
 }
 
+/** The scene has built its world and is listening for input. */
+export function setSceneReady(): void {
+  farmStore.setState({ sceneReady: true });
+}
+
+// --- the inventory screen ---------------------------------------------------
+
+export function setInventoryOpen(open: boolean): void {
+  farmStore.setState({ inventoryOpen: open });
+}
+
+export function toggleInventory(): void {
+  farmStore.setState((state) => ({ inventoryOpen: !state.inventoryOpen }));
+}
+
+// --- the menu, and the one key that closes everything ------------------------
+
+export function setMenuOpen(open: boolean): void {
+  farmStore.setState({ menuOpen: open });
+}
+
+export function setSummaryOpen(open: boolean): void {
+  if (farmStore.getState().summaryOpen === open) return;
+  farmStore.setState({ summaryOpen: open });
+}
+
+/** What an Escape press did, so a caller can play the right sound — or none. */
+export type EscapeResult = 'cancelledBuild' | 'closedPanel' | 'cancelledCast' | 'openedMenu';
+
+/**
+ * Escape, and the order it has to be read in.
+ *
+ * Escape now means three things, and the order between them is the whole
+ * design. A player with a barn on the cursor and the satchel shut presses
+ * Escape to put the barn down, not to open a settings menu; a player with
+ * neither presses it expecting a menu, because that is what Escape has meant
+ * in every game since the nineties.
+ *
+ *   1. Placing a building -> cancel the placement.
+ *   2. A panel is open -> close the panel.
+ *   3. A line is in the water -> wind it in.
+ *   4. Nothing is open -> open the menu.
+ *
+ * In one function rather than in four keydown handlers. It used to be spread
+ * across the scene, the satchel, the stall and the forge, each of them
+ * claiming the key while it happened to be on screen, and adding a fourth
+ * claimant to that arrangement is how a ladder ends up with its rungs in a
+ * different order depending on what is open.
+ */
+export function pressEscape(): EscapeResult {
+  const state = farmStore.getState();
+
+  if (state.buildKind) {
+    setBuildKind(null);
+    return 'cancelledBuild';
+  }
+
+  if (state.menuOpen) {
+    setMenuOpen(false);
+    return 'closedPanel';
+  }
+
+  // The morning panel is dismissed by any key at all, which the scene reads
+  // for itself. All that is decided here is that Escape did not mean "menu".
+  if (state.summaryOpen) return 'closedPanel';
+
+  if (state.inventoryOpen) {
+    setInventoryOpen(false);
+    return 'closedPanel';
+  }
+
+  const player = state.localPlayerId ? state.farm.players[state.localPlayerId] : null;
+  if (player?.panel) {
+    // Leaving a counter is something that happened on the farm rather than in
+    // this browser, so it goes through the reducer like every other action.
+    sendAction({ type: 'closePanel' });
+    return 'closedPanel';
+  }
+
+  // A cast is the fourth rung, and it sits below the panels on purpose: a
+  // player fishing with the satchel open pressed Escape to shut the satchel.
+  // It sits above the menu for the same reason the building does — somebody
+  // with a line in the water who presses Escape wants out of the minigame,
+  // not a settings screen over the top of it.
+  if (player?.fishing) {
+    sendAction({ type: 'cancelCast' });
+    return 'cancelledCast';
+  }
+
+  setMenuOpen(true);
+  return 'openedMenu';
+}
+
+// --- build mode -------------------------------------------------------------
+
+/**
+ * Arms, or disarms, placing a building.
+ *
+ * Local to this client: it changes what a click means and nothing else. No
+ * coins move until a spot is chosen, and the spot is then re-checked by the
+ * reducer — which is the only place that decides.
+ */
+export function setBuildKind(kind: BuildingKind | null): void {
+  farmStore.setState({ buildKind: kind });
+}
+
 /**
  * Sends a movement input.
  *
@@ -214,7 +369,7 @@ export function sendMove(dx: number, dy: number, deltaMs: number): void {
 let lastSentDx = 0;
 let lastSentDy = 0;
 
-/** Sends a non-movement command: equip a tool, change seed, or use the tool. */
+/** Sends a non-movement command: hold a slot, rearrange the grid, or act. */
 export function sendAction(command: Exclude<ClientCommand, { type: 'move' }>): void {
   const { localPlayerId } = farmStore.getState();
   if (!localPlayerId) return;
@@ -227,14 +382,115 @@ export function sendAction(command: Exclude<ClientCommand, { type: 'move' }>): v
   }
 
   switch (command.type) {
-    case 'selectTool':
-      dispatch({ type: 'player/selectTool', playerId: localPlayerId, tool: command.tool });
+    case 'selectSlot':
+      dispatch({ type: 'player/selectSlot', playerId: localPlayerId, slot: command.slot });
       return;
-    case 'cycleSeed':
-      dispatch({ type: 'player/cycleSeed', playerId: localPlayerId });
+    case 'moveStack':
+      dispatch({ type: 'player/moveStack', playerId: localPlayerId, from: command.from, to: command.to });
+      return;
+    case 'splitStack':
+      dispatch({ type: 'player/splitStack', playerId: localPlayerId, from: command.from, to: command.to });
       return;
     case 'act':
-      dispatch({ type: 'player/act', playerId: localPlayerId });
+      dispatch({ type: 'player/act', playerId: localPlayerId, target: command.target });
+      return;
+    case 'sleep':
+      dispatch({ type: 'player/sleep', playerId: localPlayerId });
+      return;
+    case 'buy':
+      dispatch({ type: 'shop/buy', playerId: localPlayerId, item: command.item, count: command.count });
+      return;
+    case 'closePanel':
+      dispatch({ type: 'panel/close', playerId: localPlayerId });
+      return;
+    case 'upgradeTool':
+      dispatch({ type: 'player/upgradeTool', playerId: localPlayerId, item: command.item });
+      return;
+    case 'collectTool':
+      dispatch({ type: 'player/collectTool', playerId: localPlayerId });
+      return;
+    case 'placeBuilding':
+      dispatch({
+        type: 'player/placeBuilding',
+        playerId: localPlayerId,
+        kind: command.kind,
+        x: command.x,
+        y: command.y,
+      });
+      return;
+    case 'buyAnimal':
+      dispatch({
+        type: 'player/buyAnimal',
+        playerId: localPlayerId,
+        kind: command.kind,
+        home: command.home,
+        name: command.name,
+      });
+      return;
+    case 'sellAnimal':
+      dispatch({ type: 'player/sellAnimal', playerId: localPlayerId, animalId: command.animalId });
+      return;
+    case 'buyHay':
+      dispatch({ type: 'player/buyHay', playerId: localPlayerId, count: command.count });
+      return;
+    case 'petAnimal':
+      dispatch({ type: 'player/petAnimal', playerId: localPlayerId, animalId: command.animalId });
+      return;
+    case 'collectProduce':
+      dispatch({ type: 'player/collectProduce', playerId: localPlayerId, animalId: command.animalId });
+      return;
+    case 'feedAnimal':
+      dispatch({ type: 'player/feedAnimal', playerId: localPlayerId, animalId: command.animalId });
+      return;
+    case 'toggleDoor':
+      dispatch({ type: 'animals/toggleDoor', playerId: localPlayerId, buildingId: command.buildingId });
+      return;
+    case 'craft':
+      dispatch({
+        type: 'player/craft',
+        playerId: localPlayerId,
+        recipe: command.recipe,
+        count: command.count,
+      });
+      return;
+    case 'placeItem':
+      dispatch({
+        type: 'player/placeItem',
+        playerId: localPlayerId,
+        item: command.item,
+        x: command.x,
+        y: command.y,
+      });
+      return;
+    case 'pickUpItem':
+      dispatch({ type: 'player/pickUpItem', playerId: localPlayerId, x: command.x, y: command.y });
+      return;
+    case 'chestMoveStack':
+      dispatch({
+        type: 'chest/moveStack',
+        playerId: localPlayerId,
+        chestId: command.chestId,
+        from: command.from,
+        to: command.to,
+      });
+      return;
+    case 'chestStow':
+      dispatch({ type: 'chest/stow', playerId: localPlayerId, chestId: command.chestId });
+      return;
+    case 'loadMachine':
+      dispatch({ type: 'machine/load', playerId: localPlayerId, machineId: command.machineId });
+      return;
+    case 'collectMachine':
+      dispatch({ type: 'machine/collect', playerId: localPlayerId, machineId: command.machineId });
+      return;
+    case 'cast':
+      dispatch({ type: 'player/cast', playerId: localPlayerId, target: command.target });
+      return;
+    case 'reel':
+      dispatch({ type: 'player/reel', playerId: localPlayerId, down: command.down });
+      return;
+    case 'cancelCast':
+      dispatch({ type: 'player/cancelCast', playerId: localPlayerId });
   }
 }
 
