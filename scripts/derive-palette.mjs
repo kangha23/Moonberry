@@ -53,11 +53,26 @@ function hex([r, g, b]) {
  * Pixels below alpha 8 are skipped entirely. A fully transparent pixel still
  * carries RGB in the file — usually black — and counting it would hand a
  * palette entry to a colour nobody has ever seen.
+ *
+ * `readdirSync` makes no ordering promise — it reflects whatever the
+ * filesystem happens to hand back, which can differ by OS or even by run.
+ * That would be harmless on its own, except `kmeans`'s k-means++ seeding
+ * picks its first centroid *positionally* from the points array, so an
+ * unsorted walk quietly makes the palette a function of the machine that
+ * built it rather than of the art. Sorting directory entries by name at
+ * every level, and sorting the finished histogram by colour key before
+ * handing it out, pins that order down at the source. `derive` below sorts
+ * its input again for the same reason, so this isn't the only line of
+ * defence — but fixing it here as well means a directory walk can never be
+ * the thing that introduces the nondeterminism in the first place.
  */
 export function histogram(dir) {
   const counts = new Map();
   const walk = (current) => {
-    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+    const entries = [...fs.readdirSync(current, { withFileTypes: true })].sort((a, b) => (
+      a.name < b.name ? -1 : a.name > b.name ? 1 : 0
+    ));
+    for (const entry of entries) {
       const full = path.join(current, entry.name);
       if (entry.isDirectory()) {
         walk(full);
@@ -73,10 +88,12 @@ export function histogram(dir) {
   };
   walk(dir);
 
-  return [...counts.entries()].map(([key, weight]) => ({
-    ...srgbToOklab((key >> 16) & 255, (key >> 8) & 255, key & 255),
-    weight,
-  }));
+  return [...counts.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([key, weight]) => ({
+      ...srgbToOklab((key >> 16) & 255, (key >> 8) & 255, key & 255),
+      weight,
+    }));
 }
 
 /**
@@ -163,13 +180,29 @@ function uniqueNames(names) {
  * root keeps volume mattering — a large family still outscores a tiny one —
  * without letting volume alone buy steps that spend themselves on
  * differences nobody will ever see.
+ *
+ * The points are sorted by (L, a, b, weight) before anything else touches
+ * them. `kmeans`'s k-means++ seeding picks its first centroid positionally
+ * from whatever order the points array arrives in, so an unsorted caller —
+ * `histogram`'s directory walk is one, but not the only possible one — makes
+ * the palette a function of incidental ordering rather than of the art
+ * itself. Reversing an unsorted input once moved 44 of the 48 output
+ * entries. Sorting here, at the one place every caller passes through,
+ * protects the guarantee regardless of where the points came from. `weight`
+ * is the tiebreak: two distinct colours never collide on (L, a, b), but a
+ * comparator that stops at `b` would let two points that do coincide there
+ * keep whatever relative order they arrived in, which is exactly the
+ * dependency this exists to remove.
  */
 export function derive(points) {
-  const anchors = kmeans(points, GROUPS, SEED);
+  const sorted = [...points].sort((p, q) => (
+    p.L - q.L || p.a - q.a || p.b - q.b || p.weight - q.weight
+  ));
+  const anchors = kmeans(sorted, GROUPS, SEED);
 
   const buckets = anchors.map(() => []);
   const weights = anchors.map(() => 0);
-  for (const point of points) {
+  for (const point of sorted) {
     const index = nearestIndex(point, anchors);
     buckets[index].push(point);
     weights[index] += point.weight;
@@ -208,7 +241,7 @@ if (process.argv[1] && process.argv[1].endsWith('derive-palette.mjs')) {
   fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
   fs.writeFileSync(
     OUT_FILE,
-    `${JSON.stringify({ generated: new Date().toISOString(), colours }, null, 2)}\n`,
+    `${JSON.stringify({ colours }, null, 2)}\n`,
   );
   console.log(`wrote ${OUT_FILE} — ${colours.length} colours from ${points.length} distinct`);
 

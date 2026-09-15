@@ -7,12 +7,13 @@
  * lock unenforceable in exactly the situation it exists for.
  */
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { distance, srgbToOklab } from './lib/colour.mjs';
-import { allocate, derive, familyName, histogram } from './derive-palette.mjs';
+import { allocate, derive, familyName } from './derive-palette.mjs';
 
-const RAW_DIR = path.join('art', 'raw');
+const PALETTE_FILE = path.join('art', 'palette.json');
 
 function samplePoints() {
   const points = [];
@@ -107,26 +108,41 @@ test('no two palette entries are closer than the eye can resolve', () => {
   // end has spent entries on differences nobody will ever see. 0.03 is roughly the
   // just-noticeable difference in OkLab.
   //
-  // This checks the real art, not `samplePoints()`. That fixture exists to test
+  // This reads the committed `art/palette.json` rather than either re-deriving
+  // from `art/raw` or using `samplePoints()`. `samplePoints()` exists to test
   // determinism, ordering, and the allocate/familyName contracts cheaply, and its
   // 15 hand-picked seeds were never meant to carry enough colour diversity to
   // fill 48 mutually-separated output entries — one seed alone (a near-black
   // brown, jittered by a uniform per-channel delta that leaves its whole 12-point
   // cloud within an OkLab diameter of 0.0435) cannot supply 3 entries 0.03 apart
   // no matter how derive() is written, since 3 points spread across a 0.0435 span
-  // have a best-case worst-gap of about half that span. The property this test
-  // guards is about the shipped palette, so it has to be measured on the pixels
-  // that are actually shipped; `png.test.mjs` already reads real files from
-  // `art/raw` for the same reason.
-  const palette = derive(histogram(RAW_DIR));
-  const lab = palette.map((entry) => {
+  // have a best-case worst-gap of about half that span. Re-deriving from
+  // `art/raw` is closer, but still not the same claim: the file every later task
+  // actually consumes is the committed JSON, which can drift from `art/raw` if
+  // someone edits the art without re-running `palette:derive`. Reading the file
+  // itself is the only way to constrain what ships rather than what the source
+  // art would currently produce. (Whether the committed file is stale against
+  // `art/raw` is a real, separate question — it belongs to the palette-lock
+  // test, not here.)
+  const { colours } = JSON.parse(fs.readFileSync(PALETTE_FILE, 'utf8'));
+  const lab = colours.map((entry) => {
     const n = Number.parseInt(entry.hex.slice(1), 16);
     return srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255);
   });
   for (let i = 0; i < lab.length; i += 1) {
     for (let j = i + 1; j < lab.length; j += 1) {
       const d = distance(lab[i], lab[j]);
-      assert.ok(d >= 0.03, `${palette[i].name} and ${palette[j].name} differ by only ${d.toFixed(4)}`);
+      assert.ok(d >= 0.03, `${colours[i].name} and ${colours[j].name} differ by only ${d.toFixed(4)}`);
     }
   }
+});
+
+test('derive does not depend on the order its points arrive in', () => {
+  // Filesystem order is not a guarantee. k-means++ seeds positionally, so an
+  // unsorted readdirSync silently makes the palette a function of the machine
+  // it was built on: reversing the input once moved 44 of 48 entries.
+  const points = samplePoints();
+  const forwards = derive(points);
+  const backwards = derive([...points].reverse());
+  assert.deepEqual(backwards, forwards);
 });
