@@ -8,18 +8,41 @@
  * canvas nine-slices for its own boxes. Square corners, no blur.
  */
 :root {
-  color: #f8f0d8;
-  background: #0d120f;
+  /*
+   * From art/palette.json. Do not type a hex below this block: the palette
+   * lock test fails the build on any literal it does not recognise.
+   *
+   * The HUD is chrome, not world art, so it draws from a restricted subset
+   * of the 48-colour palette rather than the full thing - the near-black end
+   * (outline.0/outline.2), one warm dark (soil.0/shadow.0) for panel/option
+   * backgrounds, and the accent ramp (light.2/3/5/6/7) that covers this
+   * file's golds, corals and its one desaturated mint. Every one of these
+   * was picked by comparing actual hexes, not by trusting a group's name -
+   * `light` is a lightness cluster spanning skin, foliage and cream, and
+   * these nine entries are the ones this file's literals actually land on.
+   */
+  --pal-ink: #0f0608; /* outline.0 */
+  --pal-void: #10111b; /* outline.2 */
+  --pal-panel: #3a2718; /* soil.0 */
+  --pal-shadow: #281825; /* shadow.0 */
+  --pal-rim: #b78d64; /* light.2 */
+  --pal-warn: #d28560; /* light.3 */
+  --pal-danger: #eaa473; /* light.5 */
+  --pal-mint: #acbfb0; /* light.6 */
+  --pal-cream: #f8dbbd; /* light.7 */
+
+  color: var(--pal-cream);
+  background: var(--pal-void);
   font-family:
     Nunito, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
-  --panel: #2b1f18;
-  --gold: #ffd36d;
-  --mint: #95e59a;
-  --ink: #140d08;
-  --rim: #c9924f;
+  --panel: var(--pal-panel);
+  --gold: var(--pal-cream);
+  --mint: var(--pal-mint);
+  --ink: var(--pal-ink);
+  --rim: var(--pal-rim);
   /*
    * VT323 for anything short: labels, counts, headings, the invite code. One
    * of exactly two pixel faces on Google Fonts carrying the Vietnamese tone
@@ -62,7 +85,7 @@ canvas {
   width: 100vw;
   height: 100dvh;
   overflow: hidden;
-  background: #0d120f;
+  background: var(--pal-void);
 }
 
 .game-frame {
@@ -126,7 +149,7 @@ canvas {
   border: 12px solid transparent;
   border-image: var(--frame-panel) 12 fill repeat;
   image-rendering: pixelated;
-  color: #f8f0d8;
+  color: var(--pal-cream);
 }
 
 .panel:focus-visible,
@@ -148,7 +171,7 @@ h1,
 h2,
 h3 {
   margin: 0 0 10px;
-  color: #fff1c2;
+  color: var(--pal-cream);
   font-family: var(--font-pixel);
   font-weight: 400;
   letter-spacing: 0.02em;
@@ -217,7 +240,7 @@ p {
   border: 4px solid transparent;
   border-image: var(--frame-slot) 4 fill repeat;
   background: transparent;
-  color: #f8f0d8;
+  color: var(--pal-cream);
   font-family: var(--font-pixel);
   font-size: 1.05rem;
   line-height: 1.1;
@@ -247,7 +270,7 @@ p {
   border: 4px solid transparent;
   border-image: var(--frame-slot) 4 fill repeat;
   background: transparent;
-  color: #ff9f8a;
+  color: var(--pal-danger);
   font-family: var(--font-pixel);
   font-size: 1.05rem;
   cursor: pointer;
@@ -255,7 +278,7 @@ p {
 }
 
 .danger-button:hover {
-  color: #ffc4b5;
+  color: var(--pal-cream);
 }
 
 .ghost-button:focus-visible,
@@ -325,7 +348,7 @@ p {
 }
 
 .mixer-value {
-  color: #fff5d2;
+  color: var(--pal-cream);
   font-family: var(--font-pixel);
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
@@ -398,14 +421,14 @@ p {
   position: absolute;
   right: 4px;
   bottom: 0;
-  color: #fff5d2;
+  color: var(--pal-cream);
   font-family: var(--font-pixel);
   font-size: 1.05rem;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.7);
 }
 
 .slot-count.is-empty {
-  color: #e08a8a;
+  color: var(--pal-warn);
 }
 
 /* --- the market stall, and the forge ---------------------------------------
@@ -453,7 +476,7 @@ p {
 }
 
 .shop-row-text strong {
-  color: #fff1c2;
+  color: var(--pal-cream);
   font-family: var(--font-pixel);
   font-size: 1.15rem;
   font-weight: 400;
@@ -468,11 +491,11 @@ p {
 }
 
 .shop-warning {
-  color: #ffb59c !important;
+  color: var(--pal-danger) !important;
 }
 
 .shop-price {
-  color: #ffd98a;
+  color: var(--pal-cream);
   font-family: var(--font-pixel);
   font-size: 1.2rem;
   font-variant-numeric: tabular-nums;
@@ -528,7 +551,7 @@ p {
   border: 4px solid transparent;
   border-image: var(--frame-slot) 4 fill repeat;
   background: transparent;
-  color: #fff1c2;
+  color: var(--pal-cream);
   font-family: var(--font-pixel);
   font-size: 1.05rem;
   image-rendering: pixelated;
@@ -540,15 +563,15 @@ p {
 
 .ranch-field input:focus-visible,
 .ranch-field select:focus-visible {
-  outline: 2px solid #ffd98a;
+  outline: 2px solid var(--pal-cream);
   outline-offset: -2px;
 }
 
 /* The native menu is drawn by the browser, so its own list needs a ground
    that is not the page's transparent one. */
 .ranch-field select option {
-  background: #2a2119;
-  color: #fff1c2;
+  background: var(--pal-panel);
+  color: var(--pal-cream);
 }
 
 .shop-empty {
@@ -608,7 +631,7 @@ p {
 /* The one ingredient you are short of, picked out in the same warm red the
    withering crops use — the palette's single "this is the problem" colour. */
 .recipe-need.is-short {
-  color: #e9896f;
+  color: var(--pal-warn);
 }
 
 /* Two grids need room that one does not. */

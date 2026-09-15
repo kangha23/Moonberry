@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import FarmScene from './scenes/FarmScene';
 import { MIN_VIEW_HEIGHT, MIN_VIEW_WIDTH } from './constants';
+import { PALETTE } from './assets/palette.generated';
 
 /**
  * The game fills whatever it is given.
@@ -19,7 +20,7 @@ export function createGameConfig(parent: HTMLElement): Phaser.Types.Core.GameCon
   return {
     type: Phaser.AUTO,
     parent,
-    backgroundColor: '#1a2d1c',
+    backgroundColor: PALETTE['shadow.1'],
     pixelArt: true,
     roundPixels: true,
     scene: [FarmScene],

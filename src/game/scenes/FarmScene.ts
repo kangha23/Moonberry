@@ -9,6 +9,7 @@ import {
   fringeTexture,
 } from '../assets/createPixelArtTextures';
 import { LPC_IMAGES, LPC_SHEETS } from '../assets/lpc.generated';
+import { PALETTE, tint } from '../assets/palette.generated';
 import { HUD, hudLayout, hudZones, type HudLayout } from '../ui/hudLayout';
 import { SoundManager } from '../audio/SoundManager';
 import { FOOTSTEP_INTERVAL_MS, footstepFor, musicFor } from '../audio/soundtrack';
@@ -198,8 +199,16 @@ interface HotbarCell {
   key: Phaser.GameObjects.Text | null;
 }
 
-/** Tube colours: green while there is a day left in you, then amber, then red. */
-const ENERGY_COLOURS = { full: 0x7ec85a, low: 0xf1b24a, spent: 0xd9534f };
+/**
+ * Tube colours: green while there is a day left in you, then amber, then red.
+ *
+ * `full` was the source literal `7ec85a`. The mechanical nearest is `light.1` (d=0.1038), but
+ * `light.1` (#82a204) is an olive-yellow 28° away in hue; `light.0` (#5ea64e,
+ * d=0.1051, essentially tied) is 9° away and stays green. The same override
+ * applies everywhere else the source literal `7ec85a` appeared in this file, for the same
+ * "still green" reason.
+ */
+const ENERGY_COLOURS = { full: tint('light.0'), low: tint('light.5'), spent: tint('building.3') };
 const ENERGY_LOW = 1 / 3;
 const ENERGY_SPENT = 1 / 10;
 
@@ -208,7 +217,7 @@ const EXHAUSTED_TINT_ALPHA = 0.34;
 
 /** Long enough that a key still held from last night cannot eat the summary. */
 /** What a doomed crop is tinted. Drained of colour rather than made lurid. */
-const WILT_TINT = 0x9a8f74;
+const WILT_TINT = tint('light.2');
 
 const SUMMARY_MIN_MS = 700;
 
@@ -353,13 +362,13 @@ interface PlaceableSprite {
 
 /** What a chip flying off a struck node is coloured, by what it came off. */
 const CHIP_TINTS: Record<NodeKind, number> = {
-  tree: 0x7a5636,
-  stump: 0x6b4629,
-  rock: 0x9aa8b2,
-  boulder: 0x9aa8b2,
-  weed: 0x7a9140,
-  grass: 0x6ab054,
-  forage: 0xcfe0a8,
+  tree: tint('soil.4'),
+  stump: tint('soil.3'),
+  rock: tint('light.6'),
+  boulder: tint('light.6'),
+  weed: tint('leaf.2'),
+  grass: tint('light.0'),
+  forage: tint('light.7'),
 };
 
 /**
@@ -661,22 +670,22 @@ export default class FarmScene extends Phaser.Scene {
     this.outOfReachCursor = this.add
       .image(0, 0, 'tile-cursor')
       .setDepth(DEPTH.weather - 11)
-      .setTint(0x6b7280)
+      .setTint(tint('building.0'))
       .setAlpha(0.45)
       .setVisible(false);
 
     // Build mode. Sized per building when it is armed, so one rectangle
     // serves every footprint in the catalogue.
     this.sweepGhost = this.add
-      .rectangle(0, 0, TILE_SIZE, TILE_SIZE, 0xfff2a6, 0.14)
+      .rectangle(0, 0, TILE_SIZE, TILE_SIZE, tint('light.7'), 0.14)
       .setOrigin(0, 0)
-      .setStrokeStyle(1, 0xfff2a6, 0.5)
+      .setStrokeStyle(1, tint('light.7'), 0.5)
       .setDepth(DEPTH.weather - 12)
       .setVisible(false);
     this.buildGhost = this.add
-      .rectangle(0, 0, TILE_SIZE, TILE_SIZE, 0x7ec85a, 0.36)
+      .rectangle(0, 0, TILE_SIZE, TILE_SIZE, tint('light.0'), 0.36)
       .setOrigin(0, 0)
-      .setStrokeStyle(2, 0x7ec85a, 0.9)
+      .setStrokeStyle(2, tint('light.0'), 0.9)
       .setDepth(DEPTH.weather - 9)
       .setVisible(false);
     // Two short lines and a reason, so Nunito for the reason and the pixel
@@ -685,7 +694,7 @@ export default class FarmScene extends Phaser.Scene {
       .text(0, 0, '', {
         fontFamily: PROSE_FONT,
         fontSize: '14px',
-        color: '#fff1c2',
+        color: PALETTE['light.7'],
         align: 'center',
         backgroundColor: 'rgba(20,13,8,0.86)',
         padding: { x: 12, y: 7 },
@@ -954,7 +963,7 @@ export default class FarmScene extends Phaser.Scene {
       rows.push({
         texture: 'animal-hungry',
         text: `${this.hungryOvernight} con vật đói qua đêm — kho cỏ cạn rồi`,
-        tint: 0xd9534f,
+        tint: tint('building.3'),
       });
     }
 
@@ -979,7 +988,7 @@ export default class FarmScene extends Phaser.Scene {
       rows.push({
         texture: 'icon-energy-bolt',
         text: `Gục lúc 2 giờ sáng — mất ${this.collapsedFor}g`,
-        tint: 0xd9534f,
+        tint: tint('building.3'),
       });
     }
 
@@ -1446,8 +1455,8 @@ export default class FarmScene extends Phaser.Scene {
     this.buildGhost.setVisible(true);
     this.buildGhost.setPosition(spot.x * TILE_SIZE, spot.y * TILE_SIZE);
     this.buildGhost.setSize(def.width * TILE_SIZE, def.height * TILE_SIZE);
-    this.buildGhost.setFillStyle(ok ? 0x7ec85a : 0xd9534f, 0.36);
-    this.buildGhost.setStrokeStyle(2, ok ? 0x7ec85a : 0xd9534f, 0.9);
+    this.buildGhost.setFillStyle(ok ? tint('light.0') : tint('building.3'), 0.36);
+    this.buildGhost.setStrokeStyle(2, ok ? tint('light.0') : tint('building.3'), 0.9);
 
     const reason = !placement.ok
       ? placement.reason
@@ -1796,7 +1805,16 @@ export default class FarmScene extends Phaser.Scene {
       .sprite(player.x, player.y, hasSheet ? 'player-sheet' : 'player', hasSheet ? WALK_ROW.down * 9 : undefined)
       .setScale(hasSheet ? 0.62 : 1.2);
     // Remote players are tinted so they read as somebody else at a glance.
-    if (player.id !== farmStore.getState().localPlayerId) sprite.setTint(0xbfd8ff);
+    // Was the source literal `bfd8ff`, a pale blue this palette has no match for at all (every
+    // blue it owns is dark and saturated - `water.0-3`). Between the two
+    // near-tied mechanical candidates, `light.6` (#acbfb0, d=0.1177) sits 84°
+    // from the original hue and keeps the original's near-white lightness;
+    // `light.7` (#f8dbbd, d=0.1154) is nominally closer but 174° away in hue
+    // *and* a warm cream, which would read as "everyone else's UI colour"
+    // rather than "a different player". `setTint` multiplies onto the sprite,
+    // so a dark blue (water.0-3, d>=0.26) would visibly darken the sprite
+    // rather than lightly recolour it - the wrong trade for a legibility tint.
+    if (player.id !== farmStore.getState().localPlayerId) sprite.setTint(tint('light.6'));
     this.areaLayer?.addMultiple([shadow, sprite]);
     return { sprite, shadow, lastX: player.x, lastY: player.y };
   }
@@ -2063,11 +2081,19 @@ export default class FarmScene extends Phaser.Scene {
       // gold reads instantly; gold against gold is a puzzle.
       const covered =
         fishing.fishAt >= fishing.barAt && fishing.fishAt <= fishing.barAt + fishing.barWidth;
-      this.fishSquare.setFillStyle(covered ? 0x7ec85a : 0x8299b5, 0.4);
-      this.fishSquare.setStrokeStyle(2, covered ? 0x9fe37a : 0xb7c9dd, 0.95);
+      // Fill was the source literal `7ec85a` -> `light.0` (see ENERGY_COLOURS above). Stroke
+      // was the source literal `9fe37a`, whose mechanical nearest is `light.6` (d=0.1393) - but
+      // that entry is nearly grey (S13 vs the original's S65), which would
+      // make a "you're on the fish" highlight read as dull grey instead of a
+      // brighter green riding on top of the fill. `light.1` (#82a204,
+      // d=0.1863) costs more distance but stays saturated and green, and
+      // keeps the fill/stroke pair visually distinct from each other rather
+      // than collapsing both to `light.0`.
+      this.fishSquare.setFillStyle(covered ? tint('light.0') : tint('building.2'), 0.4);
+      this.fishSquare.setStrokeStyle(2, covered ? tint('light.1') : tint('light.6'), 0.95);
       this.fishProgressFill
         .setSize(FISH_BAR.progressWidth - 4, Math.max(1, fishing.progress * FISH_BAR.height))
-        .setFillStyle(fishing.progress < 0.25 ? 0xd9534f : 0x7ec85a, 0.95);
+        .setFillStyle(fishing.progress < 0.25 ? tint('building.3') : tint('light.0'), 0.95);
     }
 
     this.hideCatchCard(time);
@@ -2109,9 +2135,18 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   private createWaterHint(): Phaser.GameObjects.Rectangle {
+    // Fill was the source literal `6fd3ef`, stroke the source literal `9fe8ff` - both pale cyan. Mechanically
+    // both land on `light.6`/`light.7` (d=0.099-0.127): close in distance
+    // only because both are pale; in hue they are 60-90 degrees away, grey
+    // and cream respectively, which would make a "this tile is water" cue
+    // look like dust. `water.3` (#1896b3, H191) is within a few degrees of
+    // both originals' hue (H193/H194) - it is darker and more saturated, but
+    // at this alpha (0.16/0.55) that reads as a cool cyan wash rather than a
+    // hue-mismatched one. Fill and stroke now share one entry; the alpha
+    // difference still keeps them visually distinct from each other.
     return this.add
-      .rectangle(0, 0, TILE_SIZE - 4, TILE_SIZE - 4, 0x6fd3ef, 0.16)
-      .setStrokeStyle(1, 0x9fe8ff, 0.55)
+      .rectangle(0, 0, TILE_SIZE - 4, TILE_SIZE - 4, tint('water.3'), 0.16)
+      .setStrokeStyle(1, tint('water.3'), 0.55)
       .setDepth(GROUND_ITEM_DEPTH);
   }
 
@@ -2265,7 +2300,7 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   /** Short text: the clock, a count, a label. Never below 16px. */
-  private pixelText(x: number, y: number, size = PIXEL_MIN_SIZE, colour = '#fff1c2') {
+  private pixelText(x: number, y: number, size = PIXEL_MIN_SIZE, colour = PALETTE['light.7']) {
     return this.add.text(x, y, '', {
       fontFamily: PIXEL_FONT,
       fontSize: `${Math.max(PIXEL_MIN_SIZE, size)}px`,
@@ -2287,7 +2322,7 @@ export default class FarmScene extends Phaser.Scene {
     this.promptText = this.add.text(0, 0, '', {
       fontFamily: PROSE_FONT,
       fontSize: '13px',
-      color: '#d9f7c7',
+      color: PALETTE['light.7'],
     });
     this.toScreen(this.promptFrame, this.heldText, this.promptText);
 
@@ -2297,10 +2332,10 @@ export default class FarmScene extends Phaser.Scene {
     this.createEnergyTube();
     this.createHotbar();
 
-    this.dayNightOverlay = this.add.rectangle(0, 0, 1, 1, 0x111733, 0).setDepth(DEPTH.overlay);
+    this.dayNightOverlay = this.add.rectangle(0, 0, 1, 1, tint('outline.2'), 0).setDepth(DEPTH.overlay);
     // Running on empty drains the colour out of the day.
-    this.exhaustionOverlay = this.add.rectangle(0, 0, 1, 1, 0x6b7280, 0).setDepth(DEPTH.overlay - 2);
-    this.sunsetOverlay = this.add.rectangle(0, 0, 1, 1, 0xff8a4c, 0).setDepth(DEPTH.overlay - 1);
+    this.exhaustionOverlay = this.add.rectangle(0, 0, 1, 1, tint('building.0'), 0).setDepth(DEPTH.overlay - 2);
+    this.sunsetOverlay = this.add.rectangle(0, 0, 1, 1, tint('light.4'), 0).setDepth(DEPTH.overlay - 1);
     this.vignetteTop = this.add.rectangle(0, 0, 1, 16, 0x000000, 0.22).setDepth(DEPTH.overlay + 1);
     this.vignetteBottom = this.add.rectangle(0, 0, 1, 16, 0x000000, 0.25).setDepth(DEPTH.overlay + 1);
     this.toScreen(
@@ -2327,14 +2362,14 @@ export default class FarmScene extends Phaser.Scene {
     // In the world: the float on the water, the line down to it, and the mark
     // over the player's head at the bite.
     this.bobberLine = this.add
-      .rectangle(0, 0, 1, 1, 0xf4ead6, 0.7)
+      .rectangle(0, 0, 1, 1, tint('light.7'), 0.7)
       .setOrigin(0.5, 1)
       .setDepth(DEPTH.weather - 2)
       .setVisible(false);
     this.bobber = this.add
       .image(0, 0, 'icon-coin')
       .setDisplaySize(10, 10)
-      .setTint(0xd9534f)
+      .setTint(tint('building.3'))
       .setDepth(DEPTH.weather - 1)
       .setVisible(false);
     // A mark rather than a sprite, and a big one. This is the thing the whole
@@ -2345,8 +2380,8 @@ export default class FarmScene extends Phaser.Scene {
       .text(0, 0, '!', {
         fontFamily: PROSE_FONT,
         fontSize: '28px',
-        color: '#ffd34d',
-        stroke: '#2b1d0e',
+        color: PALETTE['light.7'],
+        stroke: PALETTE['soil.0'],
         strokeThickness: 5,
       })
       .setOrigin(0.5, 1)
@@ -2355,27 +2390,27 @@ export default class FarmScene extends Phaser.Scene {
 
     // On the screen: the bar.
     this.fishTrack = this.add
-      .rectangle(0, 0, FISH_BAR.width, FISH_BAR.height, 0x14202e, 0.85)
+      .rectangle(0, 0, FISH_BAR.width, FISH_BAR.height, tint('shadow.1'), 0.85)
       .setOrigin(0, 0)
-      .setStrokeStyle(2, 0x4d7a9c, 0.9);
+      .setStrokeStyle(2, tint('water.2'), 0.9);
     // The square the player drives. Drawn under the fish so a fish inside it
     // is still visible, which is the one thing the player is watching for.
     this.fishSquare = this.add
-      .rectangle(0, 0, FISH_BAR.width - 6, 10, 0x7ec85a, 0.45)
+      .rectangle(0, 0, FISH_BAR.width - 6, 10, tint('light.0'), 0.45)
       .setOrigin(0, 1)
-      .setStrokeStyle(2, 0x7ec85a, 0.95);
+      .setStrokeStyle(2, tint('light.0'), 0.95);
     // The fish: gold, and outlined in near-black so it stays legible whichever
     // colour the square behind it happens to be.
     this.fishMark = this.add
-      .rectangle(0, 0, FISH_BAR.width - 14, 12, 0xf4c95d, 1)
+      .rectangle(0, 0, FISH_BAR.width - 14, 12, tint('light.7'), 1)
       .setOrigin(0.5, 0.5)
-      .setStrokeStyle(2, 0x21170a, 0.95);
+      .setStrokeStyle(2, tint('outline.3'), 0.95);
     this.fishProgressBack = this.add
-      .rectangle(0, 0, FISH_BAR.progressWidth, FISH_BAR.height, 0x14202e, 0.85)
+      .rectangle(0, 0, FISH_BAR.progressWidth, FISH_BAR.height, tint('shadow.1'), 0.85)
       .setOrigin(0, 0)
-      .setStrokeStyle(2, 0x4d7a9c, 0.9);
+      .setStrokeStyle(2, tint('water.2'), 0.9);
     this.fishProgressFill = this.add
-      .rectangle(0, 0, FISH_BAR.progressWidth - 4, 1, 0x7ec85a, 0.95)
+      .rectangle(0, 0, FISH_BAR.progressWidth - 4, 1, tint('light.0'), 0.95)
       .setOrigin(0, 1);
 
     this.fishBar = this.add
@@ -2419,13 +2454,13 @@ export default class FarmScene extends Phaser.Scene {
     this.clockFace = this.add.image(dial.x, dial.y, 'clock-face');
     // Pivoted at its foot, so one angle turns it about the dial's centre.
     this.clockHand = this.add.image(dial.x, dial.y, 'clock-hand').setOrigin(0.5, 1);
-    this.clockDay = this.pixelText(70, 8, 18, '#f1cc7b');
+    this.clockDay = this.pixelText(70, 8, 18, PALETTE['light.7']);
     this.clockTime = this.pixelText(70, 28, 28);
     this.seasonIcon = this.add.image(78, 70, 'icon-season-spring');
-    this.seasonText = this.pixelText(90, 60, 16, '#d9f7c7');
+    this.seasonText = this.pixelText(90, 60, 16, PALETTE['light.7']);
     this.weatherIcon = this.add.image(width - 22, 20, 'icon-weather-sunny');
     this.coinIcon = this.add.image(148, 70, 'icon-coin');
-    this.coinText = this.pixelText(158, 60, 18, '#ffd36d');
+    this.coinText = this.pixelText(158, 60, 18, PALETTE['light.7']);
 
     this.clockPanel = this.add
       .container(0, 0, [
@@ -2468,7 +2503,7 @@ export default class FarmScene extends Phaser.Scene {
 
       // VT323 has one weight, so a selected cell is said in colour and in the
       // brightness of its frame. There is no bolder to go to.
-      cell.frame.setTint(selected ? 0xffe6a8 : 0xffffff);
+      cell.frame.setTint(selected ? tint('light.7') : 0xffffff);
       cell.frame.setAlpha(selected ? 1 : 0.86);
 
       if (!stack) {
@@ -2488,7 +2523,7 @@ export default class FarmScene extends Phaser.Scene {
       // it is. A stack of one shows nothing, because the icon already says so.
       const charges = stack.charges;
       cell.count.setText(charges !== undefined ? String(charges) : stack.count > 1 ? String(stack.count) : '');
-      cell.count.setColor(charges !== undefined && charges === 0 ? '#e08a8a' : '#fff1c2');
+      cell.count.setColor(charges !== undefined && charges === 0 ? PALETTE['light.3'] : PALETTE['light.7']);
     });
 
     const held = slots[player.selectedSlot];
@@ -2518,7 +2553,7 @@ export default class FarmScene extends Phaser.Scene {
       // Only the first nine have a key, so only those are labelled.
       const key =
         i < 9
-          ? this.pixelText(0, 0, 16, '#f1cc7b').setAlpha(0.7).setDepth(DEPTH.hud + 2)
+          ? this.pixelText(0, 0, 16, PALETTE['light.7']).setAlpha(0.7).setDepth(DEPTH.hud + 2)
           : null;
       key?.setText(String(i + 1));
 
@@ -2559,10 +2594,10 @@ export default class FarmScene extends Phaser.Scene {
     this.questLabel = this.pixelText(inset, 9, 16);
     this.questLabel.setLineSpacing(2);
     const track = this.add
-      .rectangle(inset, height - inset - bar / 2, width - inset * 2, bar, 0x120d0a, 0.85)
+      .rectangle(inset, height - inset - bar / 2, width - inset * 2, bar, tint('outline.0'), 0.85)
       .setOrigin(0, 0.5);
     this.questFill = this.add
-      .rectangle(inset, height - inset - bar / 2, 1, bar, 0x7ec85a, 0.95)
+      .rectangle(inset, height - inset - bar / 2, 1, bar, tint('light.0'), 0.95)
       .setOrigin(0, 0.5);
 
     this.questTracker = this.add
@@ -2624,12 +2659,12 @@ export default class FarmScene extends Phaser.Scene {
    * feel broken.
    */
   private createWaitingPanel() {
-    this.waitingBackdrop = this.add.rectangle(0, 0, 1, 1, 0x05070f, 0.72);
+    this.waitingBackdrop = this.add.rectangle(0, 0, 1, 1, tint('outline.0'), 0.72);
     this.waitingText = this.add
       .text(0, 0, '', {
         fontFamily: PROSE_FONT,
         fontSize: '17px',
-        color: '#fff1c2',
+        color: PALETTE['light.7'],
         align: 'center',
         wordWrap: { width: 520 },
       })
@@ -2667,7 +2702,7 @@ export default class FarmScene extends Phaser.Scene {
       const text = this.pixelText(0, 0, 18).setOrigin(0, 0.5).setVisible(false);
       this.summaryRows.push({ icon, text });
     }
-    this.summaryHint = this.pixelText(0, 0, 16, '#d9c9a8').setOrigin(0.5, 0);
+    this.summaryHint = this.pixelText(0, 0, 16, PALETTE['light.7']).setOrigin(0.5, 0);
     this.summaryHint.setText('Nhấn phím bất kỳ');
 
     this.summaryPanel = this.add
@@ -2805,7 +2840,15 @@ export default class FarmScene extends Phaser.Scene {
     const fireflyWeather = weather === 'Firefly Shower';
     this.rainDrops.forEach((drop) => drop.setAlpha(rainy ? 0.72 : 0));
     this.fireflies.forEach((fly) => fly.setAlpha(fireflyWeather ? 0.85 : 0));
-    this.cameras.main.setBackgroundColor(rainy ? '#203142' : fireflyWeather ? '#1c2636' : '#1a2d1c');
+    // Rainy was the source literal `203142`, whose mechanical nearest is `shadow.2` (d=0.0507)
+    // - but firefly weather (the source literal `1c2636`) also lands on `shadow.2` (d=0.0308),
+    // and these three backdrops must stay distinct or two different weathers
+    // look identical. `shadow.3` (#332f66, H244) is the second-nearest for
+    // rainy (d=0.0738) and a closer hue match to its blue (H210) than
+    // `shadow.2`'s blue-purple (H286) is, so rainy moves there instead.
+    this.cameras.main.setBackgroundColor(
+      rainy ? PALETTE['shadow.3'] : fireflyWeather ? PALETTE['shadow.2'] : PALETTE['shadow.1'],
+    );
   }
 
   // --- plots ----------------------------------------------------------------
@@ -2957,7 +3000,7 @@ export default class FarmScene extends Phaser.Scene {
     // a boulder a copper pick will never break is an interface failure rather
     // than a difficulty, and this is where that is fixed.
     const blocked = this.toolWouldBounce(target);
-    this.cursor.setTint(blocked ? 0xd9534f : 0xffffff);
+    this.cursor.setTint(blocked ? tint('building.3') : 0xffffff);
 
     const showOutOfReach = Boolean(hovered) && !reachable;
     this.outOfReachCursor.setVisible(showOutOfReach);
@@ -3540,8 +3583,8 @@ export default class FarmScene extends Phaser.Scene {
       .text(actor.x, actor.y - 26, def.name, {
         fontFamily: 'Nunito, monospace',
         fontSize: '11px',
-        color: '#f4ecd8',
-        stroke: '#1d1712',
+        color: PALETTE['light.7'],
+        stroke: PALETTE['outline.2'],
         strokeThickness: 3,
       })
       .setOrigin(0.5, 1);
