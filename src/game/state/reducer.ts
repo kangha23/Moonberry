@@ -163,8 +163,16 @@ import {
   type PlayerState,
 } from './types';
 
-/** Real milliseconds per in-game clock step. */
-const CLOCK_STEP_MS = 1200;
+/**
+ * Real milliseconds per in-game clock step.
+ *
+ * Exported because the renderer has to know it: everything the reducer walks —
+ * the herd, the villagers — moves a whole step at a time on this beat, and the
+ * frames in between are drawn by interpolating across exactly this long. See
+ * `view/tickChase.ts`. Two copies of this number would drift into a walk that
+ * finishes early and stutters.
+ */
+export const CLOCK_STEP_MS = 1200;
 /** In-game minutes added per clock step. */
 const CLOCK_STEP_MINUTES = 10;
 
