@@ -1,197 +1,245 @@
 {
-  "generated": "2026-09-15T09:29:41.217Z",
+  "generated": "2026-09-15T09:41:33.120Z",
   "colours": [
     {
-      "name": "soil.trough",
-      "hex": "#74472b"
+      "name": "neutralDark.0",
+      "hex": "#000000",
+      "share": 0.1655
     },
     {
-      "name": "soil.low",
-      "hex": "#913505"
+      "name": "neutralDark.1",
+      "hex": "#1f0106",
+      "share": 0.1655
     },
     {
-      "name": "soil.base",
-      "hex": "#8d4735"
+      "name": "neutralDark.2",
+      "hex": "#150a0d",
+      "share": 0.1655
     },
     {
-      "name": "soil.high",
-      "hex": "#9f3a35"
+      "name": "neutralDark.3",
+      "hex": "#0b131d",
+      "share": 0.1655
     },
     {
-      "name": "soil.crown",
-      "hex": "#875e3f"
+      "name": "neutralDark.4",
+      "hex": "#280707",
+      "share": 0.1655
     },
     {
-      "name": "grass.deep",
-      "hex": "#397e06"
+      "name": "neutralDark2.0",
+      "hex": "#0c1e24",
+      "share": 0.1713
     },
     {
-      "name": "grass.shade",
-      "hex": "#448c33"
+      "name": "neutralDark2.1",
+      "hex": "#380e09",
+      "share": 0.1713
     },
     {
-      "name": "grass.base",
-      "hex": "#728b43"
+      "name": "neutralDark2.2",
+      "hex": "#291827",
+      "share": 0.1713
     },
     {
-      "name": "grass.lit",
-      "hex": "#64a446"
+      "name": "neutralDark2.3",
+      "hex": "#0b2b28",
+      "share": 0.1713
     },
     {
-      "name": "grass.bleached",
-      "hex": "#4ab525"
+      "name": "neutralDark2.4",
+      "hex": "#302329",
+      "share": 0.1713
     },
     {
-      "name": "foliage.deep",
-      "hex": "#073a1f"
+      "name": "neutralDark2.5",
+      "hex": "#003023",
+      "share": 0.1713
     },
     {
-      "name": "foliage.shade",
-      "hex": "#134507"
+      "name": "orangeDark.0",
+      "hex": "#44140c",
+      "share": 0.1225
     },
     {
-      "name": "foliage.base",
-      "hex": "#1b5503"
+      "name": "orangeDark.1",
+      "hex": "#660f1a",
+      "share": 0.1225
     },
     {
-      "name": "foliage.lit",
-      "hex": "#105d31"
+      "name": "orangeDark.2",
+      "hex": "#5c2511",
+      "share": 0.1225
     },
     {
-      "name": "wood.deep",
-      "hex": "#000000"
+      "name": "orangeDark.3",
+      "hex": "#58372a",
+      "share": 0.1225
     },
     {
-      "name": "wood.shade",
-      "hex": "#1c1519"
+      "name": "orangeDark.4",
+      "hex": "#841a20",
+      "share": 0.1225
     },
     {
-      "name": "wood.base",
-      "hex": "#4e1911"
+      "name": "greenMid.0",
+      "hex": "#073a1f",
+      "share": 0.1218
     },
     {
-      "name": "wood.lit",
-      "hex": "#413d5f"
+      "name": "greenMid.1",
+      "hex": "#134507",
+      "share": 0.1218
     },
     {
-      "name": "stone.deep",
-      "hex": "#91828b"
+      "name": "greenMid.2",
+      "hex": "#263e4c",
+      "share": 0.1218
     },
     {
-      "name": "stone.shade",
-      "hex": "#1299b0"
+      "name": "greenMid.3",
+      "hex": "#1b5502",
+      "share": 0.1218
     },
     {
-      "name": "stone.base",
-      "hex": "#bb86c5"
+      "name": "greenMid.4",
+      "hex": "#105b2d",
+      "share": 0.1218
     },
     {
-      "name": "stone.lit",
-      "hex": "#b19996"
+      "name": "purpleMid.0",
+      "hex": "#352d6a",
+      "share": 0.0689
     },
     {
-      "name": "water.deep",
-      "hex": "#227174"
+      "name": "purpleMid.1",
+      "hex": "#4c4a5d",
+      "share": 0.0689
     },
     {
-      "name": "water.shade",
-      "hex": "#156c99"
+      "name": "purpleMid.2",
+      "hex": "#325ca7",
+      "share": 0.0689
     },
     {
-      "name": "water.base",
-      "hex": "#726b7e"
+      "name": "purpleMid.3",
+      "hex": "#89389f",
+      "share": 0.0689
     },
     {
-      "name": "water.lit",
-      "hex": "#486fc7"
+      "name": "orangeMid.0",
+      "hex": "#74472b",
+      "share": 0.1
     },
     {
-      "name": "skin.deep",
-      "hex": "#d5855e"
+      "name": "orangeMid.1",
+      "hex": "#953a23",
+      "share": 0.1
     },
     {
-      "name": "skin.shade",
-      "hex": "#f27981"
+      "name": "orangeMid.2",
+      "hex": "#726b7e",
+      "share": 0.1
     },
     {
-      "name": "skin.base",
-      "hex": "#e9a375"
+      "name": "orangeMid.3",
+      "hex": "#ab5742",
+      "share": 0.1
     },
     {
-      "name": "skin.lit",
-      "hex": "#c4b49d"
+      "name": "greenMid2.0",
+      "hex": "#106c4c",
+      "share": 0.0322
     },
     {
-      "name": "clothWarm.deep",
-      "hex": "#ba4a45"
+      "name": "greenMid2.1",
+      "hex": "#3c8217",
+      "share": 0.0322
     },
     {
-      "name": "clothWarm.shade",
-      "hex": "#a46d3c"
+      "name": "greenMid2.2",
+      "hex": "#0098b2",
+      "share": 0.0322
     },
     {
-      "name": "clothWarm.base",
-      "hex": "#b4871f"
+      "name": "orangeMid2.0",
+      "hex": "#c55449",
+      "share": 0.005
     },
     {
-      "name": "clothWarm.lit",
-      "hex": "#b88751"
+      "name": "orangeMid2.1",
+      "hex": "#ea071a",
+      "share": 0.005
     },
     {
-      "name": "clothCool.deep",
-      "hex": "#6b1b8d"
+      "name": "orangeMid2.2",
+      "hex": "#f64d5a",
+      "share": 0.005
     },
     {
-      "name": "clothCool.shade",
-      "hex": "#3c49ad"
+      "name": "greenLight.0",
+      "hex": "#449a8d",
+      "share": 0.1068
     },
     {
-      "name": "clothCool.base",
-      "hex": "#924b81"
+      "name": "greenLight.1",
+      "hex": "#5da54d",
+      "share": 0.1068
     },
     {
-      "name": "clothCool.lit",
-      "hex": "#9b4caa"
+      "name": "greenLight.2",
+      "hex": "#81a100",
+      "share": 0.1068
     },
     {
-      "name": "metal.deep",
-      "hex": "#42d2e6"
+      "name": "greenLight.3",
+      "hex": "#80c05f",
+      "share": 0.1068
     },
     {
-      "name": "metal.shade",
-      "hex": "#fdd5b7"
+      "name": "greenLight.4",
+      "hex": "#00cfdf",
+      "share": 0.1068
     },
     {
-      "name": "metal.base",
-      "hex": "#e6e7c7"
+      "name": "yellowLight.0",
+      "hex": "#b88851",
+      "share": 0.0502
     },
     {
-      "name": "metal.lit",
-      "hex": "#f7f2ef"
+      "name": "yellowLight.1",
+      "hex": "#a69297",
+      "share": 0.0502
     },
     {
-      "name": "accent.gold",
-      "hex": "#c89622"
+      "name": "yellowLight.2",
+      "hex": "#d6845e",
+      "share": 0.0502
     },
     {
-      "name": "accent.berry",
-      "hex": "#77bf67"
+      "name": "yellowLight.3",
+      "hex": "#e2a77d",
+      "share": 0.0502
     },
     {
-      "name": "accent.bloom",
-      "hex": "#9fc137"
+      "name": "yellowLight2.0",
+      "hex": "#58d3eb",
+      "share": 0.0558
     },
     {
-      "name": "accent.sky",
-      "hex": "#ffa749"
+      "name": "yellowLight2.1",
+      "hex": "#c5e1e4",
+      "share": 0.0558
     },
     {
-      "name": "accent.ember",
-      "hex": "#bbda45"
+      "name": "yellowLight2.2",
+      "hex": "#f8d8b8",
+      "share": 0.0558
     },
     {
-      "name": "accent.bone",
-      "hex": "#f7cd4d"
+      "name": "yellowLight2.3",
+      "hex": "#f8f3e7",
+      "share": 0.0558
     }
   ]
 }

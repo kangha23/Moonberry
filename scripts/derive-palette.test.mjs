@@ -9,7 +9,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { srgbToOklab } from './lib/colour.mjs';
-import { RAMPS, derive } from './derive-palette.mjs';
+import { allocate, derive, familyName } from './derive-palette.mjs';
 
 function samplePoints() {
   const points = [];
@@ -27,22 +27,43 @@ function samplePoints() {
   return points;
 }
 
-test('the ramp table sums to exactly 48', () => {
-  const total = RAMPS.reduce((sum, ramp) => sum + ramp.steps.length, 0);
-  assert.equal(total, 48, `ramps declare ${total} colours`);
+test('allocate hands out exactly the total, however lopsided the weights', () => {
+  for (const weights of [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [486, 127, 123, 62, 55, 39, 38, 33, 22, 9, 5],
+    [1000, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  ]) {
+    const sizes = allocate(weights);
+    assert.equal(sizes.reduce((a, b) => a + b, 0), 48, `${weights} summed wrong`);
+    for (const size of sizes) assert.ok(size >= 3, `a group got ${size}, below the floor`);
+  }
 });
 
-test('every ramp name is unique', () => {
-  const names = RAMPS.flatMap((ramp) => ramp.steps.map((step) => `${ramp.name}.${step}`));
-  assert.equal(new Set(names).size, names.length);
+test('allocate gives the heavier group more', () => {
+  // The whole point: entries follow the art. A family covering half the pixels
+  // earns more steps than one covering half a percent.
+  const [heavy, light] = allocate([900, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]);
+  assert.ok(heavy > light, `heavy got ${heavy}, light got ${light}`);
 });
 
-test('derive returns 48 named colours', () => {
+test('allocate refuses a floor that cannot fit', () => {
+  assert.throws(() => allocate([1, 1, 1], 48, 20));
+});
+
+test('familyName describes hue and lightness, and never claims meaning', () => {
+  assert.equal(familyName(srgbToOklab(20, 20, 22)), 'neutralDark');
+  assert.equal(familyName(srgbToOklab(240, 240, 240)), 'neutralLight');
+  assert.match(familyName(srgbToOklab(74, 122, 48)), /^green/);
+  assert.match(familyName(srgbToOklab(90, 140, 200)), /^(blue|teal)/);
+});
+
+test('derive returns 48 colours with unique names', () => {
   const palette = derive(samplePoints());
   assert.equal(palette.length, 48);
+  const names = palette.map((entry) => entry.name);
+  assert.equal(new Set(names).size, 48, 'names collided');
   for (const entry of palette) {
     assert.match(entry.hex, /^#[0-9a-f]{6}$/, `${entry.name} had hex ${entry.hex}`);
-    assert.ok(entry.name.includes('.'), `${entry.name} is not a ramp.step name`);
   }
 });
 
@@ -51,17 +72,28 @@ test('derive is deterministic', () => {
   assert.deepEqual(derive(points), derive(points));
 });
 
-test('each ramp comes out ordered dark to light', () => {
+test('each group comes out ordered dark to light', () => {
   const palette = derive(samplePoints());
-  for (const ramp of RAMPS) {
-    const entries = palette.filter((e) => e.name.startsWith(`${ramp.name}.`));
-    assert.equal(entries.length, ramp.steps.length);
-    const lightness = entries.map((e) => {
-      const n = parseInt(e.hex.slice(1), 16);
-      return srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255).L;
-    });
+  const groups = new Map();
+  for (const entry of palette) {
+    const group = entry.name.split('.')[0];
+    if (!groups.has(group)) groups.set(group, []);
+    const n = Number.parseInt(entry.hex.slice(1), 16);
+    groups.get(group).push(srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255).L);
+  }
+  for (const [group, lightness] of groups) {
     for (let i = 1; i < lightness.length; i += 1) {
-      assert.ok(lightness[i] >= lightness[i - 1], `${ramp.name} is not ordered at step ${i}`);
+      assert.ok(lightness[i] >= lightness[i - 1], `${group} is not ordered at step ${i}`);
     }
   }
+});
+
+test('no group is a catch-all and none is starved', () => {
+  // The defect this redesign exists to prevent: a hand-placed anchor that was
+  // nearest to everything dark took 49% of the art, while another took 0.52%
+  // and was handed the largest ramp. Data-drawn groups cannot skew that far.
+  const palette = derive(samplePoints());
+  const shares = [...new Set(palette.map((entry) => `${entry.name.split('.')[0]}:${entry.share}`))]
+    .map((row) => Number(row.split(':')[1]));
+  assert.ok(Math.max(...shares) < 0.45, `a group took ${Math.max(...shares)} of the art`);
 });
