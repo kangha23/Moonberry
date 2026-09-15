@@ -32,6 +32,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { encodePng, raster } from './lib/png.mjs';
+import { PALETTE } from './lib/palette-data.mjs';
 
 const OUT_DIR = path.join('public', 'assets', 'lpc');
 const TILE = 32;
@@ -55,22 +56,45 @@ function hash(x, y, seed = 1) {
  * the darkest is the trough — so where two tiles meet, two troughs meet, and
  * the join disappears into a furrow instead of announcing itself.
  */
+/**
+ * Soil, in the two states a plot can be in.
+ *
+ * The tones are no longer written here. They are ramp positions in
+ * `art/palette.json`, so the furrows in a field are the same browns as the
+ * planks on the farmhouse and the trunk of a tree, and a change to the ramp
+ * moves all three together.
+ *
+ * The names below are the nearest palette entry to each tone this table used
+ * to hold, measured in OkLab and picked mechanically — not hand-tuned to
+ * look right, because the point of a locked palette is that nothing gets to
+ * pick its own colour any more. Several tones land on the same entry: dry's
+ * `low`, `base` and `clod` are all nearest to `clothWarm.2`, and its `high`
+ * and `crown` both land on `earth.0`; wet's `low`, `base` and `clod` all land
+ * on `wood.0`, and its `high` and `crown` both land on `clothWarm.2`. That
+ * collapses each ramp from six named tones to three rendered colours — a
+ * shallower gradient than the profile below was written for, and a sign that
+ * a 48-colour palette does not carry a soil ramp as fine as the one this
+ * script used to draw for itself. Wet soil in particular is not a second
+ * brown ramp of its own: every one of its tones turned out nearest to an
+ * entry in `wood` or `clothWarm` rather than to a `wet`-flavoured group,
+ * which is the kind of sharing a locked palette is for.
+ */
 const SOIL = {
   dry: {
-    trough: '#5b3c22',
-    low: '#6d4a2b',
-    base: '#7d5633',
-    high: '#8f6540',
-    crown: '#9d7049',
-    clod: '#6a4626',
+    trough: PALETTE['wood.0'],
+    low: PALETTE['clothWarm.2'],
+    base: PALETTE['clothWarm.2'],
+    high: PALETTE['earth.0'],
+    crown: PALETTE['earth.0'],
+    clod: PALETTE['clothWarm.2'],
   },
   wet: {
-    trough: '#3a2718',
-    low: '#48331f',
-    base: '#553d27',
-    high: '#63492f',
-    crown: '#6f5336',
-    clod: '#402c1b',
+    trough: PALETTE['warmDeep.3'],
+    low: PALETTE['wood.0'],
+    base: PALETTE['wood.0'],
+    high: PALETTE['clothWarm.2'],
+    crown: PALETTE['clothWarm.2'],
+    clod: PALETTE['wood.0'],
   },
 };
 
@@ -121,10 +145,22 @@ function drawSoil(image, wet, variant) {
   if (!wet) return;
   // Water lying in the troughs, which is what tells a watered bed from a dry
   // one across a field. In the furrow, never on the crown — water runs down.
+  //
+  // Neither of these two is nearest to anything in the `water` group: the
+  // highlight is closer to `grass.2` and the shadow beside it to `water.1`,
+  // both a little past the 0.05 OkLab threshold this migration was told to
+  // flag rather than paper over (0.056 and 0.056). That is a real gap — a
+  // muted teal-grey puddle glint is not a colour this 48-entry palette
+  // actually carries — but the nearest entries are still teal-toned, so the
+  // pixels read as a wet glint rather than as an obviously wrong hue.
+  const PUDDLE_HIGHLIGHT = PALETTE['grass.2'];
+  const PUDDLE_SHADOW = PALETTE['water.1'];
   for (let i = 0; i < 7; i += 1) {
     const x = 3 + Math.floor(hash(i, 29, variant) * (TILE - 8));
     const row = Math.floor(hash(i, 41, variant) * 4) * 8;
-    for (let k = 0; k < 3; k += 1) image.set(x + k, row, k === 1 ? '#5f8b97' : '#4b6d78');
+    for (let k = 0; k < 3; k += 1) {
+      image.set(x + k, row, k === 1 ? PUDDLE_HIGHLIGHT : PUDDLE_SHADOW);
+    }
   }
 }
 
@@ -154,15 +190,44 @@ function drawSoil(image, wet, variant) {
  * of an old furrow. The signal lives at the scale of the field rather than of
  * the tile, which is where it belongs.
  */
+/**
+ * As with `SOIL`, every tone here is now a lookup into `art/palette.json`
+ * rather than a literal, named for the palette entry nearest it in OkLab.
+ *
+ * Two things this measurement turned up are worth flagging rather than
+ * quietly accepting.
+ *
+ * First, `grass` and `ridge` both land on `grass.3`, and `dark` and `furrow`
+ * both land on `grass.1` — so the ridge band that is supposed to sit a shade
+ * lighter than the surrounding grass, and the furrow band a shade darker
+ * than the dark speckle, both collapse onto the tone next to them. The
+ * "ghost of an old furrow" this tile draws will render with its lit shoulder
+ * invisible against the grass around it; only the dark trough side still
+ * reads as a furrow. That is the palette not carrying enough resolution
+ * in the grass ramp for this effect, not a bug in the lookup.
+ *
+ * Second, `bright` — the highlight on each grass blade — is nearest to
+ * `skin.1` at d=0.101, over twice the 0.05 flag threshold and the worst of
+ * all 23 literals this file used to hold. `#9ccc63` is a bright yellow-green
+ * and the palette simply has no such colour; the nearest thing to it is a
+ * yellow skin tone. Per the migration brief this is used anyway, mechanically,
+ * rather than swapped for a hand-picked "close enough" green — but it is a
+ * real finding about the palette, not a settled matter: a bright blade
+ * highlight rendering in a yellow closer to skin than to any green is worth
+ * a second look before this palette is trusted for foliage highlights.
+ */
 const WILD = {
-  grass: '#6e9a45',
-  dark: '#5b8038',
-  light: '#8ab857',
-  ridge: '#7ba44e',
-  furrow: '#5e8639',
-  blade: '#46702f',
-  bright: '#9ccc63',
-  soil: '#8a8244',
+  grass: PALETTE['grass.3'],
+  dark: PALETTE['grass.1'],
+  light: PALETTE['grass.4'],
+  ridge: PALETTE['grass.3'],
+  furrow: PALETTE['grass.1'],
+  blade: PALETTE['foliage.4'],
+  bright: PALETTE['skin.1'],
+  soil: PALETTE['earth.0'],
+  // The darker fleck beside a turned clod, previously its own literal.
+  // Nearest is `clothWarm.2` at d=0.085 — also above the flag threshold.
+  soilShade: PALETTE['clothWarm.2'],
 };
 
 function drawWild(image, variant) {
@@ -203,7 +268,7 @@ function drawWild(image, variant) {
   const cy = 3 + Math.floor(hash(9, 9, variant) * (TILE - 8));
   image.set(cx, cy, WILD.soil);
   image.set(cx + 1, cy, WILD.soil);
-  image.set(cx, cy + 1, '#6f6a34');
+  image.set(cx, cy + 1, WILD.soilShade);
 }
 
 /** How many drawings of each. See the note at the top of the file. */
