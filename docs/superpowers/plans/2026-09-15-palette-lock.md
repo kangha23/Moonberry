@@ -348,22 +348,36 @@ git add public/assets/lpc/
 git commit -m "chore(art): commit in-flight art changes before the palette work"
 ```
 
-- [ ] **Step 2: Copy the art**
+- [ ] **Step 2: Copy the art — but not the art this repo generates**
+
+`art/raw/` holds **imported** art only. `scripts/generate-plot-art.mjs` writes
+nine PNGs straight into `public/assets/lpc/` — `plot-tilled{,-2,-3}`,
+`plot-watered{,-2,-3}`, `plot-wild{,-2,-3}` — and those are code output, not
+originals. Copying them in would give those nine paths two producers: the
+quantiser writing a raw copy, and `npm run generate:plots` writing from palette
+names. Whichever ran last would win, so a later `palette:apply` would silently
+revert Task 8's migration.
+
+It also keeps flat procedural soil from voting on a palette that exists to
+replace it.
 
 ```bash
 mkdir -p art/raw/lpc
-cp public/assets/lpc/*.png art/raw/lpc/
+for f in public/assets/lpc/*.png; do
+  case "$(basename "$f")" in plot-*) continue ;; esac
+  cp "$f" art/raw/lpc/
+done
 cp public/assets/lpc/CREDITS.md art/raw/lpc/
 cp -r public/assets/lpc/credits art/raw/lpc/
 ```
 
-- [ ] **Step 3: Verify the copies are byte-identical**
+- [ ] **Step 3: Verify the copies are byte-identical and the plots are absent**
 
-Run:
 ```bash
 for f in art/raw/lpc/*.png; do cmp "$f" "public/assets/lpc/$(basename $f)" || echo "DIFFERS: $f"; done
+ls art/raw/lpc/plot-*.png 2>/dev/null && echo "ERROR: generated plot art must not be in art/raw"
 ```
-Expected: no output.
+Expected: no output from either line beyond a "No such file" for the glob.
 
 - [ ] **Step 4: Repoint the importer**
 
@@ -1089,7 +1103,9 @@ import("./scripts/lib/png.mjs").then(({decodePng})=>{
 const fs=require("fs");
 const hexes=new Set(require("./art/palette.json").colours.map(c=>parseInt(c.hex.slice(1),16)));
 let bad=0;
-for(const f of fs.readdirSync("public/assets/lpc").filter(n=>n.endsWith(".png"))){
+// plot-*.png is skipped: it is written by generate-plot-art.mjs, not by the
+// quantiser, and Task 8 is what brings it onto the palette. Task 13 covers it.
+for(const f of fs.readdirSync("public/assets/lpc").filter(n=>n.endsWith(".png")&&!n.startsWith("plot-"))){
   const {width:w,height:h,pixels}=decodePng(fs.readFileSync("public/assets/lpc/"+f));
   const off=new Set();
   for(let i=0;i<w*h;i++){ if(pixels[i*4+3]<8)continue;
@@ -1650,9 +1666,15 @@ app code, or from `scripts/lib/palette-data.mjs` in a build script. A hex
 literal anywhere in `src/` or `scripts/` fails `npm test`, and so does a PNG in
 `public/assets/` carrying a colour the palette does not have.
 
-To change a colour, edit `art/palette.json`, then run:
+To change a colour, edit `art/palette.json`, then run all three of:
 
-    npm run palette:module && npm run palette:apply && npm run generate:plots
+    npm run palette:module    # the typed module the app imports
+    npm run palette:apply     # re-quantises the imported art
+    npm run generate:plots    # redraws the soil tiles
+
+They write to different files and can run in any order. `art/raw/` holds
+imported art only — nothing this repo generates goes in there, which is what
+keeps `palette:apply` and `generate:plots` from fighting over the same paths.
 ```
 
 - [ ] **Step 6: Commit**
