@@ -17,6 +17,7 @@ export const ASH: NpcDef = {
   blurb: 'Em trai của Juniper. Ra ngoài bất kể thời tiết, và ca cẩm về thời tiết.',
   texture: 'npc-ash',
   sheet: 'player-sheet',
+  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
   tint: 0x8fb6e0,
   birthday: { season: 'Winter', day: 8 },
   defaultGiftReaction: 'disliked',

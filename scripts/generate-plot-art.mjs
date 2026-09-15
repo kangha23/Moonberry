@@ -268,6 +268,16 @@ function drawWild(image, variant) {
 /** How many drawings of each. See the note at the top of the file. */
 export const PLOT_VARIANTS = 3;
 
+/**
+ * The three base names this file writes, before the `-2`/`-3` variant suffix.
+ *
+ * Exported so `apply-palette.mjs`'s orphan check can compute the exact set of
+ * filenames this generator owns instead of hand-typing a second copy of this
+ * list next to `PLOT_VARIANTS` — see the comment on `GENERATED_PLOT_NAMES`
+ * there for why that second copy used to exist.
+ */
+export const PLOT_BASE_NAMES = ['plot-tilled', 'plot-watered', 'plot-wild'];
+
 function write(name, draw) {
   const image = raster(TILE, TILE);
   draw(image);

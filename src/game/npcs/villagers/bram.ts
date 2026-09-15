@@ -20,6 +20,7 @@ export const BRAM: NpcDef = {
   blurb: 'Người bán gia súc. Nhớ tên từng con vật đã đi qua tay mình.',
   texture: 'npc-bram',
   sheet: 'rowan-sheet',
+  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
   tint: 0xb8a06a,
   birthday: { season: 'Summer', day: 21 },
   defaultGiftReaction: 'neutral',

@@ -15,6 +15,7 @@ export const TOBIAS: NpcDef = {
   blurb: 'Trông sạp chợ. Biết giá của mọi thứ, kể cả bác.',
   texture: 'npc-tobias',
   sheet: 'player-sheet',
+  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
   tint: 0xe0c27a,
   birthday: { season: 'Summer', day: 21 },
   defaultGiftReaction: 'liked',

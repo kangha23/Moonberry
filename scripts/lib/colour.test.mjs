@@ -9,7 +9,9 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { distance, kmeans, nearestIndex, oklabToSrgb, srgbToOklab } from './colour.mjs';
+import {
+  distance, hexToOklab, hexToRgb, kmeans, nearestIndex, oklabToHex, oklabToSrgb, srgbToOklab, unpackRgb,
+} from './colour.mjs';
 
 test('sRGB survives a round trip through OkLab', () => {
   for (const rgb of [[0, 0, 0], [255, 255, 255], [125, 86, 51], [74, 122, 48], [31, 23, 16]]) {
@@ -94,4 +96,24 @@ test('kmeans returns sorted input when fewer points than k', () => {
   // [black, grey, white], and this check would fail.
   assert.ok(result[0].L <= result[1].L, 'first entry darker than second');
   assert.ok(result[1].L <= result[2].L, 'second entry darker than third');
+});
+
+test('unpackRgb splits a packed 24-bit int into its three bytes', () => {
+  assert.deepEqual(unpackRgb(0x7d5633), [0x7d, 0x56, 0x33]);
+  assert.deepEqual(unpackRgb(0x000000), [0, 0, 0]);
+  assert.deepEqual(unpackRgb(0xffffff), [255, 255, 255]);
+});
+
+test('hexToRgb parses the same shape unpackRgb needs, from a "#rrggbb" string', () => {
+  assert.deepEqual(hexToRgb('#7d5633'), [0x7d, 0x56, 0x33]);
+});
+
+test('hexToOklab and oklabToHex are exact inverses of each other', () => {
+  for (const hex of ['#000000', '#ffffff', '#7d5633', '#4a90d9']) {
+    assert.equal(oklabToHex(hexToOklab(hex)), hex, `${hex} did not round-trip`);
+  }
+});
+
+test('hexToOklab agrees with srgbToOklab on the same colour', () => {
+  assert.deepEqual(hexToOklab('#7d5633'), srgbToOklab(0x7d, 0x56, 0x33));
 });

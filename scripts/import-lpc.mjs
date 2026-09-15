@@ -326,7 +326,18 @@ function main(argv) {
 
 // Only when run as a command. Imported — by the tests — this file is just the
 // functions above.
-if (process.argv[1] && import.meta.filename === path.resolve(process.argv[1])) {
+//
+// `process.argv[1].endsWith('import-lpc.mjs')`, matching the idiom every
+// other generator in this directory uses, not the exact-path comparison this
+// used to be. `import.meta.filename === path.resolve(process.argv[1])` is
+// prefix-blind in the wrong direction from `endsWith`: it looks precise, but
+// it breaks under anything that changes how the entry path resolves —
+// a symlinked checkout, a different working directory, `node --experimental-*`
+// changing what `argv[1]` holds — where `endsWith` degrades gracefully.
+// Standardising on one idiom also means there is only one guard pattern to
+// audit for the "does importing this file run main()?" question this file's
+// own comment above is answering.
+if (process.argv[1] && process.argv[1].endsWith('import-lpc.mjs')) {
   try {
     process.exit(main(process.argv.slice(2)));
   } catch (error) {

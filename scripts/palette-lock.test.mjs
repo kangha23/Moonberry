@@ -15,16 +15,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
-import { distance, nearestIndex, srgbToOklab } from './lib/colour.mjs';
+import { distance, hexToOklab, nearestIndex, srgbToOklab, unpackRgb } from './lib/colour.mjs';
 import { decodePng } from './lib/png.mjs';
-import { loadPalette, quantise } from './apply-palette.mjs';
+import { findOrphans, loadPalette, quantise } from './apply-palette.mjs';
 
 const { colours } = JSON.parse(fs.readFileSync(path.join('art', 'palette.json'), 'utf8'));
 const ALLOWED = new Set(colours.map((c) => Number.parseInt(c.hex.slice(1), 16)));
-const LAB = colours.map((c) => {
-  const n = Number.parseInt(c.hex.slice(1), 16);
-  return srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255);
-});
+const LAB = colours.map((c) => hexToOklab(c.hex));
 
 /**
  * Colours that are not colour choices, so the palette does not get to veto
@@ -43,22 +40,36 @@ const UTILITY_TINTS = new Set([0xffffff, 0x000000]);
 /**
  * The five villager identity tints.
  *
- * A Phaser tint is a multiplier: what reaches the screen is
- * `spriteColour x tint`, and that product is neither the sprite's palette
- * colour nor the tint itself. Requiring the tint value to already be a
- * palette member is therefore a category error, not a loophole being
- * exploited — the tint is not a colour that gets drawn, it is an operation
- * applied to one that already is (the LPC sheet, which is on-palette).
+ * This is NOT exempt because a Phaser tint is a multiplier (`spriteColour x
+ * tint`) rather than a drawn colour. That argument proves too much: it is
+ * true of every tint in the codebase, verbatim, and Task 12 spent a whole
+ * pass converting 28 of the other 33 tints in `src/` to `tint('group.N')`
+ * precisely because being a multiplier did not stop *them* from having to
+ * name a palette member. An argument that would justify exempting all 33
+ * cannot be the reason only 5 are exempt — so it isn't the real reason, and
+ * an unfalsifiable "category error" claim was worse than no reason at all.
  *
- * It is also not optional to relax this by picking the *nearest* palette
- * colour instead of allowlisting the exact value. Measured in OkLab, ash's
- * #8fb6e0 (pale blue) and juniper's #9fd9a8 (pale green) both land nearest
- * to the same palette entry, light.6 (#acbfb0, a sage grey roughly
- * equidistant between them). Snapping either tint to its nearest palette
- * colour would make two villagers share a tint and therefore share a look —
- * defeating the one job an identity tint has, which is telling villagers
- * apart at a glance. So these five are named individually rather than
- * matched by distance.
+ * The real, falsifiable reason: this palette has no pale blue and no pale
+ * green, so it cannot express five mutually distinguishable villager
+ * identities, and an identity tint that isn't distinguishable has failed at
+ * its one job. Measured in OkLab, ash's `#8fb6e0` (pale blue) and juniper's
+ * `#9fd9a8` (pale green) both land nearest to the same palette entry,
+ * `light.6` (`#acbfb0`, a sage grey roughly equidistant between them) —
+ * snapping either to its nearest palette colour, or to any single shared
+ * substitute, would make two villagers share a tint and therefore share a
+ * look. That is a fact about the current 48 colours, not about what a
+ * Phaser tint fundamentally is, and it comes with its own expiry: if the
+ * palette ever gains a genuine pale blue and pale green (a re-derivation
+ * that widens the `light` group, say), this exemption should end and all
+ * five villagers should convert to `tint('group.N')` like every other
+ * sprite. Until then, the five exact values are allowlisted rather than
+ * matched by distance, because snapping to nearest is exactly the move that
+ * collapses two of them onto `light.6`.
+ *
+ * Kept in sync with `src/game/npcs/villagers/*.ts` by the assertion right
+ * below this list, not by hand alone: a retint that changes a villager's
+ * `tint:` value without updating this list would otherwise leave a stale
+ * entry here that nothing ever objects to.
  */
 const VILLAGER_TINTS = new Set([
   0x8fb6e0, // ash
@@ -69,7 +80,7 @@ const VILLAGER_TINTS = new Set([
 ]);
 
 function nearestName(n) {
-  const lab = srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255);
+  const lab = srgbToOklab(...unpackRgb(n));
   const i = nearestIndex(lab, LAB);
   return `${colours[i].name} (${colours[i].hex}, d=${distance(lab, LAB[i]).toFixed(3)})`;
 }
@@ -106,9 +117,47 @@ function walk(dir, match, found = []) {
  * does not build colours out of string concatenation, and a crude stripper
  * that occasionally over-strips a comment is far safer than a precise one
  * that under-strips and lets a real literal hide inside `/* ... *\/`.
+ *
+ * The line-comment branch is `(?<![:\w])\/\/.*$`, not a bare `\/\/.*$`. A bare
+ * one has a live hole: `scripts/generate-assets.mjs` builds two SVGs whose
+ * opening tag is `<svg xmlns="http://www.w3.org/2000/svg" ...>`, and `//` in
+ * `http://` reads as a line comment to a stripper that doesn't know URLs
+ * exist — every character after it on that line, `fill="..."` included were
+ * one added there, vanishes before the scan below ever sees it. That is not
+ * hypothetical: a reviewer appended `fill="#123456"` right after the URL on
+ * that exact line and this test passed. The negative lookbehind excludes a
+ * `//` immediately preceded by `:` (the URL scheme separator) or any word
+ * character, which covers `http://` and `https://` without touching a real
+ * `// comment`, which is always preceded by whitespace or line-start.
  */
 function stripComments(source) {
-  return source.replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, '');
+  return source.replace(/\/\*[\s\S]*?\*\/|(?<![:\w])\/\/.*$/gm, '');
+}
+
+/**
+ * Every value in `VILLAGER_TINTS` is still somebody's `tint:` in
+ * `src/game/npcs/villagers/`.
+ *
+ * The allowlist above is a second source of truth for those five hexes, with
+ * nothing structural tying it to the villager files themselves — a retint
+ * that changes one file's `tint:` value has no way to make the Set above
+ * notice its old entry is now unused. Checked once, at module load, so a
+ * stale entry (one that widens the exemption past what any villager actually
+ * needs) fails immediately instead of sitting there forever.
+ */
+{
+  const villagerSource = walk(path.join('src', 'game', 'npcs', 'villagers'), /\.ts$/)
+    .map((file) => fs.readFileSync(file, 'utf8'))
+    .join('\n');
+  const staleTints = [...VILLAGER_TINTS].filter(
+    (n) => !villagerSource.includes(`0x${n.toString(16)}`),
+  );
+  assert.deepEqual(
+    staleTints.map((n) => `#${n.toString(16).padStart(6, '0')}`),
+    [],
+    'VILLAGER_TINTS in scripts/palette-lock.test.mjs has an entry no villager file uses any more — ' +
+      'remove it, since a stale exemption only widens what the lock lets through.',
+  );
 }
 
 test('every pixel the game loads is on the palette', () => {
@@ -135,6 +184,29 @@ test('every pixel the game loads is on the palette', () => {
       );
     }
   }
+
+  // .svg is text, not pixels, so it cannot go through decodePng — but it is
+  // still a committed asset under public/assets/, and a hex literal in one
+  // is exactly as much a colour the game draws as a PNG pixel is. Before
+  // this, .png was the only extension the walk matched, so
+  // `public/assets/pixel/*.svg` (written by generate-assets.mjs) was
+  // unscanned by both the pixel check here and the source-literal check
+  // below — neither one owned it. This closes that gap from the pixel side.
+  for (const file of walk(path.join('public', 'assets'), /\.svg$/)) {
+    const source = fs.readFileSync(file, 'utf8');
+    const off = new Map();
+    for (const match of source.matchAll(/#([0-9a-fA-F]{6})\b/g)) {
+      const n = Number.parseInt(match[1], 16);
+      if (!ALLOWED.has(n) && !UTILITY_TINTS.has(n)) off.set(match[0], (off.get(match[0]) ?? 0) + 1);
+    }
+    if (off.size > 0) {
+      failures.push(
+        `${file}: ${off.size} off-palette hex literal(s): ` +
+          [...off.keys()].map((h) => `${h} -> ${nearestName(Number.parseInt(h.slice(1), 16))}`).join('; '),
+      );
+    }
+  }
+
   assert.deepEqual(failures, [], `\n${failures.join('\n')}\n\nRebuild with: npm run palette:apply`);
 });
 
@@ -154,7 +226,21 @@ test('no source file names a colour the palette does not have', () => {
       const n = Number.parseInt(match[1] ?? match[2], 16);
       if (ALLOWED.has(n) || UTILITY_TINTS.has(n) || VILLAGER_TINTS.has(n)) continue;
       const line = source.slice(0, match.index).split('\n').length;
-      failures.push(`${file}:${line}  ${match[0]}  -> use ${nearestName(n)}`);
+      // A sixth villager needing an identity tint hits this exact failure,
+      // and "use light.6" — the message every other file gets — is precisely
+      // the fix VILLAGER_TINTS exists to reject: light.6 is where both the
+      // pale blue and the pale green villager tints already collide. Point
+      // at the allowlist and its reasoning instead of at a nearest-colour
+      // suggestion that would silently recreate the bug it was added to fix.
+      const isVillagerFile = file.split(path.sep).join('/').includes('npcs/villagers/');
+      failures.push(
+        isVillagerFile
+          ? `${file}:${line}  ${match[0]}  -> not on the palette and not in VILLAGER_TINTS. If this is a ` +
+            'new or changed identity tint, read the comment on VILLAGER_TINTS in ' +
+            'scripts/palette-lock.test.mjs before picking a replacement — "use the nearest palette ' +
+            'colour" is the exact mistake that comment exists to prevent.'
+          : `${file}:${line}  ${match[0]}  -> use ${nearestName(n)}`,
+      );
     }
   }
   assert.deepEqual(
@@ -202,8 +288,10 @@ test('public/assets/lpc/ is what the committed palette quantises art/raw/lpc/ in
   const outDir = path.join('public', 'assets', 'lpc');
 
   const failures = [];
+  const sourceNames = new Set();
   for (const file of walk(rawDir, /\.png$/)) {
     const name = path.relative(rawDir, file);
+    sourceNames.add(name);
     const outFile = path.join(outDir, name);
     if (!fs.existsSync(outFile)) {
       failures.push(`${name}: has a source in art/raw/lpc/ but no matching file in public/assets/lpc/`);
@@ -234,6 +322,23 @@ test('public/assets/lpc/ is what the committed palette quantises art/raw/lpc/ in
       failures.push(`${name}: ${diff} pixels differ from art/raw/lpc/ quantised through art/palette.json`);
     }
   }
+
+  // The converse of the loop above. That loop walks art/raw/lpc/ and asks
+  // "does every source have an output" — it says nothing about a file
+  // sitting in public/assets/lpc/ with no source at all. A rename in
+  // art/raw/lpc/ (tree.png -> oak-tree.png, say) leaves exactly that: an
+  // orphaned, still-on-palette output that quantises nothing anymore and
+  // that the loop above has no way to notice, because it never looks at
+  // outDir except to check a name it already expects to find. findOrphans
+  // (from apply-palette.mjs, the same function `npm run palette:apply` warns
+  // with) already knows how to tell a genuine orphan from one of the nine
+  // plot-*.png files generate-plot-art.mjs writes with no raw source by
+  // design — reusing it here means this check can't drift from what the CLI
+  // itself considers stale.
+  for (const orphan of findOrphans(outDir, sourceNames)) {
+    failures.push(`${orphan}: sits in public/assets/lpc/ with no source in art/raw/lpc/ (a rename left it behind?)`);
+  }
+
   assert.deepEqual(
     failures,
     [],

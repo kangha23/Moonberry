@@ -59,6 +59,36 @@ export function distance(p, q) {
   return Math.hypot(p.L - q.L, p.a - q.a, p.b - q.b);
 }
 
+/**
+ * Splits a packed 24-bit `0xRRGGBB` integer into its three channel bytes.
+ *
+ * This exact triple of shifts and masks used to be typed out separately in
+ * five places across `derive-palette.mjs`, its test, and `palette-lock.test.mjs`
+ * (apply-palette.mjs had its own copy too) — every one of them existing only
+ * to feed `srgbToOklab`. A file whose entire job is colour maths is the right
+ * place for the one copy; a caller with a packed int (a pixel key from a
+ * histogram, say) uses this directly, and `hexToRgb`/`hexToOklab` below build
+ * on it for the far more common case of a `"#rrggbb"` string.
+ */
+export function unpackRgb(n) {
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+/** `"#rrggbb"` -> `[r, g, b]`. */
+export function hexToRgb(hex) {
+  return unpackRgb(Number.parseInt(hex.slice(1), 16));
+}
+
+/** `"#rrggbb"` -> OkLab, the shape almost every caller actually wants a hex in. */
+export function hexToOklab(hex) {
+  return srgbToOklab(...hexToRgb(hex));
+}
+
+/** OkLab -> `"#rrggbb"`, the exact inverse of `hexToOklab`. */
+export function oklabToHex(lab) {
+  return `#${oklabToSrgb(lab).map((n) => n.toString(16).padStart(2, '0')).join('')}`;
+}
+
 /** Index of the closest palette entry. Linear: 48 entries is nothing. */
 export function nearestIndex(lab, palette) {
   let best = 0;

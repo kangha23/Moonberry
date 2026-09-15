@@ -19,6 +19,7 @@ export const MAEVE: NpcDef = {
   blurb: 'Thợ rèn. Sẽ kể cho cậu nghe nông cụ của cậu hỏng ở đâu, rất dài.',
   texture: 'npc-maeve',
   sheet: 'player-sheet',
+  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
   tint: 0xc98a8a,
   birthday: { season: 'Autumn', day: 3 },
   defaultGiftReaction: 'neutral',

@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { distance, srgbToOklab } from './lib/colour.mjs';
+import { distance, hexToOklab, srgbToOklab } from './lib/colour.mjs';
 import { encodePng, raster } from './lib/png.mjs';
 import {
   allocate, carryNames, derive, excludeNearPinned, familyName, histogram, pinnedRamp,
@@ -25,8 +25,7 @@ function realRamps() {
 }
 
 function hueAndLightness(hex) {
-  const n = Number.parseInt(hex.slice(1), 16);
-  const lab = srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255);
+  const lab = hexToOklab(hex);
   const hue = ((Math.atan2(lab.b, lab.a) * 180) / Math.PI + 360) % 360;
   return { ...lab, hue };
 }
@@ -98,8 +97,7 @@ test('each group comes out ordered dark to light', () => {
   for (const entry of palette) {
     const group = entry.name.split('.')[0];
     if (!groups.has(group)) groups.set(group, []);
-    const n = Number.parseInt(entry.hex.slice(1), 16);
-    groups.get(group).push(srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255).L);
+    groups.get(group).push(hexToOklab(entry.hex).L);
   }
   for (const [group, lightness] of groups) {
     for (let i = 1; i < lightness.length; i += 1) {
@@ -141,10 +139,7 @@ test('no two palette entries are closer than the eye can resolve', () => {
   // `art/raw` is a real, separate question — it belongs to the palette-lock
   // test, not here.)
   const { colours } = JSON.parse(fs.readFileSync(PALETTE_FILE, 'utf8'));
-  const lab = colours.map((entry) => {
-    const n = Number.parseInt(entry.hex.slice(1), 16);
-    return srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255);
-  });
+  const lab = colours.map((entry) => hexToOklab(entry.hex));
   for (let i = 0; i < lab.length; i += 1) {
     for (let j = i + 1; j < lab.length; j += 1) {
       const d = distance(lab[i], lab[j]);
@@ -223,6 +218,74 @@ test('carryNames reports how far each entry moved in OkLab', () => {
   assert.ok(result.moved[0].distance > 0.9, `expected a large move, got ${result.moved[0].distance}`);
 });
 
+test('carryNames carries every field on the existing entry, not just name', () => {
+  // The regression this guards: an earlier version of carryNames merged as
+  // `{ ...derivedEntry, name: oldEntry.name }` — keep the derived object's
+  // own fields, graft one name onto it. That is silently wrong the moment
+  // the human copy has a field `derive()` itself never produces, which is
+  // exactly the shape of `note` on `art/palette.json`'s `building.0` and
+  // `light.0`. This fixture puts a `note` (and a second made-up field, to
+  // prove it isn't special-cased) on the existing entry and checks it
+  // survives the merge untouched.
+  const existing = [
+    { name: 'water.0', hex: '#156c98', share: 0.0432, note: 'why this one keeps its name', extra: 'anything' },
+  ];
+  const derived = [{ name: 'blueMid.0', hex: '#17709c', share: 0.041 }];
+  const result = carryNames(existing, derived);
+  assert.deepEqual(result.colours, [
+    { name: 'water.0', hex: '#17709c', share: 0.041, note: 'why this one keeps its name', extra: 'anything' },
+  ]);
+});
+
+test('carrying names over the committed palette is a fixed point for every field, not just name', () => {
+  // `art/palette.json` itself carries a `note` on `building.0` and `light.0`
+  // — see the previous test for why that field is the one a merge bug would
+  // drop silently. This is the same claim checked against the real
+  // committed file instead of a small fixture, and — importantly — against
+  // an honest stand-in for what `derive()` actually hands `carryNames` on a
+  // live re-run: `derive()`'s real output only ever has `{name, hex, share}`,
+  // never `note` or anything else a human added by hand, so `derived` here
+  // strips every field but those three. Passing the committed file as
+  // `existing` unchanged and this stripped copy as `derived` is a fixed
+  // point exactly when carryNames preserves every field on the existing
+  // entry: names, hexes and shares already agree, and structure is
+  // identical by construction, so `result.colours` can only fail to equal
+  // `existing` byte-for-byte if a field — `note` above all — got dropped in
+  // the merge. Deleting either `note` from `existing` here and re-running is
+  // the direct demonstration: the assertion still expects the note that
+  // `derived` never had, so it fails the moment the merge stops carrying it.
+  const { colours: existing } = JSON.parse(fs.readFileSync(PALETTE_FILE, 'utf8'));
+  const derived = existing.map(({ name, hex, share }) => ({ name, hex, share }));
+  const result = carryNames(existing, derived);
+  assert.equal(result.structureChanged, false);
+  assert.deepEqual(result.colours, existing);
+});
+
+test('pinnedRamp refuses to invent steps beyond what from provides', () => {
+  // Before this guard, `steps` greater than `from.length` fell into the
+  // `steps >= points.length` branch and quietly returned every point sorted
+  // — a ramp shorter than art/ramps.json declared, with nothing anywhere
+  // noticing the shortfall. Pinning exists precisely so a ramp is the exact
+  // tones an artist chose; silently shipping fewer of them than asked for is
+  // the same category of quiet loss `carryNames` was just checked against.
+  assert.throws(
+    () => pinnedRamp({ name: 'soil', steps: 3, from: ['#111111', '#222222'] }),
+    /steps \(3\) exceeds from\.length \(2\)/,
+  );
+});
+
+test('maxSpacedSubset (via pinnedRamp) refuses a combination count past the sanity limit', () => {
+  // C(30, 15) is a little over 155 million — nothing an exhaustive search
+  // should ever attempt inside a test run. This proves the guard actually
+  // fires before the search starts, rather than merely existing in the
+  // source and never being exercised.
+  const from = Array.from({ length: 30 }, (_, i) => `#${(i * 823 % 0xffffff).toString(16).padStart(6, '0')}`);
+  assert.throws(
+    () => pinnedRamp({ name: 'huge', steps: 15, from }),
+    /C\(30, 15\) = 155117520 combinations/,
+  );
+});
+
 test('pinned soil ramp: 7 entries, one hue family, strictly ascending, evenly spaced', () => {
   // `soil` used to be two ramps (`soil`, `soilWet`) because a human could
   // keep dry and wet earth apart by eye. They overlapped in lightness the
@@ -250,6 +313,20 @@ test('pinned soil ramp: 7 entries, one hue family, strictly ascending, evenly sp
     const d = distance(lab[i], lab[i - 1]);
     assert.ok(d >= 0.03, `soil.${i - 1} and soil.${i} are only ${d.toFixed(4)} apart`);
   }
+});
+
+test('the pinned soil hexes are exactly the artist\'s declared tones, not near-misses', () => {
+  // The whole premise of pinning is that `soil`'s hexes are the exact tones
+  // in art/ramps.json's `from`, chosen by `maxSpacedSubset`, never averaged
+  // or nudged. A regression that swapped `maxSpacedSubset` for something
+  // that merely lands close (kmeans, say, which this file's own header notes
+  // was tried and rejected for exactly this reason) would still pass every
+  // hue and spacing check above, because a near-miss can be just as
+  // well-spaced as the real tone. Only checking membership in `from` catches
+  // that a value was invented rather than selected.
+  const ramp = realRamps().find((r) => r.name === 'soil');
+  const soil = derive(samplePoints(), realRamps()).filter((entry) => entry.name.startsWith('soil.'));
+  assert.ok(soil.every((entry) => ramp.from.includes(entry.hex)));
 });
 
 test("soil's ramp size is exactly what its source tones can support", () => {
@@ -291,8 +368,10 @@ test('derive with the real ramps still returns 48 unique, non-duplicate entries'
 
 test('pinned ramps do not depend on the order points arrive in', () => {
   // The pinned half never reads `points` at all, so reversing the derived
-  // half's input must leave `soil` and `soilWet` byte-for-byte identical even
-  // though it's free to change the derived groups.
+  // half's input must leave `soil` byte-for-byte identical even though it's
+  // free to change the derived groups. (Once two ramps, `soil` and `soilWet`
+  // — see the note on the test above — merged into the one `soil` ramp
+  // checked here; there is no second pinned ramp left to check.)
   const points = samplePoints();
   const ramps = realRamps();
   const forwards = derive(points, ramps);

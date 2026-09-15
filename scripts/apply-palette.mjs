@@ -12,8 +12,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { nearestIndex, srgbToOklab } from './lib/colour.mjs';
+import { hexToRgb, nearestIndex, srgbToOklab } from './lib/colour.mjs';
+import { readPaletteFile } from './lib/palette-data.mjs';
 import { decodePng, encodeImage } from './lib/png.mjs';
+import { PLOT_BASE_NAMES, PLOT_VARIANTS } from './generate-plot-art.mjs';
 
 const IN_DIR = path.join('art', 'raw', 'lpc');
 const OUT_DIR = path.join('public', 'assets', 'lpc');
@@ -48,64 +50,19 @@ export function quantise(image, palette) {
   return { width: image.width, height: image.height, pixels };
 }
 
-/** How the fix for every case below is spelled, since the palette is generated. */
-const REGENERATE_HINT = 'Run `npm run palette:derive` to regenerate it.';
-
 /**
- * Loads and validates `art/palette.json`.
+ * Loads `art/palette.json` as OkLab points ready for nearest-colour search.
  *
- * This script rewrites every piece of art in the game from whatever this
- * function returns, so a malformed entry has to fail loudly here rather than
- * degrade quietly downstream. Two ways it degrades matter enough to guard
- * against by name:
- *
- *   - A hex missing its `#` (or otherwise off-shape) is not rejected by
- *     `parseInt` — `hex.slice(1)` just drops a different character and
- *     produces a plausible-but-wrong RGB triple. No error, wrong colour.
- *   - A hex that fails to parse at all becomes `NaN` in every OkLab
- *     coordinate. In `nearestIndex` (`./lib/colour.mjs`), `d < bestDistance`
- *     is always false when `d` is `NaN`, so that entry can never win a
- *     comparison — not an error, just a palette that is silently one colour
- *     short, with every pixel that should have snapped to it landing on its
- *     nearest surviving neighbour instead.
- *
- * Deliberately not folded into `nearestIndex` or anything in `colour.mjs`:
- * that module is pure arithmetic with no notion of a JSON file on disk, and
- * "is this palette file well-formed" is this loader's concern, not its.
+ * Validation lives in `./lib/palette-data.mjs`'s `readPaletteFile` — see that
+ * function's own comment for the two ways a malformed entry degrades
+ * silently instead of loudly. This function is the one caller that also
+ * needs the OkLab conversion the quantiser runs nearest-colour search in,
+ * which is why it still exists as a thin wrapper rather than every caller
+ * importing `readPaletteFile` directly.
  */
 export function loadPalette(file = PALETTE_FILE) {
-  const parsed = JSON.parse(fs.readFileSync(file, 'utf8'));
-  const colours = parsed && Array.isArray(parsed.colours) ? parsed.colours : null;
-  if (!colours || colours.length === 0) {
-    throw new Error(`${file} has no non-empty "colours" array. ${REGENERATE_HINT}`);
-  }
-
-  return colours.map((entry, index) => {
-    const { name, hex } = entry ?? {};
-    if (!name || !hex) {
-      throw new Error(
-        `${file}: entry ${index} is missing a "name" or "hex" (got ${JSON.stringify(entry)}). ` +
-          REGENERATE_HINT,
-      );
-    }
-    if (!/^#[0-9a-f]{6}$/.test(hex)) {
-      throw new Error(
-        `${file}: entry ${index} ("${name}") has a malformed hex "${hex}" — expected ` +
-          `"#rrggbb" in lowercase hex. ${REGENERATE_HINT}`,
-      );
-    }
-
-    const n = Number.parseInt(hex.slice(1), 16);
-    const rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
-    for (const channel of rgb) {
-      if (!Number.isInteger(channel) || channel < 0 || channel > 255) {
-        throw new Error(
-          `${file}: entry ${index} ("${name}") has hex "${hex}", which does not decode to a ` +
-            `valid 0-255 RGB triple. ${REGENERATE_HINT}`,
-        );
-      }
-    }
-
+  return readPaletteFile(file).map((entry) => {
+    const rgb = hexToRgb(entry.hex);
     return { ...srgbToOklab(...rgb), rgb };
   });
 }
@@ -121,17 +78,19 @@ export function loadPalette(file = PALETTE_FILE) {
  * orphan check that did not know about them would flag Task 8's migration as
  * broken every single run.
  *
- * Not imported from `generate-plot-art.mjs` itself, on purpose: that module
- * calls its own `main()` unconditionally at the bottom of the file, with no
- * `argv`-based guard the way this script has. Importing it — even just to
- * read its exported `PLOT_VARIANTS` — would run `main()` as a side effect and
- * regenerate every plot tile every time this script (or its tests) load.
- * `scripts/generate-plot-art.mjs` remains the source of truth for what it
- * writes; keep this list in sync with it by hand.
+ * Built from `generate-plot-art.mjs`'s own `PLOT_BASE_NAMES` and
+ * `PLOT_VARIANTS` rather than a hand-typed second copy of that list. This
+ * used to be hand-typed on purpose, because `generate-plot-art.mjs` ran its
+ * `main()` unconditionally at module scope, so merely importing it — even
+ * just to read a constant — would regenerate every plot tile as a side
+ * effect. Task 8 gave that file the same `argv`-checked guard every other
+ * generator in this directory has, so importing it here no longer triggers
+ * `main()`; the two lists can be one list again, and the two can no longer
+ * silently drift apart the way a hand-maintained copy always risks.
  */
 const GENERATED_PLOT_NAMES = new Set(
-  ['plot-tilled', 'plot-watered', 'plot-wild'].flatMap((base) =>
-    [0, 1, 2].map((variant) => `${base}${variant === 0 ? '' : `-${variant + 1}`}.png`),
+  PLOT_BASE_NAMES.flatMap((base) =>
+    Array.from({ length: PLOT_VARIANTS }, (_, variant) => `${base}${variant === 0 ? '' : `-${variant + 1}`}.png`),
   ),
 );
 

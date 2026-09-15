@@ -15,6 +15,7 @@ export const JUNIPER: NpcDef = {
   blurb: 'Hái lượm ở các bìa rừng. Biết mùa nào đang nói dối bạn.',
   texture: 'npc-juniper',
   sheet: 'rowan-sheet',
+  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
   tint: 0x9fd9a8,
   birthday: { season: 'Autumn', day: 26 },
   defaultGiftReaction: 'neutral',

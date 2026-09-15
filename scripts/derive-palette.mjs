@@ -16,7 +16,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { distance, kmeans, nearestIndex, oklabToSrgb, srgbToOklab } from './lib/colour.mjs';
+import {
+  distance, hexToOklab, kmeans, nearestIndex, oklabToHex, srgbToOklab, unpackRgb,
+} from './lib/colour.mjs';
+import { readPaletteFile } from './lib/palette-data.mjs';
 import { decodePng } from './lib/png.mjs';
 
 const RAW_DIR = path.join('art', 'raw');
@@ -31,14 +34,19 @@ const SEED = 20260915;
  * Was eleven, back when clustering was asked to produce every ramp, soil
  * included. Soil is pinned now (see `pinnedRamp`), so eleven groups over
  * the remaining art spread each group thinner than it needs to be.
- * Re-measured 9 against 10 twice as this file's design settled — once at
- * 39 derived entries (`soil` pinned at 9 steps) and again at 41 (`soil`
- * corrected to 7, per the brute-force spacing proof): 9 won both times on
- * mean per-group spread (each group's own weighted mean distance from its
- * centroid). At 41 entries, on the real art with `art/raw/intent/` and
- * every point within 0.03 of a pinned `soil` tone excluded: 9 groups give
- * mean spread 0.0593 against 0.0544 for 10. See the derivation report for
- * the full numbers from both checks.
+ *
+ * 9 is not the winner of a metric. Mean per-group spread (each group's own
+ * weighted mean distance from its centroid) falls monotonically as the group
+ * count rises — more groups always means smaller, tighter groups — so by
+ * that measure alone the "best" value is however many groups the budget can
+ * afford, and the metric cannot tell 9 from 10 from 20 in any way that
+ * matters: it prefers all of them over 9, equally uselessly. 9 was chosen
+ * because a human looked at the swatch sheet it produced at 39 and again at
+ * 41 derived entries and accepted it — the actual gate this project uses for
+ * a judgment call clustering cannot make on its own (see Task 4's naming
+ * review). If this number ever needs revisiting, re-run derivation at a few
+ * candidate values and look at the output; do not reach for a spread number
+ * to justify the choice, because it will always point at "more."
  */
 const GROUPS = 9;
 
@@ -61,10 +69,6 @@ const MIN_STEPS = 3;
  * fail that floor anyway if the derived half spent a second entry on it.
  */
 const PIN_EXCLUSION_RADIUS = 0.03;
-
-function hex([r, g, b]) {
-  return `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
-}
 
 /**
  * Every opaque colour in a folder tree, with the number of pixels using it.
@@ -122,7 +126,7 @@ export function histogram(dir, { exclude = [] } = {}) {
   return [...counts.entries()]
     .sort(([a], [b]) => a - b)
     .map(([key, weight]) => ({
-      ...srgbToOklab((key >> 16) & 255, (key >> 8) & 255, key & 255),
+      ...srgbToOklab(...unpackRgb(key)),
       weight,
     }));
 }
@@ -175,6 +179,37 @@ export function familyName({ L, a, b }) {
 }
 
 /**
+ * `C(n, k)`, the exact count `maxSpacedSubset` would have to visit.
+ *
+ * Computed the boring iterative way (never build the full numerator/
+ * denominator as separate factorials) so it stays exact and doesn't
+ * overflow for the modest `n` this is ever called with — the guard below
+ * only needs this to be right, not fast.
+ */
+function combinations(n, k) {
+  if (k < 0 || k > n) return 0;
+  let result = 1;
+  for (let i = 0; i < Math.min(k, n - k); i += 1) {
+    result = (result * (n - i)) / (i + 1);
+  }
+  return Math.round(result);
+}
+
+/**
+ * The most combinations `maxSpacedSubset` is allowed to walk before it
+ * refuses instead of hanging.
+ *
+ * `C(10, 7)` — soil's own ramp today — is 120. `C(30, 15)`, a ramp merely
+ * twice as long picking half its length, is a little over 155 million. There
+ * is no rebalancing that saves an exhaustive search from that curve; the
+ * only fix is a smaller ramp or a smaller `from` list. Five million is
+ * comfortably above every combination this repo's ramps currently need
+ * (the largest, `C(10, 7)`, is 120) and comfortably below the point where a
+ * `node --test` run would sit unresponsive with no indication why.
+ */
+const MAX_SPACED_SUBSET_COMBINATIONS = 5_000_000;
+
+/**
  * The size-`count` subset of `points` (any order) whose sorted-by-lightness
  * form has the largest possible minimum gap between neighbours.
  *
@@ -184,8 +219,24 @@ export function familyName({ L, a, b }) {
  * an approximation. Ties (more than one subset sharing the best minimum
  * gap) resolve to the combination found first in index order, which is
  * deterministic given a fixed `from` list — the same tiebreak every run.
+ *
+ * Cheap today is not cheap forever: this is unguarded exhaustive search, and
+ * nothing about `art/ramps.json` limits how long a future `from` list or how
+ * large a future `steps` could get. Refusing past `MAX_SPACED_SUBSET_
+ * COMBINATIONS` turns "the test suite hangs and nobody knows why" into a
+ * thrown error naming the exact numbers responsible.
  */
 function maxSpacedSubset(points, count) {
+  const combinationCount = combinations(points.length, count);
+  if (combinationCount > MAX_SPACED_SUBSET_COMBINATIONS) {
+    throw new Error(
+      `maxSpacedSubset: choosing ${count} of ${points.length} tones is C(${points.length}, ${count}) = ` +
+        `${combinationCount} combinations, past the ${MAX_SPACED_SUBSET_COMBINATIONS} sanity limit. ` +
+        'Exhaustive search is only appropriate for a hand-typed ramp of a few dozen tones at most — ' +
+        'shrink `from` or `steps` in art/ramps.json, or give this function a real approximation.',
+    );
+  }
+
   const sorted = [...points].sort((a, b) => a.L - b.L || a.a - b.a || a.b - b.b);
   const indices = sorted.map((_, i) => i);
   let best = null;
@@ -238,18 +289,32 @@ function maxSpacedSubset(points, count) {
  * improvement, it's a fabrication. Keeping the exact subset that maximises
  * spacing serves both problems: the gap the criteria check, and the design
  * intent `pinnedRamp` already existed to protect.
+ *
+ * `steps` strictly greater than `from.length` throws rather than quietly
+ * shipping a ramp shorter than declared. The alternative — falling through
+ * to "return everything there is" the way `steps === from.length` already
+ * does — reads at a glance like a reasonable degradation, but it isn't: the
+ * whole point of pinning is that `from` is the artist's exact tones, not a
+ * budget clustering can be trusted to fill in the gaps of. A ramp that is
+ * quietly two steps short of what `art/ramps.json` declares is a silent
+ * loss of resolution nobody asked for and nothing else in this file would
+ * ever catch, because every other test measures spacing and hue, not count.
  */
 export function pinnedRamp({ name, steps, from }) {
-  const points = from.map((h) => {
-    const n = Number.parseInt(h.slice(1), 16);
-    return { ...srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255), weight: 1 };
-  });
-  const chosen = steps >= points.length
+  if (steps > from.length) {
+    throw new Error(
+      `pinnedRamp("${name}"): steps (${steps}) exceeds from.length (${from.length}) — ` +
+        'a pinned ramp can only select among the tones it was given, never invent extra ones. ' +
+        'Lower steps or add more tones to `from` in art/ramps.json.',
+    );
+  }
+  const points = from.map((h) => ({ ...hexToOklab(h), weight: 1 }));
+  const chosen = steps === points.length
     ? [...points].sort((a, b) => a.L - b.L || a.a - b.a || a.b - b.b)
     : maxSpacedSubset(points, steps);
   return chosen.map((point, step) => ({
     name: `${name}.${step}`,
-    hex: hex(oklabToSrgb(point)),
+    hex: oklabToHex(point),
     // Not a pixel proportion — these colours were declared, not measured, so
     // there is no share of the art to report. 0 says "not applicable" rather
     // than inventing a number the ramp was never given.
@@ -271,10 +336,7 @@ export function pinnedRamp({ name, steps, from }) {
  * whatever pixels remain.
  */
 export function excludeNearPinned(points, pinned, radius = PIN_EXCLUSION_RADIUS) {
-  const pinnedLab = pinned.map((entry) => {
-    const n = Number.parseInt(entry.hex.slice(1), 16);
-    return srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255);
-  });
+  const pinnedLab = pinned.map((entry) => hexToOklab(entry.hex));
   return points.filter((point) => !pinnedLab.some((pin) => distance(point, pin) <= radius));
 }
 
@@ -334,6 +396,21 @@ function groupRuns(colours) {
  * reading `art/palette.json` from inside it would mean a function with no
  * file-reading in its contract quietly grew one. This is exported instead so
  * the merge itself — not just the CLI wrapper around it — has a test.
+ *
+ * The merge is `{ ...oldEntry, hex: derivedEntry.hex, share: derivedEntry.share }`
+ * — every field the human wrote, with only the two fields derivation computes
+ * overwritten — and not `{ ...derivedEntry, name: oldEntry.name }`. The two
+ * look interchangeable when `derived` entries only ever have `name`, `hex`
+ * and `share`, and for a long time that was true. It stopped being true the
+ * day `art/palette.json` grew a `note` field on `building.0` and `light.0`
+ * recording *why* those two groups keep descriptive rather than semantic
+ * names — the direction the merge spreads in decides whether a field only
+ * the human copy has survives at all. `{ ...derivedEntry, name: ... }` keeps
+ * exactly the derived object's own fields and grafts one name onto it, so
+ * `note` (and anything else added to the human copy later that `derive`
+ * itself doesn't produce) is silently dropped on every re-run. This is the
+ * same defect already fixed once for `name` — the reason this function
+ * exists at all — returning through a field added after that fix landed.
  */
 export function carryNames(existing, derived) {
   if (!existing) {
@@ -355,12 +432,10 @@ export function carryNames(existing, derived) {
     const existingGroup = existingRuns[g].entries;
     derivedRun.entries.forEach((derivedEntry, s) => {
       const oldEntry = existingGroup[s];
-      colours.push({ ...derivedEntry, name: oldEntry.name });
+      colours.push({ ...oldEntry, hex: derivedEntry.hex, share: derivedEntry.share });
 
-      const oldN = Number.parseInt(oldEntry.hex.slice(1), 16);
-      const newN = Number.parseInt(derivedEntry.hex.slice(1), 16);
-      const oldLab = srgbToOklab((oldN >> 16) & 255, (oldN >> 8) & 255, oldN & 255);
-      const newLab = srgbToOklab((newN >> 16) & 255, (newN >> 8) & 255, newN & 255);
+      const oldLab = hexToOklab(oldEntry.hex);
+      const newLab = hexToOklab(derivedEntry.hex);
       moved.push({
         name: oldEntry.name,
         from: oldEntry.hex,
@@ -456,7 +531,7 @@ export function derive(points, ramps = []) {
       const centroid = centroids[Math.min(step, centroids.length - 1)];
       derived.push({
         name: `${names[index]}.${step}`,
-        hex: centroid ? hex(oklabToSrgb(centroid)) : hex([0, 0, 0]),
+        hex: centroid ? oklabToHex(centroid) : '#000000',
         share: Number((weights[index] / totalWeight).toFixed(4)),
       });
     }
@@ -478,9 +553,11 @@ if (process.argv[1] && process.argv[1].endsWith('derive-palette.mjs')) {
     + `dropped (within ${PIN_EXCLUSION_RADIUS} of a pinned colour), ${eligible.length} left to cluster`,
   );
 
-  const existing = fs.existsSync(OUT_FILE)
-    ? JSON.parse(fs.readFileSync(OUT_FILE, 'utf8')).colours
-    : null;
+  // readPaletteFile, not a bare JSON.parse: this is re-reading this file's
+  // own prior output, so it should be held to the same "fail loudly on a
+  // malformed palette" standard as every other reader rather than a
+  // shortcut just because the writer and reader happen to be the same file.
+  const existing = fs.existsSync(OUT_FILE) ? readPaletteFile(OUT_FILE) : null;
   const { colours, structureChanged, moved } = carryNames(existing, derived);
 
   fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
