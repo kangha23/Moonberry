@@ -445,7 +445,7 @@ git commit -m "refactor(art): keep pristine imports in art/raw, not in public"
 
 **Interfaces:**
 - Consumes: `srgbToOklab`, `kmeans`, `oklabToSrgb`, `nearestIndex` from `scripts/lib/colour.mjs`; `decodePng` from `scripts/lib/png.mjs`.
-- Produces: `histogram(dir) -> Array<{L, a, b, weight}>` and `derive(points) -> Array<{name, hex}>`, both exported for test. `art/palette.json` shaped `{ "generated": "<iso date>", "colours": [{ "name": "soil.trough", "hex": "#5b3c22" }, ...] }` with exactly 48 entries.
+- Produces: `histogram(dir) -> Array<{L, a, b, weight}>` and `derive(points) -> Array<{name, hex}>`, both exported for test. `art/palette.json` shaped `{ "colours": [{ "name": "outline.0", "hex": "#000000", "share": 0.132 }, ...] }` with exactly 48 entries. Step suffixes are integers from 0, ascending in lightness within a group.
 
 **Why per-role k-means rather than one global run:** a single k-means over everything gives 48 anonymous centroids that still have to be named, and the ramp sizes would come out wherever the data put them. Bucketing pixels by nearest role anchor first and running k-means *within* each bucket at that ramp's fixed size guarantees both the count and the meaning of every name.
 
@@ -860,11 +860,12 @@ describe('the palette module', () => {
   });
 
   it('names every colour ramp.step', () => {
-    for (const name of Object.keys(PALETTE)) expect(name).toMatch(/^[a-zA-Z]+\.[a-z]+$/);
+    // Group names are words; step suffixes are integers ascending in lightness.
+    for (const name of Object.keys(PALETTE)) expect(name).toMatch(/^[a-z][A-Za-z]*\.\d+$/);
   });
 
   it('converts a colour to the number Phaser wants', () => {
-    expect(tint('soil.base')).toBe(Number.parseInt(PALETTE['soil.base'].slice(1), 16));
+    expect(tint('wood.0')).toBe(Number.parseInt(PALETTE['wood.0'].slice(1), 16));
   });
 
   it('contains no two identical colours', () => {
@@ -1312,20 +1313,20 @@ and replace the table body, mapping each tone to the name Step 2 reported — fo
  */
 const SOIL = {
   dry: {
-    trough: PALETTE['soil.trough'],
-    low: PALETTE['soil.low'],
-    base: PALETTE['soil.base'],
-    high: PALETTE['soil.high'],
-    crown: PALETTE['soil.crown'],
-    clod: PALETTE['soil.low'],
+    trough: PALETTE['earth.0'],
+    low: PALETTE['earth.1'],
+    base: PALETTE['earth.2'],
+    high: PALETTE['earth.3'],
+    crown: PALETTE['skin.0'],
+    clod: PALETTE['earth.1'],
   },
   wet: {
-    trough: PALETTE['wood.deep'],
+    trough: PALETTE['wood.0'],
     low: PALETTE['wood.shade'],
     base: PALETTE['wood.base'],
-    high: PALETTE['soil.low'],
-    crown: PALETTE['soil.base'],
-    clod: PALETTE['wood.deep'],
+    high: PALETTE['wood.2'],
+    crown: PALETTE['wood.3'],
+    clod: PALETTE['warmDeep.0'],
   },
 };
 ```
@@ -1367,7 +1368,7 @@ Add `import { PALETTE } from './lib/palette-data.mjs';` and replace each literal
 
 - [ ] **Step 3: Replace in `generate-assets.mjs`**
 
-The hexes here sit inside SVG template strings, so they interpolate rather than substitute. `fill="#ffd36d"` becomes `fill="${PALETTE['accent.gold']}"`. Add the same import.
+The hexes here sit inside SVG template strings, so they interpolate rather than substitute. `fill="#ffd36d"` becomes `fill="${PALETTE['skin.1']}"`. Add the same import.
 
 - [ ] **Step 4: Regenerate and check**
 
