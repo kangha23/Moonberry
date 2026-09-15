@@ -213,3 +213,11 @@ If you replace files in this folder with your own art, update this file
 accordingly. Adaptations of the LPC files must remain under CC-BY-SA 3.0
 (or GPL 3.0) — do not relicense them as MIT. The CC0 sources above need no
 attribution, and are credited anyway.
+
+## Modification notice
+
+Every PNG in this folder has been colour-reduced to the 48-colour palette in
+`art/palette.json`. No shape, frame or layout was altered — only the colour of
+individual pixels, by nearest-neighbour matching in OkLab. The unmodified
+originals are kept in `art/raw/lpc/` and are what the CC-BY-SA attributions
+above describe. Rebuild this folder with `npm run palette:apply`.
