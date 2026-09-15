@@ -26,11 +26,15 @@ import {
   upscale,
 } from './png.mjs';
 import {
+  ANIMAL,
   WALK,
+  animalcycle,
   cut,
   expectationFor,
   parseFlags,
+  parseRecolour,
   planImport,
+  recolour,
   readSource,
   scaleFor,
   walkcycle,
@@ -150,16 +154,256 @@ test('the free-size props have no empty rows to float them off the ground', () =
     };
     assert.ok(!rowIsEmpty(image.height - 1), `${file} ends in a transparent row, so it will float`);
     assert.ok(!rowIsEmpty(0), `${file} starts with a transparent row`);
+
+    // And nothing empty in between. Checking only the two ends caught a prop
+    // hovering over its own shadow and missed the other half of the same
+    // mistake: `tree.png` had eight blank rows across its middle, so the crown
+    // floated a body's width clear of its own trunk, and at zoom 2 that is a
+    // sixteen-pixel hole with grass showing through it. A prop is one object
+    // and arrives in one piece; a band of nothing through the middle of it is
+    // a cut that took too much, every time.
+    for (let y = 1; y < image.height - 1; y += 1) {
+      assert.ok(!rowIsEmpty(y), `${file} row ${y} is empty, so the prop is drawn in two halves`);
+    }
   }
 });
 
+/**
+ * The people's sheets. `animal-*-sheet.png` is a sheet too, and a different
+ * shape — four frames of whatever that animal needs rather than nine of 64px —
+ * so the two are counted apart here the same way the manifest generator counts
+ * them apart. A sheet read with the wrong frame size is a texture of slices.
+ */
+function peopleSheets() {
+  return fs
+    .readdirSync(ART_DIR)
+    .filter((file) => file.endsWith('-sheet.png') && !file.startsWith('animal-'));
+}
+
+function animalSheets() {
+  return fs
+    .readdirSync(ART_DIR)
+    .filter((file) => file.startsWith('animal-') && file.endsWith('-sheet.png'));
+}
+
 test('every walk sheet in the folder is a whole number of 64px frames, 9 by 4', () => {
-  const sheets = fs.readdirSync(ART_DIR).filter((file) => file.endsWith('-sheet.png'));
+  const sheets = peopleSheets();
   assert.ok(sheets.length > 0, 'expected at least one walk sheet');
   for (const file of sheets) {
     const image = decodePng(fs.readFileSync(path.join(ART_DIR, file)));
     assert.equal(image.width, WALK.frames * WALK.frame, `${file} width`);
     assert.equal(image.height, WALK.rows * WALK.frame, `${file} height`);
+  }
+});
+
+test('every animal sheet divides into sixteen frames with an animal in each', () => {
+  const sheets = animalSheets();
+  assert.ok(sheets.length > 0, 'expected at least one animal sheet');
+  for (const file of sheets) {
+    const image = decodePng(fs.readFileSync(path.join(ART_DIR, file)));
+    // The game finds a frame by dividing, so a file that does not divide is
+    // every frame but the first read off by a pixel.
+    assert.equal(image.width % ANIMAL.cols, 0, `${file} width does not divide ${ANIMAL.cols}`);
+    assert.equal(image.height % ANIMAL.rows, 0, `${file} height does not divide ${ANIMAL.rows}`);
+
+    // And an animal in every one of them. An empty frame is the cut having
+    // taken the wrong rows — the goat's source has a grazing cycle under its
+    // walk, and taking four rows from the wrong place is a hole in the amble
+    // rather than an error.
+    const frameWidth = image.width / ANIMAL.cols;
+    const frameHeight = image.height / ANIMAL.rows;
+    for (let row = 0; row < ANIMAL.rows; row += 1) {
+      for (let col = 0; col < ANIMAL.cols; col += 1) {
+        let ink = 0;
+        for (let y = 0; y < frameHeight; y += 1) {
+          for (let x = 0; x < frameWidth; x += 1) {
+            const at = ((row * frameHeight + y) * image.width + col * frameWidth + x) * 4 + 3;
+            if (image.pixels[at] > 8) ink += 1;
+          }
+        }
+        assert.ok(ink > 0, `${file} frame ${col} of row ${row} is empty`);
+      }
+    }
+  }
+});
+
+test('every animal stands on the bottom edge of its frame, whichever way it faces', () => {
+  // The game hangs an animal's shadow and its hunger marker off the sprite's
+  // `displayHeight`, which is the frame and not the animal. So a direction
+  // with empty pixels under its feet is a direction drawn hovering over its
+  // own shadow — and, worse, one that jumps the moment the animal turns to a
+  // direction that has none. The cow shipped 23px of nothing under its side
+  // views and none under its back view: it flew when walking east and landed
+  // when walking north.
+  for (const file of animalSheets()) {
+    const image = decodePng(fs.readFileSync(path.join(ART_DIR, file)));
+    const frameWidth = image.width / ANIMAL.cols;
+    const frameHeight = image.height / ANIMAL.rows;
+    for (let row = 0; row < ANIMAL.rows; row += 1) {
+      let lowest = -1;
+      for (let col = 0; col < ANIMAL.cols; col += 1) {
+        for (let y = 0; y < frameHeight; y += 1) {
+          for (let x = 0; x < frameWidth; x += 1) {
+            const at = ((row * frameHeight + y) * image.width + col * frameWidth + x) * 4 + 3;
+            if (image.pixels[at] > 8 && y > lowest) lowest = y;
+          }
+        }
+      }
+      assert.equal(
+        lowest,
+        frameHeight - 1,
+        `${file} row ${row} leaves ${frameHeight - 1 - lowest}px under its feet, so it floats`,
+      );
+    }
+  }
+});
+
+test('an animal cut stands each direction on the floor and centres it', () => {
+  // A 4x4 sheet of 8px frames. Three rows draw a 2x2 mark high in the box and
+  // one draws a 6x4 mark low in it — which is the shape of the real problem:
+  // one direction needs far more of the source box than the others.
+  const source = raster(32, 32);
+  for (let col = 0; col < 4; col += 1) {
+    for (const row of [0, 2, 3]) {
+      source.set(col * 8 + 3, row * 8 + 0, '#ff0000');
+      source.set(col * 8 + 4, row * 8 + 1, '#ff0000');
+    }
+    source.set(col * 8 + 1, 8 + 2, '#00ff00');
+    source.set(col * 8 + 6, 8 + 5, '#0000ff');
+  }
+  const sheet = animalcycle({ width: 32, height: 32, pixels: source.pixels }, { frame: 8 });
+
+  // One frame size for the sheet: as wide as the widest direction and as tall
+  // as the tallest, so nothing changes size when it turns.
+  assert.deepEqual([sheet.width, sheet.height], [4 * 6, 4 * 4]);
+
+  // Every row's lowest drawn pixel is on the frame's bottom edge. This is the
+  // property the whole per-row treatment exists for: the game hangs a shadow
+  // off the frame, so a direction with air under its feet is drawn hovering.
+  for (let row = 0; row < 4; row += 1) {
+    let lowest = -1;
+    for (let y = 0; y < 4; y += 1) {
+      for (let x = 0; x < 6; x += 1) {
+        if (at(sheet, x, row * 4 + y)[3] > 8 && y > lowest) lowest = y;
+      }
+    }
+    assert.equal(lowest, 3, `row ${row} does not stand on the floor`);
+  }
+
+  // The short rows are centred across as well as dropped to the floor.
+  assert.deepEqual(at(sheet, 2, 2), [255, 0, 0, 255]);
+  assert.deepEqual(at(sheet, 3, 3), [255, 0, 0, 255]);
+  // The tall row fills its frame, so it moves not at all.
+  assert.deepEqual(at(sheet, 0, 4), [0, 255, 0, 255]);
+  assert.deepEqual(at(sheet, 5, 7), [0, 0, 255, 255]);
+});
+
+test('an animal cut keeps the frames of one row in step with each other', () => {
+  // Trimming is per row and never per frame. Per frame would fit each pose to
+  // itself, and an animal whose every pose is fitted to itself is one that
+  // changes size as its legs move.
+  const source = raster(32, 32);
+  for (let col = 0; col < 4; col += 1) {
+    for (let row = 0; row < 4; row += 1) {
+      // A body that stays put, and a foot that swings two pixels across.
+      source.set(col * 8 + 2, row * 8 + 2, '#ff0000');
+      source.set(col * 8 + 2 + (col % 2), row * 8 + 4, '#0000ff');
+    }
+  }
+  const sheet = animalcycle({ width: 32, height: 32, pixels: source.pixels }, { frame: 8 });
+  const frameWidth = sheet.width / 4;
+  const frameHeight = sheet.height / 4;
+
+  /** Where in frame `col` of row 0 the pixel of this colour ended up. */
+  const find = (col, colour) => {
+    for (let y = 0; y < frameHeight; y += 1) {
+      for (let x = 0; x < frameWidth; x += 1) {
+        const got = at(sheet, col * frameWidth + x, y);
+        if (got[3] > 8 && got[0] === colour[0] && got[2] === colour[2]) return [x, y];
+      }
+    }
+    return null;
+  };
+
+  const bodies = [0, 1, 2, 3].map((col) => find(col, [255, 0, 0]));
+  const feet = [0, 1, 2, 3].map((col) => find(col, [0, 0, 255]));
+
+  // The body is in the same place in all four frames: the row was trimmed as
+  // one, so nothing drifted.
+  for (const body of bodies) assert.deepEqual(body, bodies[0], 'the body moved between frames');
+  // And the foot still swings, which is the animation the trim must not eat.
+  assert.deepEqual(feet[0][0], feet[2][0]);
+  assert.equal(feet[1][0] - feet[0][0], 1, 'the foot lost its swing');
+});
+
+test('an animal cut says so when it was pointed at empty rows', () => {
+  const source = raster(32, 32);
+  source.set(0, 0, '#ff0000');
+  const image = { width: 32, height: 32, pixels: source.pixels };
+  // Rows 4..7 of an 8px grid on a 32px source: past the bottom entirely.
+  assert.throws(() => animalcycle(image, { frame: 8, startRow: 4 }), /at least 64px tall/);
+  // In range, but nothing is drawn there — which is the quiet failure, because
+  // a sheet of nothing loads perfectly well and draws nothing at all.
+  assert.throws(() => animalcycle(image, { frame: 4, startRow: 4 }), /Row 4 of this cut is empty/);
+});
+
+test('a recolour swaps the colours it was given and leaves the rest', () => {
+  const source = raster(3, 1);
+  source.set(0, 0, '#efe9e7');
+  source.set(1, 0, '#cf7b49');
+  source.set(2, 0, '#222121');
+  const out = recolour({ width: 3, height: 1, pixels: source.pixels }, parseRecolour('efe9e7:9d7049,cf7b49:ff7b3a'));
+  assert.deepEqual(at(out, 0, 0), [0x9d, 0x70, 0x49, 255], 'body recoloured');
+  assert.deepEqual(at(out, 1, 0), [0xff, 0x7b, 0x3a, 255], 'bill recoloured');
+  assert.deepEqual(at(out, 2, 0), [0x22, 0x21, 0x21, 255], 'outline left alone');
+});
+
+test('a recolour leaves transparent pixels transparent', () => {
+  // Every fully transparent pixel in a PNG this repo writes is black, so a map
+  // that mentions black would otherwise paint the empty half of a sprite.
+  const source = raster(2, 1);
+  source.set(0, 0, '#000000');
+  const out = recolour({ width: 2, height: 1, pixels: source.pixels }, parseRecolour('000000:ff0000'));
+  assert.deepEqual(at(out, 0, 0), [255, 0, 0, 255], 'the drawn black is recoloured');
+  assert.deepEqual(at(out, 1, 0), [0, 0, 0, 0], 'the empty pixel is untouched');
+});
+
+test('a recolour rejects anything that is not a pair of colours', () => {
+  assert.throws(() => parseRecolour('efe9e7'), /pairs like/);
+  assert.throws(() => parseRecolour('efe9e7:nope12'), /pairs like/);
+  assert.throws(() => parseRecolour('efe9:112233'), /pairs like/);
+});
+
+test('no frame of a walk sheet is a solid block', () => {
+  // A person drawn in a 64px box never fills it: there is sky round their
+  // head and floor either side of their feet. So a frame with no transparent
+  // pixel in it is not a pose at all, and the game will happily animate it —
+  // which is exactly what shipped. The ninth column of both sheets was a
+  // solid rectangle of one colour, the walk cycle ran through it, and a
+  // square of flat dark green sat over the player once per stride.
+  //
+  // Stated as "no frame is solid" rather than "the frames the scene animates
+  // are not solid", because the scene picks its own range and this file
+  // cannot see it. The stronger rule needs no agreement between the two.
+  const sheets = peopleSheets();
+  for (const file of sheets) {
+    const image = decodePng(fs.readFileSync(path.join(ART_DIR, file)));
+    for (let row = 0; row < WALK.rows; row += 1) {
+      for (let column = 0; column < WALK.frames; column += 1) {
+        let opaque = 0;
+        for (let y = 0; y < WALK.frame; y += 1) {
+          for (let x = 0; x < WALK.frame; x += 1) {
+            const at = ((row * WALK.frame + y) * image.width + column * WALK.frame + x) * 4;
+            if (image.pixels[at + 3] > 8) opaque += 1;
+          }
+        }
+        assert.ok(
+          opaque < WALK.frame * WALK.frame,
+          `${file} frame ${column} of row ${row} is opaque to the edges, so it is a block and ` +
+            'not a pose',
+        );
+      }
+    }
   }
 });
 
