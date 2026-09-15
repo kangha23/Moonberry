@@ -16,7 +16,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { kmeans, nearestIndex, oklabToSrgb, srgbToOklab } from './lib/colour.mjs';
+import { distance, kmeans, nearestIndex, oklabToSrgb, srgbToOklab } from './lib/colour.mjs';
 import { decodePng } from './lib/png.mjs';
 
 const RAW_DIR = path.join('art', 'raw');
@@ -150,6 +150,19 @@ function uniqueNames(names) {
  * while `accent` held 0.52% of the pixels and was handed the largest ramp.
  * Anchors drawn from the data cannot fail that way: a catch-all region is
  * exactly what a k-means centroid splits.
+ *
+ * The second version allocated steps by raw pixel weight, and that rebuilt a
+ * smaller copy of the exact defect this whole project exists to remove: a
+ * game's outlines and shadow pixels dominate by pixel count while spanning
+ * almost no colour range, so weight-only allocation handed a near-black group
+ * eleven steps for colours indistinguishable to the eye, while a group with a
+ * real gradient across it went short. An entry is earned by RANGE, not by
+ * volume — `spread` is each group's weighted mean distance from its own
+ * centroid, i.e. how much colour it actually covers, and the score handed to
+ * `allocate` is `sqrt(share) * spread` rather than share alone. The square
+ * root keeps volume mattering — a large family still outscores a tiny one —
+ * without letting volume alone buy steps that spend themselves on
+ * differences nobody will ever see.
  */
 export function derive(points) {
   const anchors = kmeans(points, GROUPS, SEED);
@@ -162,7 +175,14 @@ export function derive(points) {
     weights[index] += point.weight;
   }
 
-  const sizes = allocate(weights);
+  const totalWeight = weights.reduce((a, b) => a + b, 0);
+  const spread = buckets.map((bucket, i) => {
+    const bucketWeight = bucket.reduce((sum, p) => sum + p.weight, 0) || 1;
+    return bucket.reduce((sum, p) => sum + distance(p, anchors[i]) * p.weight, 0) / bucketWeight;
+  });
+  const scores = weights.map((w, i) => Math.sqrt(w / totalWeight) * spread[i]);
+
+  const sizes = allocate(scores);
   const names = uniqueNames(anchors.map(familyName));
 
   const palette = [];
@@ -173,7 +193,7 @@ export function derive(points) {
       palette.push({
         name: `${names[index]}.${step}`,
         hex: centroid ? hex(oklabToSrgb(centroid)) : hex([0, 0, 0]),
-        share: Number((weights[index] / points.reduce((s, p) => s + p.weight, 0)).toFixed(4)),
+        share: Number((weights[index] / totalWeight).toFixed(4)),
       });
     }
   });

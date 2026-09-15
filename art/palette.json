@@ -1,28 +1,23 @@
 {
-  "generated": "2026-09-15T09:41:33.120Z",
+  "generated": "2026-09-15T09:53:39.160Z",
   "colours": [
     {
       "name": "neutralDark.0",
-      "hex": "#000000",
+      "hex": "#150103",
       "share": 0.1655
     },
     {
       "name": "neutralDark.1",
-      "hex": "#1f0106",
-      "share": 0.1655
-    },
-    {
-      "name": "neutralDark.2",
       "hex": "#150a0d",
       "share": 0.1655
     },
     {
-      "name": "neutralDark.3",
+      "name": "neutralDark.2",
       "hex": "#0b131d",
       "share": 0.1655
     },
     {
-      "name": "neutralDark.4",
+      "name": "neutralDark.3",
       "hex": "#280707",
       "share": 0.1655
     },
@@ -43,17 +38,12 @@
     },
     {
       "name": "neutralDark2.3",
-      "hex": "#0b2b28",
+      "hex": "#082c27",
       "share": 0.1713
     },
     {
       "name": "neutralDark2.4",
       "hex": "#302329",
-      "share": 0.1713
-    },
-    {
-      "name": "neutralDark2.5",
-      "hex": "#003023",
       "share": 0.1713
     },
     {
@@ -98,12 +88,7 @@
     },
     {
       "name": "greenMid.3",
-      "hex": "#1b5502",
-      "share": 0.1218
-    },
-    {
-      "name": "greenMid.4",
-      "hex": "#105b2d",
+      "hex": "#175819",
       "share": 0.1218
     },
     {
@@ -118,12 +103,17 @@
     },
     {
       "name": "purpleMid.2",
-      "hex": "#325ca7",
+      "hex": "#3c49ad",
       "share": 0.0689
     },
     {
       "name": "purpleMid.3",
       "hex": "#89389f",
+      "share": 0.0689
+    },
+    {
+      "name": "purpleMid.4",
+      "hex": "#216da0",
       "share": 0.0689
     },
     {
@@ -143,7 +133,12 @@
     },
     {
       "name": "orangeMid.3",
-      "hex": "#ab5742",
+      "hex": "#b14f45",
+      "share": 0.1
+    },
+    {
+      "name": "orangeMid.4",
+      "hex": "#976d38",
       "share": 0.1
     },
     {
@@ -153,27 +148,37 @@
     },
     {
       "name": "greenMid2.1",
-      "hex": "#3c8217",
+      "hex": "#397e06",
       "share": 0.0322
     },
     {
       "name": "greenMid2.2",
+      "hex": "#448c33",
+      "share": 0.0322
+    },
+    {
+      "name": "greenMid2.3",
       "hex": "#0098b2",
       "share": 0.0322
     },
     {
       "name": "orangeMid2.0",
-      "hex": "#c55449",
+      "hex": "#d5058c",
       "share": 0.005
     },
     {
       "name": "orangeMid2.1",
-      "hex": "#ea071a",
+      "hex": "#da2b31",
       "share": 0.005
     },
     {
       "name": "orangeMid2.2",
-      "hex": "#f64d5a",
+      "hex": "#ba6c4c",
+      "share": 0.005
+    },
+    {
+      "name": "orangeMid2.3",
+      "hex": "#f8514e",
       "share": 0.005
     },
     {
@@ -183,21 +188,16 @@
     },
     {
       "name": "greenLight.1",
-      "hex": "#5da54d",
+      "hex": "#5ea64d",
       "share": 0.1068
     },
     {
       "name": "greenLight.2",
-      "hex": "#81a100",
+      "hex": "#82a204",
       "share": 0.1068
     },
     {
       "name": "greenLight.3",
-      "hex": "#80c05f",
-      "share": 0.1068
-    },
-    {
-      "name": "greenLight.4",
       "hex": "#00cfdf",
       "share": 0.1068
     },
