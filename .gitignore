@@ -24,3 +24,8 @@ __pycache__/
 # Subagent-driven-development scratch: ledger, briefs, reports, review packages.
 # Git history is the durable record; this directory is working memory.
 .superpowers/
+
+# Downloaded upstream art packs. art/sources.json pins each file by sha256, so
+# this folder is a cache rather than a record; the whole packs are not
+# redistributed from this repo.
+art/sources/
