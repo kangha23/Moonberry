@@ -252,8 +252,16 @@ export const CROP_PALETTES: Record<CropId, CropPalette> = {
   rhubarb: { form: 'grain', body: PALETTE['building.1'], light: PALETTE['building.3'], dark: PALETTE['clothWarm.2'], seed: PALETTE['building.1'] },
   wheat: { form: 'grain', body: PALETTE['light.5'], light: PALETTE['light.7'], dark: PALETTE['light.2'], seed: PALETTE['light.5'] },
   sunflower: { form: 'bloom', body: PALETTE['light.5'], light: PALETTE['light.7'], dark: PALETTE['light.2'], seed: PALETTE['soil.4'] },
-  tomato: { form: 'fruit', body: PALETTE['building.3'], light: PALETTE['light.4'], dark: PALETTE['clothWarm.2'], seed: PALETTE['building.3'] },
-  melon: { form: 'gourd', body: PALETTE['light.0'], light: PALETTE['light.1'], dark: PALETTE['leaf.0'], seed: PALETTE['light.0'] },
+  // Seed was building.3, identical to strawberry's seed below (both fill the
+  // same envelope-window rect in `seedPacket`, so the two packets were
+  // pixel-for-pixel the same icon). clothWarm.0 is a darker red the tomato
+  // does not otherwise use, keeping the packet in the tomato's own colour
+  // family without borrowing the strawberry's.
+  tomato: { form: 'fruit', body: PALETTE['building.3'], light: PALETTE['light.4'], dark: PALETTE['clothWarm.2'], seed: PALETTE['clothWarm.0'] },
+  // Seed was light.0, identical to clover's seed below (same collision as
+  // tomato/strawberry above). leaf.0 is the melon's own `dark` shade, so the
+  // packet still reads as "melon-coloured" without duplicating clover's.
+  melon: { form: 'gourd', body: PALETTE['light.0'], light: PALETTE['light.1'], dark: PALETTE['leaf.0'], seed: PALETTE['leaf.0'] },
   barley: { form: 'grain', body: PALETTE['light.5'], light: PALETTE['light.7'], dark: PALETTE['soil.6'], seed: PALETTE['soil.5'] },
   cranberry: { form: 'berry', body: PALETTE['clothWarm.2'], light: PALETTE['building.3'], dark: PALETTE['clothWarm.0'], seed: PALETTE['clothWarm.2'] },
   pumpkin: { form: 'gourd', body: PALETTE['light.3'], light: PALETTE['light.5'], dark: PALETTE['soil.5'], seed: PALETTE['light.3'] },
@@ -514,10 +522,21 @@ const FORAGE_PALETTES: Record<ItemId, CropPalette> = {
   'wild-grape': { form: 'berry', body: PALETTE['water.1'], light: PALETTE['building.2'], dark: PALETTE['shadow.3'] },
   buttercup: { form: 'bloom', body: PALETTE['light.5'], light: PALETTE['light.7'], dark: PALETTE['light.2'] },
   'purple-mushroom': { form: 'cap', body: PALETTE['water.1'], light: PALETTE['building.2'], dark: PALETTE['shadow.3'] },
-  'wild-daisy': { form: 'bloom', body: PALETTE['light.7'], light: PALETTE['light.7'], dark: PALETTE['light.6'] },
+  // Was body: light.7, light: light.7 — the highlight rect `produceIcon`
+  // draws for every 'bloom' is filled in the same colour as the body it
+  // sits on, so it never shows: the flower rendered flat. light.5 gives the
+  // petals a warm centre instead of a second layer of the same cream.
+  'wild-daisy': { form: 'bloom', body: PALETTE['light.7'], light: PALETTE['light.5'], dark: PALETTE['light.6'] },
   chestnut: { form: 'fruit', body: PALETTE['soil.4'], light: PALETTE['light.2'], dark: PALETTE['soil.1'] },
   'winter-root': { form: 'root', body: PALETTE['light.6'], light: PALETTE['light.7'], dark: PALETTE['light.2'] },
-  'snow-yam': { form: 'root', body: PALETTE['light.7'], light: PALETTE['light.7'], dark: PALETTE['light.6'] },
+  // Was body: light.7, light: light.7, dark: light.6 — identical to
+  // 'wild-daisy' above but for the form, so a snow-yam and a wild-daisy read
+  // as the same three colours with a different silhouette rather than as
+  // two different things. Body and dark swap (a root grown underground
+  // reads darker than a flower in bloom) and dark moves to building.2, a
+  // cool grey that stands in for frost — distinct from wild-daisy's warm
+  // light.6 shadow, and from its own body and light.
+  'snow-yam': { form: 'root', body: PALETTE['light.6'], light: PALETTE['light.7'], dark: PALETTE['building.2'] },
   quartz: { form: 'grain', body: PALETTE['light.6'], light: PALETTE['light.7'], dark: PALETTE['leaf.3'] },
 };
 

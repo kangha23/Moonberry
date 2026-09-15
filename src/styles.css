@@ -20,6 +20,17 @@
    * was picked by comparing actual hexes, not by trusting a group's name -
    * `light` is a lightness cluster spanning skin, foliage and cream, and
    * these nine entries are the ones this file's literals actually land on.
+   *
+   * A translucent colour is still one of these nine: `rgba(r,g,b,a)` typed
+   * directly is invisible to the palette lock (it only matches `#rrggbb`),
+   * which is how a second, undeclared cream — rgba(248,240,216,*) sitting
+   * eleven lines from --pal-cream's own #f8dbbd — went unnoticed for as
+   * long as it did. Every translucent colour below is instead
+   * `color-mix(in srgb, var(--pal-x) N%, transparent)`, which keeps it
+   * traceable to one of these nine and keeps the alpha readable as a
+   * percentage. Plain black/white scrims (drop shadows, wash-outs) are not
+   * colour choices and are left as literal rgba(0,0,0,*) / rgba(255,255,255,*),
+   * the same exemption 0x000000/0xffffff get in the lock itself.
    */
   --pal-ink: #0f0608; /* outline.0 */
   --pal-void: #10111b; /* outline.2 */
@@ -136,7 +147,11 @@ canvas {
   display: grid;
   place-items: center;
   padding: 16px;
-  background: rgba(8, 12, 9, 0.74);
+  /* Was rgba(8, 12, 9, 0.74), a near-black with a faint green cast nobody
+     had checked against the palette. outline.0 (--pal-ink) is the nearest
+     entry — also a near-black — so the overlay backdrop keeps the same
+     weight it always had. */
+  background: color-mix(in srgb, var(--pal-ink) 74%, transparent);
 }
 
 .panel,
@@ -208,7 +223,9 @@ p {
 .menu-section {
   margin-bottom: 18px;
   padding-bottom: 16px;
-  border-bottom: 2px solid rgba(201, 146, 79, 0.24);
+  /* Was rgba(201, 146, 79, 0.24), a warm tan. light.3 (--pal-warn) is the
+     nearest palette entry. */
+  border-bottom: 2px solid color-mix(in srgb, var(--pal-warn) 24%, transparent);
 }
 
 .menu-section:last-child {
@@ -222,7 +239,13 @@ p {
 .hud-note,
 .controls-hint {
   margin: 10px 0 0;
-  color: rgba(248, 240, 216, 0.62);
+  /* Was rgba(248, 240, 216, 0.62) — a second, undeclared cream: --pal-cream
+     eleven lines up in the :root block is #f8dbbd (248,219,189). Only the
+     green and blue channels differ (219→240, 189→216), so on screen this
+     read as the same colour at a slightly milkier tint, which is exactly
+     the kind of drift the palette lock exists to catch and could not,
+     because it never sees inside an rgba() literal. */
+  color: color-mix(in srgb, var(--pal-cream) 62%, transparent);
   font-family: var(--font-prose);
   font-size: 0.8rem;
   line-height: 1.55;
@@ -300,7 +323,8 @@ p {
 .invite-label,
 .inventory-free,
 .mixer-label {
-  color: rgba(248, 240, 216, 0.62);
+  /* Same undeclared second cream as `.note` above; see that rule. */
+  color: color-mix(in srgb, var(--pal-cream) 62%, transparent);
   font-family: var(--font-pixel);
   font-size: 1rem;
   letter-spacing: 0.08em;
@@ -412,7 +436,9 @@ p {
   position: absolute;
   top: 1px;
   left: 4px;
-  color: rgba(255, 231, 173, 0.5);
+  /* Was rgba(255, 231, 173, 0.5), a pale gold. light.7 (--pal-cream) is the
+     nearest palette entry. */
+  color: color-mix(in srgb, var(--pal-cream) 50%, transparent);
   font-family: var(--font-pixel);
   font-size: 0.95rem;
 }
@@ -460,7 +486,10 @@ p {
 /* Not disabled, only warned: planting something that cannot ripen in time is
    a choice a player is allowed to make, and sometimes the right one. */
 .shop-row.is-late {
-  outline: 2px solid rgba(233, 137, 111, 0.5);
+  /* Was rgba(233, 137, 111, 0.5), a warm coral-red. light.5 (--pal-danger)
+     is the nearest entry, and is already what this same warning colour is
+     called everywhere else in this file (see .shop-warning below). */
+  outline: 2px solid color-mix(in srgb, var(--pal-danger) 50%, transparent);
   outline-offset: -2px;
 }
 
@@ -484,7 +513,8 @@ p {
 
 /* A description is a sentence, so it stays in the prose face. */
 .shop-row-text small {
-  color: rgba(248, 240, 216, 0.6);
+  /* Same undeclared second cream as `.note` above; see that rule. */
+  color: color-mix(in srgb, var(--pal-cream) 60%, transparent);
   font-family: var(--font-prose);
   font-size: 0.72rem;
   line-height: 1.4;
@@ -539,7 +569,8 @@ p {
 }
 
 .ranch-field span {
-  color: rgba(248, 240, 216, 0.6);
+  /* Same undeclared second cream as `.note` above; see that rule. */
+  color: color-mix(in srgb, var(--pal-cream) 60%, transparent);
   font-family: var(--font-prose);
   font-size: 0.72rem;
 }
@@ -558,7 +589,8 @@ p {
 }
 
 .ranch-field input::placeholder {
-  color: rgba(248, 240, 216, 0.35);
+  /* Same undeclared second cream as `.note` above; see that rule. */
+  color: color-mix(in srgb, var(--pal-cream) 35%, transparent);
 }
 
 .ranch-field input:focus-visible,
@@ -577,8 +609,11 @@ p {
 .shop-empty {
   margin: 0 0 14px;
   padding: 20px 16px;
-  border: 2px dashed rgba(201, 146, 79, 0.4);
-  color: rgba(248, 240, 216, 0.6);
+  /* Was rgba(201, 146, 79, 0.4), the same warm tan as `.menu-section`'s
+     border above; see that rule for the nearest-entry reasoning. */
+  border: 2px dashed color-mix(in srgb, var(--pal-warn) 40%, transparent);
+  /* Same undeclared second cream as `.note` above; see that rule. */
+  color: color-mix(in srgb, var(--pal-cream) 60%, transparent);
   text-align: center;
   font-family: var(--font-prose);
   font-size: 0.84rem;

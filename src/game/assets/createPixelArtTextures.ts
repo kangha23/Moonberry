@@ -36,6 +36,25 @@ function px(ctx: CanvasRenderingContext2D, color: string, x: number, y: number) 
   ctx.fillRect(Math.round(x), Math.round(y), 1, 1);
 }
 
+/**
+ * A palette colour with an alpha channel, for the places canvas 2D wants a
+ * translucent fill or stroke rather than an opaque `rect`/`px`.
+ *
+ * `scripts/palette-lock.test.mjs` only recognises `#rrggbb` and `0xRRGGBB`
+ * literals, so a hand-typed `rgba(...)` slips past the lock completely
+ * invisible to it — which is how this file ended up with 34 of them holding
+ * colours nobody had checked against the 48. Building the string from a
+ * palette hex instead means every translucent colour here is still one of
+ * the 48, even though the lock itself cannot see that it is.
+ */
+function withAlpha(hex: string, alpha: number): string {
+  const n = Number.parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 /** Deterministic pseudo-random from coords so grass looks varied but stable. */
 function hash(x: number, y: number, seed = 7) {
   let h = (x * 374761393 + y * 668265263 + seed * 974634211) | 0;
@@ -43,7 +62,11 @@ function hash(x: number, y: number, seed = 7) {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
 }
 
-function outline(ctx: CanvasRenderingContext2D, w: number, h: number, color = 'rgba(24,38,24,0.35)') {
+// Was 'rgba(24,38,24,0.35)', a dark green-black nobody had checked against
+// the palette. shadow.1 (#0a2726) is the nearest entry — also a dark,
+// slightly green-teal near-black — so the tile outline keeps the same weight
+// and hue family it always had.
+function outline(ctx: CanvasRenderingContext2D, w: number, h: number, color = withAlpha(PALETTE['shadow.1'], 0.35)) {
   rect(ctx, color, 0, 0, w, 1);
   rect(ctx, color, 0, h - 1, w, 1);
   rect(ctx, color, 0, 0, 1, h);
@@ -127,14 +150,28 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'tile-water', TILE, TILE, (ctx) => {
     rect(ctx, PALETTE['water.2'], 0, 0, TILE, TILE);
-    rect(ctx, PALETTE['water.2'], 0, 26, TILE, 6);
+    // The deep band used to repaint this same water.2 over itself — a no-op
+    // that told the next reader there was a darker band along the bottom
+    // when there was not. `water` cannot be read as a light-to-dark ramp:
+    // water.0 #3c49ad is indigo and water.1 #7f2c99 is magenta-purple, so
+    // neither reads as "the same water, but deeper" the way soil.0..soil.6
+    // does. water.0 is the nearest thing to a depth step this group has —
+    // darker and cooler than water.2 without being a different hue family —
+    // so it stands in for the deep band. water.1 stays unusable here for the
+    // same reason it is unusable anywhere water needs a ramp: a purple deep
+    // band would read as a dye spill, not depth.
+    rect(ctx, PALETTE['water.0'], 0, 26, TILE, 6);
     rect(ctx, PALETTE['water.3'], 0, 0, TILE, 3);
     // waves
     rect(ctx, PALETTE['light.6'], 4, 9, 10, 2);
     rect(ctx, PALETTE['light.7'], 5, 9, 4, 1);
     rect(ctx, PALETTE['water.3'], 17, 16, 11, 2);
     rect(ctx, PALETTE['light.7'], 18, 16, 4, 1);
-    rect(ctx, PALETTE['water.2'], 7, 21, 8, 1);
+    // The ripple used to be water.2 painted over the deep band's own
+    // water.2, invisible for the same reason the deep band's fill was.
+    // Now that the deep band is water.0, this ripple in water.3 (the same
+    // pale-teal highlight the waves above use) actually shows against it.
+    rect(ctx, PALETTE['water.3'], 7, 21, 8, 1);
     outline(ctx, TILE, TILE);
   });
 
@@ -279,7 +316,12 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
     ctx.clearRect(0, 0, TILE, TILE);
     ctx.strokeStyle = PALETTE['light.7'];
     ctx.lineWidth = 3;
-    ctx.shadowColor = 'rgba(255,242,166,0.9)';
+    // Was 'rgba(255,242,166,0.9)', a bright warm yellow the palette has no
+    // real equivalent for (light.4 #ff7b3a is orange, not yellow). light.7
+    // is the nearest entry and already the tile-cursor's own stroke colour,
+    // so the glow reads as "the same colour, softened" rather than as a
+    // second, off-palette yellow sitting right next to it.
+    ctx.shadowColor = withAlpha(PALETTE['light.7'], 0.9);
     ctx.shadowBlur = 6;
     const r = 7;
     ctx.beginPath();
@@ -293,7 +335,12 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'shadow', 32, 12, (ctx) => {
     ctx.clearRect(0, 0, 32, 12);
-    ctx.fillStyle = 'rgba(10,18,12,0.32)';
+    // Was 'rgba(10,18,12,0.32)'. This is a colour, not a neutral scrim like
+    // the plain rgba(0,0,0,...) drop shadows elsewhere in this file — it has
+    // a visible green cast — so it does not get the black exemption. outline.0
+    // (#0f0608) is the nearest palette entry: still a near-black, just without
+    // the green tint the original had.
+    ctx.fillStyle = withAlpha(PALETTE['outline.0'], 0.32);
     ctx.beginPath();
     ctx.ellipse(16, 6, 13, 4.5, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -301,11 +348,15 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'shadow-soft', 48, 20, (ctx) => {
     ctx.clearRect(0, 0, 48, 20);
+    // Same colour as 'shadow' above and the same reasoning: 'rgba(10,20,14,*)'
+    // is a near-black with a green cast, not a neutral scrim, so it is
+    // migrated to outline.0 rather than exempted. Four alphas stack the same
+    // four soft rings the original literal did.
     const layers: Array<[number, number, string]> = [
-      [22, 8.5, 'rgba(10,20,14,0.16)'],
-      [17, 6.5, 'rgba(10,20,14,0.20)'],
-      [12, 4.8, 'rgba(10,20,14,0.26)'],
-      [7, 3, 'rgba(10,20,14,0.30)'],
+      [22, 8.5, withAlpha(PALETTE['outline.0'], 0.16)],
+      [17, 6.5, withAlpha(PALETTE['outline.0'], 0.2)],
+      [12, 4.8, withAlpha(PALETTE['outline.0'], 0.26)],
+      [7, 3, withAlpha(PALETTE['outline.0'], 0.3)],
     ];
     layers.forEach(([rx, ry, color]) => {
       ctx.fillStyle = color;
@@ -350,7 +401,12 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'firefly', 8, 8, (ctx) => {
     ctx.clearRect(0, 0, 8, 8);
-    ctx.fillStyle = 'rgba(255,246,165,0.35)';
+    // Was 'rgba(255,246,165,0.35)', another bright yellow the palette does
+    // not have (see the tile-cursor glow above for the same gap). light.7 is
+    // the nearest entry and, again, is already this same firefly's own core
+    // colour two lines down, so the halo reads as a soft version of the body
+    // rather than a mismatched second colour around it.
+    ctx.fillStyle = withAlpha(PALETTE['light.7'], 0.35);
     ctx.beginPath();
     ctx.arc(4, 4, 3.5, 0, Math.PI * 2);
     ctx.fill();
@@ -360,11 +416,20 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'dust', 12, 8, (ctx) => {
     ctx.clearRect(0, 0, 12, 8);
-    ctx.fillStyle = 'rgba(232,214,175,0.85)';
+    // Was 'rgba(232,214,175,0.85)', a tan close enough to light.7 (#f8dbbd)
+    // to use it directly — both are pale and warm, just at different
+    // saturations.
+    ctx.fillStyle = withAlpha(PALETTE['light.7'], 0.85);
     ctx.beginPath();
     ctx.ellipse(6, 5, 5, 2.6, 0, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = 'rgba(255,246,220,0.9)';
+    // Was 'rgba(255,246,220,0.9)', an almost-white cream. The palette has no
+    // true white or pale grey (see art/palette.json's own note on the
+    // light.* group), so this highlight lands on the same light.7 as the
+    // fill above it rather than a second, brighter step — a poor match in
+    // that the two ellipses now share one colour where they used to be two
+    // shades of it, but there is nothing lighter on the palette to reach for.
+    ctx.fillStyle = withAlpha(PALETTE['light.7'], 0.9);
     ctx.beginPath();
     ctx.ellipse(5, 4, 2.4, 1.4, 0, 0, Math.PI * 2);
     ctx.fill();
@@ -372,10 +437,17 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'smoke', 16, 16, (ctx) => {
     ctx.clearRect(0, 0, 16, 16);
-    ctx.fillStyle = 'rgba(235,232,225,0.75)';
+    // Was 'rgba(235,232,225,0.75)', a light neutral grey — close to white but
+    // not the pure (255,255,255) that gets the neutral-scrim exemption, so it
+    // still has to name a palette colour. The palette has nothing this pale
+    // and this desaturated (see the dust highlight above for the same gap);
+    // light.7 is the nearest entry it does have.
+    ctx.fillStyle = withAlpha(PALETTE['light.7'], 0.75);
     ctx.beginPath();
     ctx.arc(8, 9, 5, 0, Math.PI * 2);
     ctx.fill();
+    // Pure white, unlike the body above — a highlight wash rather than a
+    // colour choice, so it keeps the same exemption 0xffffff has elsewhere.
     ctx.fillStyle = 'rgba(255,255,255,0.85)';
     ctx.beginPath();
     ctx.arc(6.5, 7.5, 2.4, 0, Math.PI * 2);
@@ -446,7 +518,12 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
         }
         // The ragged edge. Only bites at the rim, so the body stays solid.
         if (depth <= hash(x, y, 31) * 0.14) continue;
-        rect(ctx, depth > 0.3 ? 'rgba(20,35,30,0.20)' : 'rgba(20,35,30,0.11)', x, y, step, step);
+        // Was 'rgba(20,35,30,0.20)' / 'rgba(20,35,30,0.11)' — a dark
+        // green-grey, not the neutral black this shadow reads as at a
+        // glance, so it does not qualify for the black exemption either.
+        // shadow.1 (#0a2726) is the nearest palette entry and, like the
+        // original, sits between plain black and green.
+        rect(ctx, depth > 0.3 ? withAlpha(PALETTE['shadow.1'], 0.2) : withAlpha(PALETTE['shadow.1'], 0.11), x, y, step, step);
       }
     }
   });
@@ -454,9 +531,18 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
   withTexture(scene, 'glow', 96, 96, (ctx) => {
     ctx.clearRect(0, 0, 96, 96);
     const g = ctx.createRadialGradient(48, 48, 4, 48, 48, 48);
-    g.addColorStop(0, 'rgba(255,220,130,0.85)');
-    g.addColorStop(0.4, 'rgba(255,200,110,0.28)');
-    g.addColorStop(1, 'rgba(255,200,110,0)');
+    // The palette has no saturated warm gold or yellow-orange (light.4
+    // #ff7b3a is the closest thing and is already a hard orange, not a
+    // glow). The three original stops — 'rgba(255,220,130,0.85)',
+    // 'rgba(255,200,110,0.28)' and the same colour faded to alpha 0 — ran
+    // from a pale gold centre to a slightly deeper orange edge. light.7 and
+    // light.5 are each the nearest palette entry to their own stop rather
+    // than one colour reused for all three, which is a poor match on hue for
+    // both (paler/pinker than a real gold glow) but keeps the same
+    // light-centre-to-warmer-edge direction the original gradient had.
+    g.addColorStop(0, withAlpha(PALETTE['light.7'], 0.85));
+    g.addColorStop(0.4, withAlpha(PALETTE['light.5'], 0.28));
+    g.addColorStop(1, withAlpha(PALETTE['light.5'], 0));
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, 96, 96);
   });
@@ -515,7 +601,13 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'splash', 10, 5, (ctx) => {
     ctx.clearRect(0, 0, 10, 5);
-    ctx.strokeStyle = 'rgba(200,235,245,0.9)';
+    // Was 'rgba(200,235,245,0.9)', a pale, cool blue — the palette has no
+    // pale blue at all (see the water group's own note: it runs
+    // indigo/magenta/teal/teal, never light). The nearest entry by hex
+    // distance is light.7, which is warm rather than cool — a poor match on
+    // hue, kept anyway per this project's rule of using the nearest real
+    // entry rather than inventing a hex for water spray.
+    ctx.strokeStyle = withAlpha(PALETTE['light.7'], 0.9);
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.ellipse(5, 3, 4, 1.8, 0, Math.PI, 0);
@@ -1530,12 +1622,19 @@ function createDialTextures(scene: Phaser.Scene) {
 
     // Noon sits at the top; a warm wash over the morning half and a cool one
     // over the evening half says which way the day is going, wordlessly.
-    ctx.fillStyle = 'rgba(255,211,109,0.20)';
+    // Was 'rgba(255,211,109,0.20)', a bright yellow with no palette
+    // equivalent (the same gap as the tile-cursor and firefly glows above);
+    // light.5 is the nearest entry.
+    ctx.fillStyle = withAlpha(PALETTE['light.5'], 0.2);
     ctx.beginPath();
     ctx.moveTo(mid, mid);
     ctx.arc(mid, mid, 11, Math.PI, Math.PI * 1.5);
     ctx.fill();
-    ctx.fillStyle = 'rgba(80,110,160,0.18)';
+    // Was 'rgba(80,110,160,0.18)', a cool blue. Unlike the yellow above, the
+    // palette actually has a decent match here: water.0 (#3c49ad) is an
+    // indigo blue in the same family and close enough in weight to read as
+    // "the evening wash", not a substitution.
+    ctx.fillStyle = withAlpha(PALETTE['water.0'], 0.18);
     ctx.beginPath();
     ctx.moveTo(mid, mid);
     ctx.arc(mid, mid, 11, Math.PI * 1.5, Math.PI * 2);
