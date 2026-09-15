@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { PALETTE } from './palette.generated';
 import { CROP_ORDER, ITEMS } from '../systems/items';
 import { CROP_PALETTES, ICON_SIZE, foragePalette, iconFor } from './itemIcons';
 import { PLACEABLE_KINDS } from '../systems/items';
@@ -49,7 +50,12 @@ function outline(ctx: CanvasRenderingContext2D, w: number, h: number, color = 'r
   rect(ctx, color, w - 1, 0, 1, h);
 }
 
-function drawGrass(ctx: CanvasRenderingContext2D, base = '#63b04e', dark = '#4a8f3c', light = '#8fd47a') {
+function drawGrass(
+  ctx: CanvasRenderingContext2D,
+  base: string = PALETTE['light.0'],
+  dark: string = PALETTE['leaf.2'],
+  light: string = PALETTE['light.1'],
+) {
   rect(ctx, base, 0, 0, TILE, TILE);
   // large soft checker dither
   for (let y = 0; y < TILE; y += 4) {
@@ -72,15 +78,15 @@ function drawGrass(ctx: CanvasRenderingContext2D, base = '#63b04e', dark = '#4a8
   rect(ctx, light, 23, 9, 1, 4);
   rect(ctx, dark, 15, 26, 1, 4);
   // tiny clover flowers
-  px(ctx, '#fff7d6', 11, 6);
-  px(ctx, '#ffd9e3', 26, 24);
+  px(ctx, PALETTE['light.7'], 11, 6);
+  px(ctx, PALETTE['light.7'], 26, 24);
   outline(ctx, TILE, TILE);
 }
 
 function drawSoil(ctx: CanvasRenderingContext2D, wet = false) {
-  const base = wet ? '#5a3d2c' : '#7a5230';
-  const furrow = wet ? '#3e2a1f' : '#5e3d24';
-  const ridge = wet ? '#7a5c44' : '#a3764a';
+  const base = wet ? PALETTE['soil.2'] : PALETTE['soil.4'];
+  const furrow = wet ? PALETTE['soil.0'] : PALETTE['soil.2'];
+  const ridge = wet ? PALETTE['soil.4'] : PALETTE['soil.6'];
   rect(ctx, base, 0, 0, TILE, TILE);
   for (let r = 0; r < 4; r += 1) {
     const y = 4 + r * 8;
@@ -92,53 +98,53 @@ function drawSoil(ctx: CanvasRenderingContext2D, wet = false) {
   rect(ctx, furrow, 22, 20, 3, 2);
   rect(ctx, ridge, 18, 27, 2, 1);
   if (wet) {
-    rect(ctx, '#4f7f8c', 7, 22, 10, 2);
-    rect(ctx, '#6fa8b5', 8, 22, 5, 1);
+    rect(ctx, PALETTE['building.0'], 7, 22, 10, 2);
+    rect(ctx, PALETTE['leaf.3'], 8, 22, 5, 1);
   }
   outline(ctx, TILE, TILE);
 }
 
 export function createPixelArtTextures(scene: Phaser.Scene) {
   withTexture(scene, 'tile-grass', TILE, TILE, (ctx) => drawGrass(ctx));
-  withTexture(scene, 'tile-grass-2', TILE, TILE, (ctx) => drawGrass(ctx, '#5da653', '#478739', '#86cc74'));
-  withTexture(scene, 'tile-grass-3', TILE, TILE, (ctx) => drawGrass(ctx, '#6ab054', '#4f9040', '#9ade83'));
+  withTexture(scene, 'tile-grass-2', TILE, TILE, (ctx) => drawGrass(ctx, PALETTE['light.0'], PALETTE['leaf.1'], PALETTE['light.1']));
+  withTexture(scene, 'tile-grass-3', TILE, TILE, (ctx) => drawGrass(ctx, PALETTE['light.0'], PALETTE['leaf.2'], PALETTE['light.1']));
 
   withTexture(scene, 'tile-path', TILE, TILE, (ctx) => {
-    rect(ctx, '#c9a06b', 0, 0, TILE, TILE);
-    rect(ctx, '#e2c086', 0, 0, TILE, 5);
-    rect(ctx, '#a87f4e', 0, 27, TILE, 5);
+    rect(ctx, PALETTE['light.5'], 0, 0, TILE, TILE);
+    rect(ctx, PALETTE['light.5'], 0, 0, TILE, 5);
+    rect(ctx, PALETTE['soil.6'], 0, 27, TILE, 5);
     // cobble dots
-    rect(ctx, '#b78f5c', 5, 9, 7, 4);
-    rect(ctx, '#d9b77e', 6, 9, 5, 1);
-    rect(ctx, '#b78f5c', 19, 16, 8, 5);
-    rect(ctx, '#e8cb90', 20, 16, 6, 1);
-    rect(ctx, '#9a7345', 8, 21, 5, 3);
+    rect(ctx, PALETTE['light.2'], 5, 9, 7, 4);
+    rect(ctx, PALETTE['light.5'], 6, 9, 5, 1);
+    rect(ctx, PALETTE['light.2'], 19, 16, 8, 5);
+    rect(ctx, PALETTE['light.7'], 20, 16, 6, 1);
+    rect(ctx, PALETTE['soil.6'], 8, 21, 5, 3);
     for (let i = 0; i < 12; i += 1) {
-      px(ctx, '#8a6840', Math.floor(hash(i, 3) * 30) + 1, Math.floor(hash(i, 11) * 30) + 1);
+      px(ctx, PALETTE['soil.5'], Math.floor(hash(i, 3) * 30) + 1, Math.floor(hash(i, 11) * 30) + 1);
     }
     outline(ctx, TILE, TILE);
   });
 
   withTexture(scene, 'tile-water', TILE, TILE, (ctx) => {
-    rect(ctx, '#3d7fa6', 0, 0, TILE, TILE);
-    rect(ctx, '#2c5f80', 0, 26, TILE, 6);
-    rect(ctx, '#5fb3c9', 0, 0, TILE, 3);
+    rect(ctx, PALETTE['water.2'], 0, 0, TILE, TILE);
+    rect(ctx, PALETTE['water.2'], 0, 26, TILE, 6);
+    rect(ctx, PALETTE['water.3'], 0, 0, TILE, 3);
     // waves
-    rect(ctx, '#7fd4de', 4, 9, 10, 2);
-    rect(ctx, '#bff0ef', 5, 9, 4, 1);
-    rect(ctx, '#5fb3c9', 17, 16, 11, 2);
-    rect(ctx, '#dff7f3', 18, 16, 4, 1);
-    rect(ctx, '#2c5f80', 7, 21, 8, 1);
+    rect(ctx, PALETTE['light.6'], 4, 9, 10, 2);
+    rect(ctx, PALETTE['light.7'], 5, 9, 4, 1);
+    rect(ctx, PALETTE['water.3'], 17, 16, 11, 2);
+    rect(ctx, PALETTE['light.7'], 18, 16, 4, 1);
+    rect(ctx, PALETTE['water.2'], 7, 21, 8, 1);
     outline(ctx, TILE, TILE);
   });
 
   withTexture(scene, 'plot-wild', TILE, TILE, (ctx) => {
-    drawGrass(ctx, '#5c9a49', '#43763a', '#8fca76');
-    rect(ctx, '#3d6b35', 9, 8, 2, 14);
-    rect(ctx, '#6fbf58', 11, 10, 2, 10);
-    rect(ctx, '#2e5230', 20, 12, 2, 12);
-    rect(ctx, '#7fd06a', 22, 14, 2, 8);
-    rect(ctx, '#d9b06a', 24, 24, 3, 2);
+    drawGrass(ctx, PALETTE['leaf.2'], PALETTE['leaf.1'], PALETTE['light.1']);
+    rect(ctx, PALETTE['leaf.0'], 9, 8, 2, 14);
+    rect(ctx, PALETTE['light.0'], 11, 10, 2, 10);
+    rect(ctx, PALETTE['foliage.3'], 20, 12, 2, 12);
+    rect(ctx, PALETTE['light.0'], 22, 14, 2, 8);
+    rect(ctx, PALETTE['light.5'], 24, 24, 3, 2);
   });
 
   withTexture(scene, 'plot-tilled', TILE, TILE, (ctx) => drawSoil(ctx, false));
@@ -146,20 +152,20 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'crop-seeded', TILE, TILE, (ctx) => {
     ctx.clearRect(0, 0, TILE, TILE);
-    rect(ctx, '#8a613c', 12, 20, 8, 3);
-    rect(ctx, '#e3c98c', 13, 16, 3, 4);
-    rect(ctx, '#c9a86a', 16, 17, 3, 3);
-    px(ctx, '#fff3cf', 14, 17);
+    rect(ctx, PALETTE['soil.5'], 12, 20, 8, 3);
+    rect(ctx, PALETTE['light.7'], 13, 16, 3, 4);
+    rect(ctx, PALETTE['light.5'], 16, 17, 3, 3);
+    px(ctx, PALETTE['light.7'], 14, 17);
   });
 
   withTexture(scene, 'crop-sprout', TILE, TILE, (ctx) => {
     ctx.clearRect(0, 0, TILE, TILE);
-    rect(ctx, '#2f7d37', 15, 17, 2, 8);
-    rect(ctx, '#57b84f', 9, 13, 7, 5);
-    rect(ctx, '#8be06e', 10, 13, 4, 2);
-    rect(ctx, '#3f9c46', 17, 11, 7, 6);
-    rect(ctx, '#a9ec8f', 18, 11, 4, 2);
-    rect(ctx, '#245c2c', 15, 22, 2, 3);
+    rect(ctx, PALETTE['leaf.1'], 15, 17, 2, 8);
+    rect(ctx, PALETTE['light.0'], 9, 13, 7, 5);
+    rect(ctx, PALETTE['light.1'], 10, 13, 4, 2);
+    rect(ctx, PALETTE['leaf.2'], 17, 11, 7, 6);
+    rect(ctx, PALETTE['light.1'], 18, 11, 4, 2);
+    rect(ctx, PALETTE['foliage.3'], 15, 22, 2, 3);
   });
 
   createCropTextures(scene);
@@ -167,44 +173,44 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
   withTexture(scene, 'player', 24, 32, (ctx) => {
     ctx.clearRect(0, 0, 24, 32);
     // shadow anchor drawn separately in scene; body with outline feel
-    rect(ctx, '#241612', 7, 2, 10, 3); // hat top shadow
-    rect(ctx, '#8a5a33', 5, 4, 14, 4); // straw hat
-    rect(ctx, '#e8b96a', 6, 5, 12, 2);
-    rect(ctx, '#c98f45', 5, 7, 14, 1);
-    rect(ctx, '#f2c189', 7, 8, 10, 7); // face
-    rect(ctx, '#2b1d18', 9, 10, 2, 2);
-    rect(ctx, '#2b1d18', 14, 10, 2, 2);
-    rect(ctx, '#e89a7a', 8, 12, 2, 1);
-    rect(ctx, '#e89a7a', 15, 12, 2, 1);
-    rect(ctx, '#4d8f5f', 6, 15, 12, 9); // shirt
-    rect(ctx, '#6fbf7f', 7, 16, 4, 6);
-    rect(ctx, '#35663f', 14, 16, 4, 8);
-    rect(ctx, '#f2c189', 3, 17, 3, 7); // arms
-    rect(ctx, '#f2c189', 18, 17, 3, 7);
-    rect(ctx, '#3a4a6b', 7, 24, 4, 6); // pants
-    rect(ctx, '#3a4a6b', 13, 24, 4, 6);
-    rect(ctx, '#2b3a55', 7, 27, 4, 1);
-    rect(ctx, '#2b3a55', 13, 27, 4, 1);
-    rect(ctx, '#211612', 6, 30, 5, 2); // boots
-    rect(ctx, '#211612', 13, 30, 5, 2);
+    rect(ctx, PALETTE['shadow.0'], 7, 2, 10, 3); // hat top shadow
+    rect(ctx, PALETTE['soil.4'], 5, 4, 14, 4); // straw hat
+    rect(ctx, PALETTE['light.5'], 6, 5, 12, 2);
+    rect(ctx, PALETTE['light.2'], 5, 7, 14, 1);
+    rect(ctx, PALETTE['light.5'], 7, 8, 10, 7); // face
+    rect(ctx, PALETTE['shadow.0'], 9, 10, 2, 2);
+    rect(ctx, PALETTE['shadow.0'], 14, 10, 2, 2);
+    rect(ctx, PALETTE['light.5'], 8, 12, 2, 1);
+    rect(ctx, PALETTE['light.5'], 15, 12, 2, 1);
+    rect(ctx, PALETTE['leaf.3'], 6, 15, 12, 9); // shirt
+    rect(ctx, PALETTE['light.0'], 7, 16, 4, 6);
+    rect(ctx, PALETTE['leaf.0'], 14, 16, 4, 8);
+    rect(ctx, PALETTE['light.5'], 3, 17, 3, 7); // arms
+    rect(ctx, PALETTE['light.5'], 18, 17, 3, 7);
+    rect(ctx, PALETTE['foliage.4'], 7, 24, 4, 6); // pants
+    rect(ctx, PALETTE['foliage.4'], 13, 24, 4, 6);
+    rect(ctx, PALETTE['shadow.3'], 7, 27, 4, 1);
+    rect(ctx, PALETTE['shadow.3'], 13, 27, 4, 1);
+    rect(ctx, PALETTE['outline.3'], 6, 30, 5, 2); // boots
+    rect(ctx, PALETTE['outline.3'], 13, 30, 5, 2);
   });
 
   withTexture(scene, 'rowan', 24, 32, (ctx) => {
     ctx.clearRect(0, 0, 24, 32);
-    rect(ctx, '#d9d0c1', 5, 2, 14, 5); // gray hair / hood
-    rect(ctx, '#efe6c8', 6, 3, 12, 2);
-    rect(ctx, '#f2d9a7', 7, 7, 10, 7);
-    rect(ctx, '#2b1d18', 9, 9, 2, 2);
-    rect(ctx, '#2b1d18', 14, 9, 2, 2);
-    rect(ctx, '#ffffff', 9, 9, 1, 1);
-    rect(ctx, '#5f7fa6', 5, 14, 14, 10); // robe
-    rect(ctx, '#87a8cc', 6, 15, 5, 7);
-    rect(ctx, '#32465a', 14, 15, 5, 9);
-    rect(ctx, '#ffd36d', 11, 16, 2, 6); // clasp
-    rect(ctx, '#5a3c32', 7, 24, 4, 6);
-    rect(ctx, '#5a3c32', 13, 24, 4, 6);
-    rect(ctx, '#2e211b', 6, 29, 5, 2);
-    rect(ctx, '#2e211b', 13, 29, 5, 2);
+    rect(ctx, PALETTE['light.7'], 5, 2, 14, 5); // gray hair / hood
+    rect(ctx, PALETTE['light.7'], 6, 3, 12, 2);
+    rect(ctx, PALETTE['light.7'], 7, 7, 10, 7);
+    rect(ctx, PALETTE['shadow.0'], 9, 9, 2, 2);
+    rect(ctx, PALETTE['shadow.0'], 14, 9, 2, 2);
+    rect(ctx, PALETTE['light.7'], 9, 9, 1, 1);
+    rect(ctx, PALETTE['building.0'], 5, 14, 14, 10); // robe
+    rect(ctx, PALETTE['water.3'], 6, 15, 5, 7);
+    rect(ctx, PALETTE['foliage.4'], 14, 15, 5, 9);
+    rect(ctx, PALETTE['light.5'], 11, 16, 2, 6); // clasp
+    rect(ctx, PALETTE['soil.2'], 7, 24, 4, 6);
+    rect(ctx, PALETTE['soil.2'], 13, 24, 4, 6);
+    rect(ctx, PALETTE['soil.0'], 6, 29, 5, 2);
+    rect(ctx, PALETTE['soil.0'], 13, 29, 5, 2);
   });
 
   withTexture(scene, 'farmhouse', 112, 84, (ctx) => {
@@ -212,66 +218,66 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
     // shadow
     rect(ctx, 'rgba(0,0,0,0.25)', 4, 78, 104, 6);
     // walls
-    rect(ctx, '#7a4a35', 10, 36, 92, 42);
-    rect(ctx, '#9c6244', 12, 38, 88, 4);
-    rect(ctx, '#5a3426', 12, 70, 88, 8);
+    rect(ctx, PALETTE['soil.4'], 10, 36, 92, 42);
+    rect(ctx, PALETTE['soil.5'], 12, 38, 88, 4);
+    rect(ctx, PALETTE['soil.2'], 12, 70, 88, 8);
     // timber frame
-    rect(ctx, '#3d271d', 10, 36, 4, 42);
-    rect(ctx, '#3d271d', 98, 36, 4, 42);
-    rect(ctx, '#3d271d', 10, 52, 92, 3);
+    rect(ctx, PALETTE['soil.0'], 10, 36, 4, 42);
+    rect(ctx, PALETTE['soil.0'], 98, 36, 4, 42);
+    rect(ctx, PALETTE['soil.0'], 10, 52, 92, 3);
     // roof
-    rect(ctx, '#b65a3d', 4, 22, 104, 16);
-    rect(ctx, '#e08a5a', 6, 24, 100, 4);
-    rect(ctx, '#7e3524', 6, 32, 100, 6);
-    for (let x = 8; x < 104; x += 8) rect(ctx, '#7e3524', x, 24, 2, 12);
+    rect(ctx, PALETTE['building.1'], 4, 22, 104, 16);
+    rect(ctx, PALETTE['light.3'], 6, 24, 100, 4);
+    rect(ctx, PALETTE['clothWarm.1'], 6, 32, 100, 6);
+    for (let x = 8; x < 104; x += 8) rect(ctx, PALETTE['clothWarm.1'], x, 24, 2, 12);
     // chimney
-    rect(ctx, '#6b6b7a', 80, 8, 12, 18);
-    rect(ctx, '#4c4c58', 80, 8, 12, 3);
+    rect(ctx, PALETTE['building.0'], 80, 8, 12, 18);
+    rect(ctx, PALETTE['foliage.4'], 80, 8, 12, 3);
     rect(ctx, 'rgba(255,255,255,0.7)', 84, 2, 5, 4);
     // door
-    rect(ctx, '#2e1d14', 48, 52, 20, 26);
-    rect(ctx, '#6b4429', 50, 54, 16, 24);
-    rect(ctx, '#ffd36d', 62, 64, 3, 3);
+    rect(ctx, PALETTE['shadow.0'], 48, 52, 20, 26);
+    rect(ctx, PALETTE['soil.3'], 50, 54, 16, 24);
+    rect(ctx, PALETTE['light.5'], 62, 64, 3, 3);
     // windows warm
-    rect(ctx, '#2e1d14', 18, 44, 20, 16);
-    rect(ctx, '#ffd87a', 20, 46, 16, 12);
-    rect(ctx, '#fff3bd', 21, 47, 6, 5);
-    rect(ctx, '#2e1d14', 27, 46, 2, 12);
-    rect(ctx, '#2e1d14', 20, 51, 16, 2);
-    rect(ctx, '#2e1d14', 76, 44, 20, 16);
-    rect(ctx, '#ffd87a', 78, 46, 16, 12);
-    rect(ctx, '#fff3bd', 79, 47, 6, 5);
-    rect(ctx, '#2e1d14', 85, 46, 2, 12);
-    rect(ctx, '#2e1d14', 78, 51, 16, 2);
+    rect(ctx, PALETTE['shadow.0'], 18, 44, 20, 16);
+    rect(ctx, PALETTE['light.7'], 20, 46, 16, 12);
+    rect(ctx, PALETTE['light.7'], 21, 47, 6, 5);
+    rect(ctx, PALETTE['shadow.0'], 27, 46, 2, 12);
+    rect(ctx, PALETTE['shadow.0'], 20, 51, 16, 2);
+    rect(ctx, PALETTE['shadow.0'], 76, 44, 20, 16);
+    rect(ctx, PALETTE['light.7'], 78, 46, 16, 12);
+    rect(ctx, PALETTE['light.7'], 79, 47, 6, 5);
+    rect(ctx, PALETTE['shadow.0'], 85, 46, 2, 12);
+    rect(ctx, PALETTE['shadow.0'], 78, 51, 16, 2);
     // flower box
-    rect(ctx, '#4a8f3c', 18, 61, 20, 4);
-    px(ctx, '#ff8aa0', 20, 60);
-    px(ctx, '#ffd36d', 24, 60);
-    px(ctx, '#ffffff', 28, 60);
+    rect(ctx, PALETTE['leaf.2'], 18, 61, 20, 4);
+    px(ctx, PALETTE['light.4'], 20, 60);
+    px(ctx, PALETTE['light.5'], 24, 60);
+    px(ctx, PALETTE['light.7'], 28, 60);
   });
 
   withTexture(scene, 'tree', 48, 64, (ctx) => {
     ctx.clearRect(0, 0, 48, 64);
     rect(ctx, 'rgba(0,0,0,0.22)', 12, 56, 26, 5);
-    rect(ctx, '#6d4328', 20, 34, 9, 22);
-    rect(ctx, '#8f5c38', 21, 35, 3, 20);
-    rect(ctx, '#42291a', 25, 36, 4, 19);
+    rect(ctx, PALETTE['soil.3'], 20, 34, 9, 22);
+    rect(ctx, PALETTE['soil.5'], 21, 35, 3, 20);
+    rect(ctx, PALETTE['soil.0'], 25, 36, 4, 19);
     // canopy layers
-    rect(ctx, '#2e6b38', 8, 24, 32, 16);
-    rect(ctx, '#3f8c45', 4, 14, 38, 16);
-    rect(ctx, '#63b458', 12, 6, 26, 16);
-    rect(ctx, '#8fdc7c', 15, 8, 14, 8);
-    rect(ctx, '#2e6b38', 26, 28, 14, 12);
-    rect(ctx, '#3f8c45', 6, 28, 12, 8);
+    rect(ctx, PALETTE['leaf.0'], 8, 24, 32, 16);
+    rect(ctx, PALETTE['leaf.1'], 4, 14, 38, 16);
+    rect(ctx, PALETTE['light.0'], 12, 6, 26, 16);
+    rect(ctx, PALETTE['light.1'], 15, 8, 14, 8);
+    rect(ctx, PALETTE['leaf.0'], 26, 28, 14, 12);
+    rect(ctx, PALETTE['leaf.1'], 6, 28, 12, 8);
     // apples
-    px(ctx, '#ff6b6b', 14, 20);
-    px(ctx, '#ff6b6b', 30, 18);
-    px(ctx, '#ffd36d', 22, 26);
+    px(ctx, PALETTE['light.4'], 14, 20);
+    px(ctx, PALETTE['light.4'], 30, 18);
+    px(ctx, PALETTE['light.5'], 22, 26);
   });
 
   withTexture(scene, 'tile-cursor', TILE, TILE, (ctx) => {
     ctx.clearRect(0, 0, TILE, TILE);
-    ctx.strokeStyle = '#fff2a6';
+    ctx.strokeStyle = PALETTE['light.7'];
     ctx.lineWidth = 3;
     ctx.shadowColor = 'rgba(255,242,166,0.9)';
     ctx.shadowBlur = 6;
@@ -281,8 +287,8 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
     ctx.stroke();
     ctx.shadowBlur = 0;
     // corners
-    rect(ctx, '#fff7cf', 2, 2, 6, 2);
-    rect(ctx, '#fff7cf', 2, 2, 2, 6);
+    rect(ctx, PALETTE['light.7'], 2, 2, 6, 2);
+    rect(ctx, PALETTE['light.7'], 2, 2, 2, 6);
   });
 
   withTexture(scene, 'shadow', 32, 12, (ctx) => {
@@ -311,17 +317,17 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'grass-tuft', TILE, TILE, (ctx) => {
     ctx.clearRect(0, 0, TILE, TILE);
-    rect(ctx, '#3d7a35', 14, 16, 2, 10);
-    rect(ctx, '#5cb85a', 11, 13, 2, 12);
-    rect(ctx, '#8be06e', 12, 13, 2, 4);
-    rect(ctx, '#3d7a35', 19, 15, 2, 11);
-    rect(ctx, '#6fbf58', 21, 12, 2, 10);
+    rect(ctx, PALETTE['leaf.1'], 14, 16, 2, 10);
+    rect(ctx, PALETTE['light.0'], 11, 13, 2, 12);
+    rect(ctx, PALETTE['light.1'], 12, 13, 2, 4);
+    rect(ctx, PALETTE['leaf.1'], 19, 15, 2, 11);
+    rect(ctx, PALETTE['light.0'], 21, 12, 2, 10);
   });
 
   withTexture(scene, 'rain-drop', 3, 10, (ctx) => {
     ctx.clearRect(0, 0, 3, 10);
-    rect(ctx, '#bfe9ff', 1, 1, 1, 8);
-    px(ctx, '#ffffff', 1, 1);
+    rect(ctx, PALETTE['water.3'], 1, 1, 1, 8);
+    px(ctx, PALETTE['light.7'], 1, 1);
   });
 
   // A bead, not a streak. `rain-drop` above is drawn as a falling line because
@@ -330,10 +336,16 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
   // weather rather than like a can being tipped.
   withTexture(scene, 'water-bead', 5, 5, (ctx) => {
     ctx.clearRect(0, 0, 5, 5);
-    rect(ctx, '#7fc6ea', 1, 0, 3, 5);
-    rect(ctx, '#7fc6ea', 0, 1, 5, 3);
-    rect(ctx, '#bfe9ff', 1, 1, 2, 2);
-    px(ctx, '#ffffff', 1, 1);
+    rect(ctx, PALETTE['water.3'], 1, 0, 3, 5);
+    rect(ctx, PALETTE['water.3'], 0, 1, 5, 3);
+    // The inner ring's own literal (#bfe9ff) maps to water.3 everywhere else
+    // in this file (it is the raindrop's main streak in the texture above),
+    // but here it sits on top of this bead's outer body, which already is
+    // water.3 via the #7fc6ea override two lines up. Kept distinct with
+    // light.6 instead, preserving the outer < inner < highlight brightness
+    // order (water.3 < light.6 < light.7).
+    rect(ctx, PALETTE['light.6'], 1, 1, 2, 2);
+    px(ctx, PALETTE['light.7'], 1, 1);
   });
 
   withTexture(scene, 'firefly', 8, 8, (ctx) => {
@@ -342,8 +354,8 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
     ctx.beginPath();
     ctx.arc(4, 4, 3.5, 0, Math.PI * 2);
     ctx.fill();
-    rect(ctx, '#fff6a5', 3, 3, 2, 2);
-    px(ctx, '#ffffff', 3, 3);
+    rect(ctx, PALETTE['light.7'], 3, 3, 2, 2);
+    px(ctx, PALETTE['light.7'], 3, 3);
   });
 
   withTexture(scene, 'dust', 12, 8, (ctx) => {
@@ -372,7 +384,7 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'sparkle', 12, 12, (ctx) => {
     ctx.clearRect(0, 0, 12, 12);
-    ctx.fillStyle = '#fff8d1';
+    ctx.fillStyle = PALETTE['light.7'];
     ctx.beginPath();
     ctx.moveTo(6, 0);
     ctx.lineTo(7.4, 4.6);
@@ -388,18 +400,18 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'petal', 5, 5, (ctx) => {
     ctx.clearRect(0, 0, 5, 5);
-    rect(ctx, '#ffd9e3', 1, 1, 3, 3);
-    px(ctx, '#ffffff', 2, 1);
-    px(ctx, '#ff9eb5', 3, 3);
+    rect(ctx, PALETTE['light.7'], 1, 1, 3, 3);
+    px(ctx, PALETTE['light.7'], 2, 1);
+    px(ctx, PALETTE['light.4'], 3, 3);
   });
 
   withTexture(scene, 'butterfly', 10, 8, (ctx) => {
     ctx.clearRect(0, 0, 10, 8);
-    rect(ctx, '#ff9eb5', 0, 1, 4, 5);
-    rect(ctx, '#ffd36d', 6, 1, 4, 5);
-    rect(ctx, '#3a2b28', 4, 2, 2, 4);
-    px(ctx, '#ffffff', 1, 2);
-    px(ctx, '#ffffff', 7, 2);
+    rect(ctx, PALETTE['light.4'], 0, 1, 4, 5);
+    rect(ctx, PALETTE['light.5'], 6, 1, 4, 5);
+    rect(ctx, PALETTE['soil.0'], 4, 2, 2, 4);
+    px(ctx, PALETTE['light.7'], 1, 2);
+    px(ctx, PALETTE['light.7'], 7, 2);
   });
 
   /**
@@ -453,18 +465,18 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
   // now a texture, so the map can name it like any other prop.
   withTexture(scene, 'well', 64, 64, (ctx) => {
     ctx.clearRect(0, 0, 64, 64);
-    rect(ctx, '#2e211b', 6, 30, 52, 28);
-    rect(ctx, '#6e5846', 8, 32, 48, 24);
-    rect(ctx, '#5b4738', 8, 40, 48, 4);
-    rect(ctx, '#324b55', 14, 20, 36, 20);
-    rect(ctx, '#93b5bd', 16, 22, 32, 16);
-    rect(ctx, '#b8dbe2', 18, 24, 28, 5);
-    rect(ctx, '#4a2a19', 8, 8, 48, 8);
-    rect(ctx, '#7b4328', 10, 10, 44, 5);
-    rect(ctx, '#4a2a19', 12, 14, 5, 18);
-    rect(ctx, '#4a2a19', 47, 14, 5, 18);
-    px(ctx, '#d9edf2', 30, 26);
-    px(ctx, '#d9edf2', 36, 27);
+    rect(ctx, PALETTE['soil.0'], 6, 30, 52, 28);
+    rect(ctx, PALETTE['soil.4'], 8, 32, 48, 24);
+    rect(ctx, PALETTE['soil.3'], 8, 40, 48, 4);
+    rect(ctx, PALETTE['foliage.4'], 14, 20, 36, 20);
+    rect(ctx, PALETTE['light.6'], 16, 22, 32, 16);
+    rect(ctx, PALETTE['light.7'], 18, 24, 28, 5);
+    rect(ctx, PALETTE['soil.1'], 8, 8, 48, 8);
+    rect(ctx, PALETTE['clothWarm.1'], 10, 10, 44, 5);
+    rect(ctx, PALETTE['soil.1'], 12, 14, 5, 18);
+    rect(ctx, PALETTE['soil.1'], 47, 14, 5, 18);
+    px(ctx, PALETTE['light.7'], 30, 26);
+    px(ctx, PALETTE['light.7'], 36, 27);
   });
 
   // The forge in the village. An open-fronted shed with a lit hearth and an
@@ -473,28 +485,28 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
     ctx.clearRect(0, 0, 96, 64);
     rect(ctx, 'rgba(0,0,0,0.24)', 4, 58, 88, 5);
     // Roof, low and heavy.
-    rect(ctx, '#4a4a55', 0, 4, 96, 16);
-    rect(ctx, '#6b6b7a', 2, 6, 92, 4);
-    rect(ctx, '#33333c', 2, 16, 92, 4);
+    rect(ctx, PALETTE['foliage.4'], 0, 4, 96, 16);
+    rect(ctx, PALETTE['building.0'], 2, 6, 92, 4);
+    rect(ctx, PALETTE['foliage.2'], 2, 16, 92, 4);
     // Posts, open front.
-    rect(ctx, '#5a3c28', 6, 20, 7, 38);
-    rect(ctx, '#5a3c28', 83, 20, 7, 38);
-    rect(ctx, '#3d2a1c', 13, 20, 70, 26);
+    rect(ctx, PALETTE['soil.2'], 6, 20, 7, 38);
+    rect(ctx, PALETTE['soil.2'], 83, 20, 7, 38);
+    rect(ctx, PALETTE['soil.0'], 13, 20, 70, 26);
     // The hearth, which is the whole reason to walk over here.
-    rect(ctx, '#7a2e18', 20, 26, 26, 20);
-    rect(ctx, '#e2611f', 23, 30, 20, 16);
-    rect(ctx, '#ffb347', 26, 34, 14, 12);
-    rect(ctx, '#fff0b8', 30, 38, 7, 8);
+    rect(ctx, PALETTE['clothWarm.1'], 20, 26, 26, 20);
+    rect(ctx, PALETTE['building.3'], 23, 30, 20, 16);
+    rect(ctx, PALETTE['light.5'], 26, 34, 14, 12);
+    rect(ctx, PALETTE['light.7'], 30, 38, 7, 8);
     // Chimney, and the smoke it earns.
-    rect(ctx, '#55555f', 24, 0, 14, 8);
-    rect(ctx, '#3a3a42', 24, 0, 14, 3);
+    rect(ctx, PALETTE['foliage.4'], 24, 0, 14, 8);
+    rect(ctx, PALETTE['foliage.2'], 24, 0, 14, 3);
     // Anvil on its block.
-    rect(ctx, '#4a3324', 58, 44, 16, 14);
-    rect(ctx, '#3f4a55', 55, 36, 22, 6);
-    rect(ctx, '#6b7c8c', 55, 36, 22, 2);
-    rect(ctx, '#3f4a55', 62, 41, 8, 4);
-    px(ctx, '#ffd36d', 60, 35);
-    px(ctx, '#ffd36d', 72, 34);
+    rect(ctx, PALETTE['soil.1'], 58, 44, 16, 14);
+    rect(ctx, PALETTE['foliage.4'], 55, 36, 22, 6);
+    rect(ctx, PALETTE['building.0'], 55, 36, 22, 2);
+    rect(ctx, PALETTE['foliage.4'], 62, 41, 8, 4);
+    px(ctx, PALETTE['light.5'], 60, 35);
+    px(ctx, PALETTE['light.5'], 72, 34);
   });
 
   createBuildingTextures(scene);
@@ -563,11 +575,11 @@ interface BuildingPalette {
 
 const BUILDING_ART: readonly BuildingPalette[] = [
   // The two working buildings, in weathered timber and galvanised steel.
-  { key: 'building-shed', width: 128, height: 96, wall: '#8a6a46', trim: '#5d452c', roof: '#7a4a35', roofLight: '#a96d4c' },
-  { key: 'building-silo', width: 96, height: 96, wall: '#9aa3ab', trim: '#6b7480', roof: '#5d6b78', roofLight: '#8ba3b8' },
+  { key: 'building-shed', width: 128, height: 96, wall: PALETTE['soil.5'], trim: PALETTE['soil.3'], roof: PALETTE['soil.4'], roofLight: PALETTE['soil.6'] },
+  { key: 'building-silo', width: 96, height: 96, wall: PALETTE['light.6'], trim: PALETTE['building.0'], roof: PALETTE['building.0'], roofLight: PALETTE['building.2'] },
   // The two you want to pick out from the far side of the field.
-  { key: 'building-coop', width: 192, height: 96, wall: '#d9c08a', trim: '#a3874f', roof: '#b65a3d', roofLight: '#e08a5a' },
-  { key: 'building-barn', width: 224, height: 128, wall: '#b8452f', trim: '#7e2a1c', roof: '#5a3426', roofLight: '#8a5a3c' },
+  { key: 'building-coop', width: 192, height: 96, wall: PALETTE['light.5'], trim: PALETTE['light.2'], roof: PALETTE['building.1'], roofLight: PALETTE['light.3'] },
+  { key: 'building-barn', width: 224, height: 128, wall: PALETTE['building.1'], trim: PALETTE['clothWarm.0'], roof: PALETTE['soil.2'], roofLight: PALETTE['soil.4'] },
 ];
 
 function drawBuilding(ctx: CanvasRenderingContext2D, art: BuildingPalette) {
@@ -595,17 +607,17 @@ function drawBuilding(ctx: CanvasRenderingContext2D, art: BuildingPalette) {
   const doorWidth = Math.max(10, Math.round(w * 0.14));
   const doorX = Math.round((w - doorWidth) / 2);
   const doorY = Math.round(h * 0.62);
-  rect(ctx, '#2e1d14', doorX, doorY, doorWidth, h - doorY - 5);
-  rect(ctx, '#6b4429', doorX + 2, doorY + 2, doorWidth - 4, h - doorY - 9);
-  rect(ctx, '#ffd36d', doorX + doorWidth - 5, doorY + Math.round((h - doorY) / 2), 2, 2);
+  rect(ctx, PALETTE['shadow.0'], doorX, doorY, doorWidth, h - doorY - 5);
+  rect(ctx, PALETTE['soil.3'], doorX + 2, doorY + 2, doorWidth - 4, h - doorY - 9);
+  rect(ctx, PALETTE['light.5'], doorX + doorWidth - 5, doorY + Math.round((h - doorY) / 2), 2, 2);
 
   // A lit window each side, so a finished building reads as somewhere rather
   // than as a shape — even before there is anything living in it.
   const windowY = Math.round(h * 0.55);
   for (const windowX of [Math.round(w * 0.16), Math.round(w * 0.74)]) {
-    rect(ctx, '#2e1d14', windowX, windowY, 18, 14);
-    rect(ctx, '#ffd87a', windowX + 2, windowY + 2, 14, 10);
-    rect(ctx, '#2e1d14', windowX + 8, windowY + 2, 2, 10);
+    rect(ctx, PALETTE['shadow.0'], windowX, windowY, 18, 14);
+    rect(ctx, PALETTE['light.7'], windowX + 2, windowY + 2, 14, 10);
+    rect(ctx, PALETTE['shadow.0'], windowX + 8, windowY + 2, 2, 10);
   }
 }
 
@@ -620,13 +632,13 @@ function createBuildingTextures(scene: Phaser.Scene) {
   withTexture(scene, 'building-scaffold', 128, 96, (ctx) => {
     ctx.clearRect(0, 0, 128, 96);
     rect(ctx, 'rgba(0,0,0,0.18)', 4, 91, 120, 5);
-    for (const x of [8, 60, 114]) rect(ctx, '#6b5136', x, 24, 6, 68);
-    for (const y of [30, 56, 82]) rect(ctx, '#8a6a46', 8, y, 112, 5);
+    for (const x of [8, 60, 114]) rect(ctx, PALETTE['soil.3'], x, 24, 6, 68);
+    for (const y of [30, 56, 82]) rect(ctx, PALETTE['soil.5'], 8, y, 112, 5);
     // The diagonal brace, stepped, because the context only fills rectangles.
-    for (let i = 0; i < 11; i += 1) rect(ctx, '#9c7a52', 12 + i * 9, 84 - i * 5, 9, 4);
+    for (let i = 0; i < 11; i += 1) rect(ctx, PALETTE['soil.6'], 12 + i * 9, 84 - i * 5, 9, 4);
     // A pale tarpaulin over the ridge.
-    rect(ctx, '#d9c08a', 34, 12, 60, 9);
-    rect(ctx, '#f0e0b8', 34, 12, 60, 3);
+    rect(ctx, PALETTE['light.5'], 34, 12, 60, 9);
+    rect(ctx, PALETTE['light.7'], 34, 12, 60, 3);
   });
 }
 
@@ -659,39 +671,39 @@ const ANIMAL_ART: readonly AnimalPalette[] = [
     key: 'animal-chicken',
     width: 20,
     height: 20,
-    body: '#f2ece0',
-    light: '#ffffff',
-    dark: '#cfc6b4',
-    accent: '#d9534f',
+    body: PALETTE['light.7'],
+    light: PALETTE['light.7'],
+    dark: PALETTE['light.6'],
+    accent: PALETTE['building.3'],
     bird: true,
   },
   {
     key: 'animal-duck',
     width: 22,
     height: 20,
-    body: '#e8e4d6',
-    light: '#ffffff',
-    dark: '#b9b4a2',
-    accent: '#e0a83c',
+    body: PALETTE['light.7'],
+    light: PALETTE['light.7'],
+    dark: PALETTE['light.6'],
+    accent: PALETTE['light.5'],
     bird: true,
   },
   {
     key: 'animal-cow',
     width: 32,
     height: 26,
-    body: '#f4efe6',
-    light: '#ffffff',
-    dark: '#3a322c',
-    accent: '#e9a7a7',
+    body: PALETTE['light.7'],
+    light: PALETTE['light.7'],
+    dark: PALETTE['soil.1'],
+    accent: PALETTE['light.5'],
   },
   {
     key: 'animal-goat',
     width: 26,
     height: 24,
-    body: '#c9bda6',
-    light: '#e4dbc6',
-    dark: '#8d8069',
-    accent: '#6b5b45',
+    body: PALETTE['light.6'],
+    light: PALETTE['light.7'],
+    dark: PALETTE['soil.6'],
+    accent: PALETTE['soil.4'],
   },
 ];
 
@@ -716,8 +728,8 @@ function drawAnimal(ctx: CanvasRenderingContext2D, art: AnimalPalette) {
     rect(ctx, art.light, w - 7, 3, 4, 2);
     rect(ctx, art.accent, w - 6, 0, 3, 2);
     rect(ctx, art.accent, w - 2, 4, 2, 2);
-    rect(ctx, '#2e2a22', w - 4, 4, 1, 1);
-    for (const legX of [5, w - 10]) rect(ctx, '#e0a83c', legX, h - 5, 2, 3);
+    rect(ctx, PALETTE['soil.0'], w - 4, 4, 1, 1);
+    for (const legX of [5, w - 10]) rect(ctx, PALETTE['light.5'], legX, h - 5, 2, 3);
     return;
   }
 
@@ -737,7 +749,7 @@ function drawAnimal(ctx: CanvasRenderingContext2D, art: AnimalPalette) {
   rect(ctx, art.accent, w - 4, backTop + 8, 3, 2);
   rect(ctx, art.dark, w - 9, backTop, 2, 4);
   rect(ctx, art.dark, w - 4, backTop + 1, 2, 3);
-  rect(ctx, '#2e2a22', w - 5, backTop + 5, 1, 1);
+  rect(ctx, PALETTE['soil.0'], w - 5, backTop + 5, 1, 1);
   // Tail.
   rect(ctx, art.dark, 1, backTop, 2, bodyHeight - 2);
   for (const legX of [4, 9, w - 14, w - 9]) rect(ctx, art.dark, legX, h - 7, 2, 5);
@@ -758,10 +770,10 @@ function createAnimalTextures(scene: Phaser.Scene) {
 
   withTexture(scene, 'animal-hungry', 8, 14, (ctx) => {
     ctx.clearRect(0, 0, 8, 14);
-    rect(ctx, '#2b2119', 2, 0, 4, 10);
-    rect(ctx, '#ffd36d', 3, 1, 2, 7);
-    rect(ctx, '#2b2119', 2, 11, 4, 3);
-    rect(ctx, '#ffd36d', 3, 12, 2, 1);
+    rect(ctx, PALETTE['soil.0'], 2, 0, 4, 10);
+    rect(ctx, PALETTE['light.5'], 3, 1, 2, 7);
+    rect(ctx, PALETTE['soil.0'], 2, 11, 4, 3);
+    rect(ctx, PALETTE['light.5'], 3, 12, 2, 1);
   });
 
   // The stock pen: a rail fence with a trough in it, three tiles by two.
@@ -769,19 +781,19 @@ function createAnimalTextures(scene: Phaser.Scene) {
     ctx.clearRect(0, 0, 96, 64);
     rect(ctx, 'rgba(0,0,0,0.16)', 6, 56, 84, 5);
     // Straw inside the rails, so the ground reads as trodden rather than grass.
-    rect(ctx, '#c8a86a', 8, 22, 80, 32);
-    rect(ctx, '#dcc088', 10, 24, 76, 6);
+    rect(ctx, PALETTE['light.5'], 8, 22, 80, 32);
+    rect(ctx, PALETTE['light.5'], 10, 24, 76, 6);
     // Two rails along the back and the front, with posts holding them up.
-    for (const railY of [16, 26, 46]) rect(ctx, '#8a6a46', 4, railY, 88, 4);
-    for (const postX of [4, 30, 60, 88]) rect(ctx, '#6b5136', postX, 12, 5, 40);
+    for (const railY of [16, 26, 46]) rect(ctx, PALETTE['soil.5'], 4, railY, 88, 4);
+    for (const postX of [4, 30, 60, 88]) rect(ctx, PALETTE['soil.3'], postX, 12, 5, 40);
     // The trough, which is the bit you walk up to.
-    rect(ctx, '#5f452f', 34, 34, 34, 12);
-    rect(ctx, '#8a6a46', 36, 36, 30, 6);
-    rect(ctx, '#b89a5e', 38, 37, 26, 3);
+    rect(ctx, PALETTE['soil.3'], 34, 34, 34, 12);
+    rect(ctx, PALETTE['soil.5'], 36, 36, 30, 6);
+    rect(ctx, PALETTE['light.2'], 38, 37, 26, 3);
     // A hay bale stacked at the end.
-    rect(ctx, '#d8bc78', 72, 32, 18, 14);
-    rect(ctx, '#efd89c', 72, 32, 18, 4);
-    rect(ctx, '#a8894c', 78, 32, 2, 14);
+    rect(ctx, PALETTE['light.5'], 72, 32, 18, 14);
+    rect(ctx, PALETTE['light.7'], 72, 32, 18, 4);
+    rect(ctx, PALETTE['light.2'], 78, 32, 2, 14);
   });
 }
 
@@ -797,12 +809,12 @@ function createCropTextures(scene: Phaser.Scene) {
 
 /** Leaves at the base, so every plant is rooted in something green. */
 function drawFoliage(ctx: CanvasRenderingContext2D, top: number) {
-  rect(ctx, '#2f7d37', 15, top, 2, 26 - top);
-  rect(ctx, '#57b84f', 7, top + 1, 7, 5);
-  rect(ctx, '#8be06e', 8, top + 1, 4, 2);
-  rect(ctx, '#3f9c46', 18, top, 7, 6);
-  rect(ctx, '#a9ec8f', 19, top, 4, 2);
-  rect(ctx, '#245c2c', 15, 23, 2, 3);
+  rect(ctx, PALETTE['leaf.1'], 15, top, 2, 26 - top);
+  rect(ctx, PALETTE['light.0'], 7, top + 1, 7, 5);
+  rect(ctx, PALETTE['light.1'], 8, top + 1, 4, 2);
+  rect(ctx, PALETTE['leaf.2'], 18, top, 7, 6);
+  rect(ctx, PALETTE['light.1'], 19, top, 4, 2);
+  rect(ctx, PALETTE['foliage.3'], 15, 23, 2, 3);
 }
 
 function drawCropPlant(
@@ -840,9 +852,9 @@ function drawCropPlant(
       return;
     // Wide and low, the only silhouette that has to read from across a field.
     case 'gourd':
-      rect(ctx, '#2f7d37', 6, 8, 4, 3);
-      rect(ctx, '#57b84f', 22, 9, 5, 3);
-      rect(ctx, '#3a5c2a', 15, 8, 2, 5);
+      rect(ctx, PALETTE['leaf.1'], 6, 8, 4, 3);
+      rect(ctx, PALETTE['light.0'], 22, 9, 5, 3);
+      rect(ctx, PALETTE['foliage.3'], 15, 8, 2, 5);
       rect(ctx, body, 4, 12, 24, 14);
       rect(ctx, light, 7, 14, 4, 10);
       rect(ctx, light, 15, 13, 3, 12);
@@ -851,9 +863,9 @@ function drawCropPlant(
       return;
     // Ears on stalks. Three of them, leaning, so it does not read as a fence.
     case 'grain':
-      rect(ctx, '#3a6b2c', 9, 16, 2, 10);
-      rect(ctx, '#3a6b2c', 15, 14, 2, 12);
-      rect(ctx, '#3a6b2c', 21, 17, 2, 9);
+      rect(ctx, PALETTE['leaf.0'], 9, 16, 2, 10);
+      rect(ctx, PALETTE['leaf.0'], 15, 14, 2, 12);
+      rect(ctx, PALETTE['leaf.0'], 21, 17, 2, 9);
       rect(ctx, body, 7, 6, 5, 11);
       rect(ctx, light, 8, 7, 2, 7);
       rect(ctx, body, 14, 4, 5, 11);
@@ -862,9 +874,9 @@ function drawCropPlant(
       rect(ctx, light, 21, 9, 2, 6);
       return;
     case 'bloom':
-      rect(ctx, '#2f7d37', 15, 15, 2, 11);
-      rect(ctx, '#57b84f', 8, 18, 6, 3);
-      rect(ctx, '#57b84f', 18, 20, 6, 3);
+      rect(ctx, PALETTE['leaf.1'], 15, 15, 2, 11);
+      rect(ctx, PALETTE['light.0'], 8, 18, 6, 3);
+      rect(ctx, PALETTE['light.0'], 18, 20, 6, 3);
       rect(ctx, body, 10, 5, 12, 11);
       rect(ctx, light, 12, 6, 4, 4);
       rect(ctx, dark, 17, 11, 4, 4);
@@ -878,7 +890,7 @@ function drawCropPlant(
         rect(ctx, body, x, y, w, 5);
         rect(ctx, light, x + 1, y, Math.floor(w / 2), 2);
         rect(ctx, dark, x, y + 5, w, 1);
-        rect(ctx, '#efe6d6', x + Math.floor(w / 2) - 1, y + 6, 3, 5);
+        rect(ctx, PALETTE['light.7'], x + Math.floor(w / 2) - 1, y + 6, 3, 5);
       }
   }
 }
@@ -960,15 +972,15 @@ function drawTree(ctx: CanvasRenderingContext2D, stage: number) {
   const trunkTop = h - 6 - trunkHeight;
 
   rect(ctx, 'rgba(0,0,0,0.18)', Math.round(centreX - radiusX * 0.6), h - 8, Math.round(radiusX * 1.2), 5);
-  rect(ctx, '#5a3f28', trunkX, trunkTop, trunkWidth, trunkHeight);
-  rect(ctx, '#7a5636', trunkX, trunkTop, Math.max(1, trunkWidth - 2), trunkHeight);
-  rect(ctx, '#3d2a1a', trunkX + trunkWidth - 1, trunkTop, 1, trunkHeight);
+  rect(ctx, PALETTE['soil.2'], trunkX, trunkTop, trunkWidth, trunkHeight);
+  rect(ctx, PALETTE['soil.4'], trunkX, trunkTop, Math.max(1, trunkWidth - 2), trunkHeight);
+  rect(ctx, PALETTE['soil.0'], trunkX + trunkWidth - 1, trunkTop, 1, trunkHeight);
 
   // Two masses rather than one: a big one over the trunk and a smaller one
   // riding on its shoulder, which is what stops a wood of them looking like a
   // row of identical lollipops.
   const shade = (fromTop: number) =>
-    fromTop < 0.22 ? '#63b04e' : fromTop < 0.62 ? '#3f8c3c' : '#2a5e2c';
+    fromTop < 0.22 ? PALETTE['light.0'] : fromTop < 0.62 ? PALETTE['leaf.1'] : PALETTE['foliage.3'];
   blob(ctx, centreX, trunkTop + 3, radiusX, radiusY, shade);
   if (stage >= 2) {
     blob(
@@ -988,15 +1000,15 @@ function drawStump(ctx: CanvasRenderingContext2D) {
   ctx.clearRect(0, 0, w, h);
   const top = h - 26;
   rect(ctx, 'rgba(0,0,0,0.20)', 14, h - 8, 36, 5);
-  rect(ctx, '#4a3120', 18, top, 28, 22);
-  rect(ctx, '#6b4629', 18, top, 24, 22);
+  rect(ctx, PALETTE['soil.1'], 18, top, 28, 22);
+  rect(ctx, PALETTE['soil.3'], 18, top, 24, 22);
   // The cut face, lighter, with two rings on it.
-  rect(ctx, '#a07a4c', 18, top, 28, 7);
-  rect(ctx, '#c49a62', 22, top + 1, 20, 4);
-  rect(ctx, '#8a6234', 28, top + 2, 8, 2);
+  rect(ctx, PALETTE['soil.6'], 18, top, 28, 7);
+  rect(ctx, PALETTE['light.2'], 22, top + 1, 20, 4);
+  rect(ctx, PALETTE['soil.5'], 28, top + 2, 8, 2);
   // A root breaking the ground on each side.
-  rect(ctx, '#4a3120', 14, h - 12, 6, 4);
-  rect(ctx, '#4a3120', 44, h - 12, 6, 4);
+  rect(ctx, PALETTE['soil.1'], 14, h - 12, 6, 4);
+  rect(ctx, PALETTE['soil.1'], 44, h - 12, 6, 4);
 }
 
 /**
@@ -1018,17 +1030,17 @@ function drawRock(ctx: CanvasRenderingContext2D, big: boolean) {
 
   rect(ctx, 'rgba(0,0,0,0.20)', Math.round(centreX - radiusX), h - 8, radiusX * 2, 5);
   blob(ctx, centreX, bottom, radiusX, radiusY, (fromTop) =>
-    fromTop < 0.25 ? '#b3c0ca' : fromTop < 0.6 ? '#8c99a4' : '#5c6872',
+    fromTop < 0.25 ? PALETTE['light.6'] : fromTop < 0.6 ? PALETTE['building.2'] : PALETTE['building.0'],
   );
   // The shaded facet, cut straight down the right so the mass has a corner.
-  rect(ctx, '#47525b', Math.round(centreX + radiusX * 0.35), bottom - radiusY * 2 + 3, 2, radiusY * 2 - 5);
-  rect(ctx, '#cfdae2', Math.round(centreX - radiusX * 0.5), bottom - radiusY * 2 + 2, Math.round(radiusX * 0.5), 2);
+  rect(ctx, PALETTE['foliage.4'], Math.round(centreX + radiusX * 0.35), bottom - radiusY * 2 + 3, 2, radiusY * 2 - 5);
+  rect(ctx, PALETTE['light.7'], Math.round(centreX - radiusX * 0.5), bottom - radiusY * 2 + 2, Math.round(radiusX * 0.5), 2);
 
   if (big) {
     // Chips at the foot, so the big one reads as the thing the small ones came
     // off rather than as a rock somebody has zoomed in on.
-    rect(ctx, '#8c99a4', Math.round(centreX - radiusX - 4), bottom - 4, 6, 4);
-    rect(ctx, '#5c6872', Math.round(centreX + radiusX - 1), bottom - 3, 5, 3);
+    rect(ctx, PALETTE['building.2'], Math.round(centreX - radiusX - 4), bottom - 4, 6, 4);
+    rect(ctx, PALETTE['building.0'], Math.round(centreX + radiusX - 1), bottom - 3, 5, 3);
   }
 }
 
@@ -1050,20 +1062,20 @@ function drawWeed(ctx: CanvasRenderingContext2D) {
 
   // The body: three overlapping slabs of leaf, widest at the bottom.
   for (const [x, y, bw, bh, shade] of [
-    [21, floor - 9, 22, 9, '#2f5a26'],
-    [23, floor - 15, 18, 8, '#3d7130'],
-    [27, floor - 20, 11, 7, '#4a8a3a'],
+    [21, floor - 9, 22, 9, PALETTE['foliage.3']],
+    [23, floor - 15, 18, 8, PALETTE['leaf.0']],
+    [27, floor - 20, 11, 7, PALETTE['leaf.1']],
   ] as const) {
     rect(ctx, shade, x, y, bw, bh);
   }
   // Lit edges along the top-left of each slab, so it has a direction of light.
-  rect(ctx, '#5f9c48', 22, floor - 8, 8, 2);
-  rect(ctx, '#5f9c48', 24, floor - 14, 6, 2);
-  rect(ctx, '#74b257', 28, floor - 19, 5, 2);
+  rect(ctx, PALETTE['leaf.2'], 22, floor - 8, 8, 2);
+  rect(ctx, PALETTE['leaf.2'], 24, floor - 14, 6, 2);
+  rect(ctx, PALETTE['light.0'], 28, floor - 19, 5, 2);
   // Two dry runners out of the top, which is what says weed and not shrub.
-  rect(ctx, '#7a8f45', 25, floor - 26, 2, 7);
-  rect(ctx, '#7a8f45', 36, floor - 24, 2, 6);
-  rect(ctx, '#c8b46a', 24, floor - 28, 4, 3);
+  rect(ctx, PALETTE['leaf.2'], 25, floor - 26, 2, 7);
+  rect(ctx, PALETTE['leaf.2'], 36, floor - 24, 2, 6);
+  rect(ctx, PALETTE['light.5'], 24, floor - 28, 4, 3);
 }
 
 /** Grass: the same family as the weed, shorter and bluer, and never solid. */
@@ -1079,11 +1091,11 @@ function drawGrassClump(ctx: CanvasRenderingContext2D) {
     [37, 10],
     [41, 12],
   ] as const) {
-    rect(ctx, '#4f9040', x, floor - tall, 2, tall);
-    rect(ctx, '#6ab054', x, floor - tall, 1, Math.round(tall * 0.6));
-    rect(ctx, '#9ade83', x, floor - tall, 1, 3);
+    rect(ctx, PALETTE['leaf.2'], x, floor - tall, 2, tall);
+    rect(ctx, PALETTE['light.0'], x, floor - tall, 1, Math.round(tall * 0.6));
+    rect(ctx, PALETTE['light.1'], x, floor - tall, 1, 3);
   }
-  rect(ctx, '#3d7a33', 20, floor - 2, 24, 2);
+  rect(ctx, PALETTE['leaf.1'], 20, floor - 2, 24, 2);
 }
 
 /**
@@ -1128,7 +1140,7 @@ function createResourceTextures(scene: Phaser.Scene) {
   // at four pixels across.
   withTexture(scene, 'node-chip', 6, 6, (ctx) => {
     ctx.clearRect(0, 0, 6, 6);
-    rect(ctx, '#ffffff', 1, 1, 4, 4);
+    rect(ctx, PALETTE['light.7'], 1, 1, 4, 4);
     rect(ctx, 'rgba(0,0,0,0.3)', 3, 3, 3, 3);
   });
 }
@@ -1166,13 +1178,13 @@ function createPlaceableTextures(scene: Phaser.Scene) {
   // is still legible at that distance.
   withTexture(scene, 'machine-bubble', 14, 14, (ctx) => {
     ctx.clearRect(0, 0, 14, 14);
-    rect(ctx, '#2b241d', 1, 0, 12, 11);
-    rect(ctx, '#2b241d', 0, 1, 14, 9);
-    rect(ctx, '#f8f0d8', 2, 1, 10, 9);
-    rect(ctx, '#f8f0d8', 1, 2, 12, 7);
-    rect(ctx, '#2b241d', 5, 11, 4, 2);
-    rect(ctx, '#e0a53c', 6, 3, 2, 4);
-    rect(ctx, '#e0a53c', 6, 8, 2, 1);
+    rect(ctx, PALETTE['soil.0'], 1, 0, 12, 11);
+    rect(ctx, PALETTE['soil.0'], 0, 1, 14, 9);
+    rect(ctx, PALETTE['light.7'], 2, 1, 10, 9);
+    rect(ctx, PALETTE['light.7'], 1, 2, 12, 7);
+    rect(ctx, PALETTE['soil.0'], 5, 11, 4, 2);
+    rect(ctx, PALETTE['light.5'], 6, 3, 2, 4);
+    rect(ctx, PALETTE['light.5'], 6, 8, 2, 1);
   });
 }
 
@@ -1218,75 +1230,75 @@ interface VillagerPalette {
 const VILLAGER_PALETTES: VillagerPalette[] = [
   {
     key: 'npc-rowan',
-    hair: '#d9d0c1',
-    hairLight: '#efe6c8',
-    skin: '#f2d9a7',
-    cloth: '#5f7fa6',
-    clothLight: '#87a8cc',
-    clothDark: '#32465a',
-    legs: '#5a3c32',
-    boots: '#2e211b',
-    accent: '#ffd36d',
+    hair: PALETTE['light.7'],
+    hairLight: PALETTE['light.7'],
+    skin: PALETTE['light.7'],
+    cloth: PALETTE['building.0'],
+    clothLight: PALETTE['water.3'],
+    clothDark: PALETTE['foliage.4'],
+    legs: PALETTE['soil.2'],
+    boots: PALETTE['soil.0'],
+    accent: PALETTE['light.5'],
   },
   {
     key: 'npc-maeve',
-    hair: '#6d2f22',
-    hairLight: '#9c4a33',
-    skin: '#e6b489',
-    cloth: '#4a4a52',
-    clothLight: '#6f6f7a',
-    clothDark: '#2b2b31',
-    legs: '#3a3128',
-    boots: '#1d1a16',
-    accent: '#ff8a3d',
+    hair: PALETTE['clothWarm.1'],
+    hairLight: PALETTE['clothWarm.3'],
+    skin: PALETTE['light.5'],
+    cloth: PALETTE['foliage.4'],
+    clothLight: PALETTE['building.0'],
+    clothDark: PALETTE['shadow.2'],
+    legs: PALETTE['soil.1'],
+    boots: PALETTE['shadow.0'],
+    accent: PALETTE['light.4'],
   },
   {
     key: 'npc-tobias',
-    hair: '#3b2a1c',
-    hairLight: '#5c4227',
-    skin: '#f0c79a',
-    cloth: '#b8843a',
-    clothLight: '#dcaa5e',
-    clothDark: '#7d5722',
-    legs: '#4a5a6b',
-    boots: '#2b2019',
-    accent: '#e8e3d4',
+    hair: PALETTE['soil.0'],
+    hairLight: PALETTE['soil.2'],
+    skin: PALETTE['light.7'],
+    cloth: PALETTE['light.2'],
+    clothLight: PALETTE['light.5'],
+    clothDark: PALETTE['soil.4'],
+    legs: PALETTE['foliage.4'],
+    boots: PALETTE['soil.0'],
+    accent: PALETTE['light.7'],
   },
   {
     key: 'npc-juniper',
-    hair: '#2f4a2c',
-    hairLight: '#4c7344',
-    skin: '#e9c49b',
-    cloth: '#5e8a52',
-    clothLight: '#86b877',
-    clothDark: '#37522f',
-    legs: '#6a5a3c',
-    boots: '#2a2419',
-    accent: '#d8e070',
+    hair: PALETTE['foliage.2'],
+    hairLight: PALETTE['leaf.0'],
+    skin: PALETTE['light.7'],
+    cloth: PALETTE['leaf.2'],
+    clothLight: PALETTE['light.0'],
+    clothDark: PALETTE['foliage.3'],
+    legs: PALETTE['soil.4'],
+    boots: PALETTE['soil.0'],
+    accent: PALETTE['light.1'],
   },
   {
     key: 'npc-bram',
-    hair: '#8a8377',
-    hairLight: '#b3aa99',
-    skin: '#d8a877',
-    cloth: '#7a6141',
-    clothLight: '#a3855c',
-    clothDark: '#4c3b26',
-    legs: '#3f4a3a',
-    boots: '#241c15',
-    accent: '#c9d46a',
+    hair: PALETTE['building.2'],
+    hairLight: PALETTE['light.6'],
+    skin: PALETTE['light.5'],
+    cloth: PALETTE['soil.4'],
+    clothLight: PALETTE['light.2'],
+    clothDark: PALETTE['soil.2'],
+    legs: PALETTE['soil.2'],
+    boots: PALETTE['shadow.0'],
+    accent: PALETTE['light.1'],
   },
   {
     key: 'npc-ash',
-    hair: '#c7a24a',
-    hairLight: '#e8cb79',
-    skin: '#f4d2a6',
-    cloth: '#4f7fa8',
-    clothLight: '#79a9cd',
-    clothDark: '#2f4f68',
-    legs: '#43506b',
-    boots: '#241d18',
-    accent: '#ef6d6d',
+    hair: PALETTE['light.5'],
+    hairLight: PALETTE['light.7'],
+    skin: PALETTE['light.7'],
+    cloth: PALETTE['water.2'],
+    clothLight: PALETTE['water.3'],
+    clothDark: PALETTE['foliage.4'],
+    legs: PALETTE['foliage.4'],
+    boots: PALETTE['shadow.0'],
+    accent: PALETTE['building.3'],
     child: true,
   },
 ];
@@ -1302,9 +1314,9 @@ function drawVillager(ctx: CanvasRenderingContext2D, palette: VillagerPalette) {
   rect(ctx, palette.hair, 5, 2 + drop, 14, 5);
   rect(ctx, palette.hairLight, 6, 3 + drop, 12, 2);
   rect(ctx, palette.skin, 7, 7 + drop, 10, 7);
-  rect(ctx, '#2b1d18', 9, 9 + drop, 2, 2);
-  rect(ctx, '#2b1d18', 14, 9 + drop, 2, 2);
-  rect(ctx, '#ffffff', 9, 9 + drop, 1, 1);
+  rect(ctx, PALETTE['shadow.0'], 9, 9 + drop, 2, 2);
+  rect(ctx, PALETTE['shadow.0'], 14, 9 + drop, 2, 2);
+  rect(ctx, PALETTE['light.7'], 9, 9 + drop, 1, 1);
 
   rect(ctx, palette.cloth, 5, bodyTop, 14, bodyHeight);
   rect(ctx, palette.clothLight, 6, bodyTop + 1, 5, bodyHeight - 3);
@@ -1332,44 +1344,44 @@ function createVillagerTextures(scene: Phaser.Scene) {
     ctx.clearRect(0, 0, 96, 64);
     rect(ctx, 'rgba(0,0,0,0.22)', 4, 58, 88, 6);
     // walls
-    rect(ctx, '#c9b089', 10, 26, 76, 32);
-    rect(ctx, '#e0cba4', 12, 28, 72, 3);
-    rect(ctx, '#9c8562', 12, 52, 72, 6);
+    rect(ctx, PALETTE['light.5'], 10, 26, 76, 32);
+    rect(ctx, PALETTE['light.7'], 12, 28, 72, 3);
+    rect(ctx, PALETTE['light.2'], 12, 52, 72, 6);
     // timber
-    rect(ctx, '#5f452f', 10, 26, 3, 32);
-    rect(ctx, '#5f452f', 83, 26, 3, 32);
-    rect(ctx, '#5f452f', 10, 40, 76, 2);
+    rect(ctx, PALETTE['soil.3'], 10, 26, 3, 32);
+    rect(ctx, PALETTE['soil.3'], 83, 26, 3, 32);
+    rect(ctx, PALETTE['soil.3'], 10, 40, 76, 2);
     // roof
-    rect(ctx, '#7a4a35', 4, 14, 88, 14);
-    rect(ctx, '#a96d4c', 6, 16, 84, 3);
-    rect(ctx, '#5d3527', 6, 23, 84, 5);
-    for (let x = 8; x < 88; x += 8) rect(ctx, '#5d3527', x, 16, 2, 10);
+    rect(ctx, PALETTE['soil.4'], 4, 14, 88, 14);
+    rect(ctx, PALETTE['soil.6'], 6, 16, 84, 3);
+    rect(ctx, PALETTE['soil.2'], 6, 23, 84, 5);
+    for (let x = 8; x < 88; x += 8) rect(ctx, PALETTE['soil.2'], x, 16, 2, 10);
     // chimney, and the smoke that says somebody is home
-    rect(ctx, '#6b6b7a', 68, 4, 9, 12);
-    rect(ctx, '#4c4c58', 68, 4, 9, 3);
+    rect(ctx, PALETTE['building.0'], 68, 4, 9, 12);
+    rect(ctx, PALETTE['foliage.4'], 68, 4, 9, 3);
     // door
-    rect(ctx, '#2e1d14', 40, 34, 16, 24);
-    rect(ctx, '#6b4429', 42, 36, 12, 22);
-    rect(ctx, '#ffd36d', 51, 46, 2, 2);
+    rect(ctx, PALETTE['shadow.0'], 40, 34, 16, 24);
+    rect(ctx, PALETTE['soil.3'], 42, 36, 12, 22);
+    rect(ctx, PALETTE['light.5'], 51, 46, 2, 2);
     // windows
-    rect(ctx, '#2e1d14', 18, 32, 14, 12);
-    rect(ctx, '#ffd87a', 20, 34, 10, 8);
-    rect(ctx, '#2e1d14', 24, 34, 2, 8);
-    rect(ctx, '#2e1d14', 64, 32, 14, 12);
-    rect(ctx, '#ffd87a', 66, 34, 10, 8);
-    rect(ctx, '#2e1d14', 70, 34, 2, 8);
+    rect(ctx, PALETTE['shadow.0'], 18, 32, 14, 12);
+    rect(ctx, PALETTE['light.7'], 20, 34, 10, 8);
+    rect(ctx, PALETTE['shadow.0'], 24, 34, 2, 8);
+    rect(ctx, PALETTE['shadow.0'], 64, 32, 14, 12);
+    rect(ctx, PALETTE['light.7'], 66, 34, 10, 8);
+    rect(ctx, PALETTE['shadow.0'], 70, 34, 2, 8);
   });
 
   // The heart the HUD pops when a gift lands well.
   withTexture(scene, 'heart', 14, 12, (ctx) => {
     ctx.clearRect(0, 0, 14, 12);
-    rect(ctx, '#e0556b', 2, 2, 4, 3);
-    rect(ctx, '#e0556b', 8, 2, 4, 3);
-    rect(ctx, '#e0556b', 1, 4, 12, 3);
-    rect(ctx, '#e0556b', 3, 7, 8, 2);
-    rect(ctx, '#e0556b', 5, 9, 4, 2);
-    rect(ctx, '#ff8fa0', 3, 3, 2, 2);
-    rect(ctx, '#ff8fa0', 9, 3, 2, 2);
+    rect(ctx, PALETTE['building.3'], 2, 2, 4, 3);
+    rect(ctx, PALETTE['building.3'], 8, 2, 4, 3);
+    rect(ctx, PALETTE['building.3'], 1, 4, 12, 3);
+    rect(ctx, PALETTE['building.3'], 3, 7, 8, 2);
+    rect(ctx, PALETTE['building.3'], 5, 9, 4, 2);
+    rect(ctx, PALETTE['light.5'], 3, 3, 2, 2);
+    rect(ctx, PALETTE['light.5'], 9, 3, 2, 2);
   });
 }
 
@@ -1383,8 +1395,8 @@ function createVillagerTextures(scene: Phaser.Scene) {
  * cut into.
  */
 const FRINGE_PALETTES: Record<'grass' | 'path', { body: string; dark: string; light: string }> = {
-  grass: { body: '#5da653', dark: '#3f7c36', light: '#8fd47a' },
-  path: { body: '#c9a06b', dark: '#9a7345', light: '#e2c086' },
+  grass: { body: PALETTE['light.0'], dark: PALETTE['leaf.1'], light: PALETTE['light.1'] },
+  path: { body: PALETTE['light.5'], dark: PALETTE['soil.6'], light: PALETTE['light.5'] },
 };
 
 /**
@@ -1495,11 +1507,11 @@ function createDialTextures(scene: Phaser.Scene) {
       ctx.arc(mid, mid, radius, 0, Math.PI * 2);
       ctx.fill();
     };
-    disc(16, '#140d08');
-    disc(15, '#c9924f');
-    disc(13, '#8a5a2e');
-    disc(12, '#f4e2b8');
-    disc(11, '#e8d2a2');
+    disc(16, PALETTE['outline.0']);
+    disc(15, PALETTE['light.2']);
+    disc(13, PALETTE['soil.4']);
+    disc(12, PALETTE['light.7']);
+    disc(11, PALETTE['light.7']);
 
     // Marks at dawn, mid-morning, noon, evening and the small hours, which is
     // what the hand is telling you — not minutes.
@@ -1509,7 +1521,7 @@ function createDialTextures(scene: Phaser.Scene) {
       for (let r = long ? 6 : 8; r <= 10; r += 1) {
         px(
           ctx,
-          long ? '#6b4429' : '#9a7345',
+          long ? PALETTE['soil.3'] : PALETTE['soil.6'],
           Math.round(mid + Math.sin(angle) * r),
           Math.round(mid - Math.cos(angle) * r),
         );
@@ -1529,18 +1541,18 @@ function createDialTextures(scene: Phaser.Scene) {
     ctx.arc(mid, mid, 11, Math.PI * 1.5, Math.PI * 2);
     ctx.fill();
 
-    disc(2, '#6b4429');
-    px(ctx, '#f4e2b8', mid - 1, mid - 1);
+    disc(2, PALETTE['soil.3']);
+    px(ctx, PALETTE['light.7'], mid - 1, mid - 1);
   });
 
   // The origin sits at the pivot end, so the scene turns it about the dial's
   // centre by setting one angle and nothing else.
   withTexture(scene, 'clock-hand', 3, 14, (ctx) => {
     ctx.clearRect(0, 0, 3, 14);
-    rect(ctx, '#7a2e18', 1, 0, 1, 14);
-    rect(ctx, '#b64a24', 1, 1, 1, 9);
-    px(ctx, '#e2611f', 1, 3);
-    rect(ctx, '#7a2e18', 0, 11, 3, 3);
+    rect(ctx, PALETTE['clothWarm.1'], 1, 0, 1, 14);
+    rect(ctx, PALETTE['building.1'], 1, 1, 1, 9);
+    px(ctx, PALETTE['building.3'], 1, 3);
+    rect(ctx, PALETTE['clothWarm.1'], 0, 11, 3, 3);
   });
 }
 
@@ -1552,7 +1564,7 @@ function icon(scene: Phaser.Scene, key: string, draw: (ctx: CanvasRenderingConte
   });
 }
 
-function drawSun(ctx: CanvasRenderingContext2D, body = '#ffd36d', rim = '#f0a63c') {
+function drawSun(ctx: CanvasRenderingContext2D, body: string = PALETTE['light.5'], rim: string = PALETTE['light.5']) {
   ctx.fillStyle = rim;
   ctx.beginPath();
   ctx.arc(8, 8, 5, 0, Math.PI * 2);
@@ -1561,7 +1573,7 @@ function drawSun(ctx: CanvasRenderingContext2D, body = '#ffd36d', rim = '#f0a63c
   ctx.beginPath();
   ctx.arc(8, 8, 4, 0, Math.PI * 2);
   ctx.fill();
-  rect(ctx, '#fff3bd', 6, 5, 2, 2);
+  rect(ctx, PALETTE['light.7'], 6, 5, 2, 2);
   for (const [x, y] of [
     [8, 0],
     [8, 14],
@@ -1572,11 +1584,11 @@ function drawSun(ctx: CanvasRenderingContext2D, body = '#ffd36d', rim = '#f0a63c
   }
 }
 
-function drawCloud(ctx: CanvasRenderingContext2D, body = '#cfd9e2', shade = '#9fb0c0') {
+function drawCloud(ctx: CanvasRenderingContext2D, body: string = PALETTE['light.7'], shade: string = PALETTE['light.6']) {
   rect(ctx, shade, 2, 6, 12, 5);
   rect(ctx, body, 2, 5, 12, 4);
   rect(ctx, body, 5, 3, 7, 3);
-  rect(ctx, '#eef4f8', 6, 4, 4, 1);
+  rect(ctx, PALETTE['light.7'], 6, 4, 4, 1);
 }
 
 /**
@@ -1594,37 +1606,37 @@ function createHudIcons(scene: Phaser.Scene) {
       [6, 10],
       [2, 6],
     ] as Array<[number, number]>) {
-      rect(ctx, '#f7a8c4', x, y, 4, 4);
-      rect(ctx, '#ffd0e0', x, y, 2, 2);
+      rect(ctx, PALETTE['light.4'], x, y, 4, 4);
+      rect(ctx, PALETTE['light.7'], x, y, 2, 2);
     }
-    rect(ctx, '#ffd36d', 6, 6, 4, 4);
-    rect(ctx, '#4a8f3c', 7, 11, 2, 5);
+    rect(ctx, PALETTE['light.5'], 6, 6, 4, 4);
+    rect(ctx, PALETTE['leaf.2'], 7, 11, 2, 5);
   });
 
   icon(scene, 'icon-season-summer', (ctx) => drawSun(ctx));
 
   icon(scene, 'icon-season-autumn', (ctx) => {
-    rect(ctx, '#7a4a25', 7, 10, 2, 6);
-    rect(ctx, '#d9622b', 4, 4, 8, 7);
-    rect(ctx, '#f08a3c', 5, 3, 6, 3);
-    rect(ctx, '#b8431c', 4, 9, 8, 2);
-    rect(ctx, '#ffb347', 6, 5, 2, 3);
-    px(ctx, '#d9622b', 2, 6);
-    px(ctx, '#d9622b', 13, 6);
+    rect(ctx, PALETTE['soil.4'], 7, 10, 2, 6);
+    rect(ctx, PALETTE['light.3'], 4, 4, 8, 7);
+    rect(ctx, PALETTE['light.4'], 5, 3, 6, 3);
+    rect(ctx, PALETTE['building.1'], 4, 9, 8, 2);
+    rect(ctx, PALETTE['light.5'], 6, 5, 2, 3);
+    px(ctx, PALETTE['light.3'], 2, 6);
+    px(ctx, PALETTE['light.3'], 13, 6);
   });
 
   icon(scene, 'icon-season-winter', (ctx) => {
-    rect(ctx, '#bfe6f2', 7, 1, 2, 14);
-    rect(ctx, '#bfe6f2', 1, 7, 14, 2);
+    rect(ctx, PALETTE['light.6'], 7, 1, 2, 14);
+    rect(ctx, PALETTE['light.6'], 1, 7, 14, 2);
     for (const [x, y] of [
       [3, 3],
       [11, 3],
       [3, 11],
       [11, 11],
     ] as Array<[number, number]>) {
-      rect(ctx, '#8fd2e8', x, y, 2, 2);
+      rect(ctx, PALETTE['light.6'], x, y, 2, 2);
     }
-    rect(ctx, '#ffffff', 7, 7, 2, 2);
+    rect(ctx, PALETTE['light.7'], 7, 7, 2, 2);
   });
 
   icon(scene, 'icon-weather-sunny', (ctx) => drawSun(ctx));
@@ -1636,58 +1648,58 @@ function createHudIcons(scene: Phaser.Scene) {
       [8, 12],
       [11, 11],
     ] as Array<[number, number]>) {
-      rect(ctx, '#6fa8d9', x, y, 1, 3);
-      px(ctx, '#bfe0f5', x, y);
+      rect(ctx, PALETTE['water.3'], x, y, 1, 3);
+      px(ctx, PALETTE['light.7'], x, y);
     }
   });
 
   icon(scene, 'icon-weather-breezy', (ctx) => {
-    drawCloud(ctx, '#dfe6ec', '#b2bfcb');
-    rect(ctx, '#9fd4c2', 2, 11, 9, 1);
-    rect(ctx, '#9fd4c2', 5, 13, 8, 1);
-    px(ctx, '#d8f3e8', 10, 11);
-    px(ctx, '#d8f3e8', 12, 13);
+    drawCloud(ctx, PALETTE['light.7'], PALETTE['light.6']);
+    rect(ctx, PALETTE['light.6'], 2, 11, 9, 1);
+    rect(ctx, PALETTE['light.6'], 5, 13, 8, 1);
+    px(ctx, PALETTE['light.7'], 10, 11);
+    px(ctx, PALETTE['light.7'], 12, 13);
   });
 
   icon(scene, 'icon-weather-firefly', (ctx) => {
-    rect(ctx, '#e8e6c2', 8, 2, 5, 5);
-    rect(ctx, '#fffbd8', 9, 3, 2, 2);
+    rect(ctx, PALETTE['light.7'], 8, 2, 5, 5);
+    rect(ctx, PALETTE['light.7'], 9, 3, 2, 2);
     for (const [x, y] of [
       [3, 8],
       [7, 11],
       [12, 10],
       [5, 13],
     ] as Array<[number, number]>) {
-      px(ctx, '#fff3a6', x, y);
-      px(ctx, '#d9e06a', x + 1, y);
-      px(ctx, '#d9e06a', x, y + 1);
+      px(ctx, PALETTE['light.7'], x, y);
+      px(ctx, PALETTE['light.1'], x + 1, y);
+      px(ctx, PALETTE['light.1'], x, y + 1);
     }
   });
 
   icon(scene, 'icon-coin', (ctx) => {
-    ctx.fillStyle = '#b8801f';
+    ctx.fillStyle = PALETTE['light.2'];
     ctx.beginPath();
     ctx.arc(8, 8, 6, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#ffd36d';
+    ctx.fillStyle = PALETTE['light.5'];
     ctx.beginPath();
     ctx.arc(8, 8, 5, 0, Math.PI * 2);
     ctx.fill();
-    rect(ctx, '#fff3bd', 5, 4, 3, 1);
-    rect(ctx, '#b8801f', 6, 5, 4, 1);
-    rect(ctx, '#b8801f', 6, 10, 4, 1);
-    rect(ctx, '#b8801f', 6, 5, 1, 6);
-    rect(ctx, '#b8801f', 9, 5, 1, 6);
-    rect(ctx, '#b8801f', 7, 7, 2, 2);
+    rect(ctx, PALETTE['light.7'], 5, 4, 3, 1);
+    rect(ctx, PALETTE['light.2'], 6, 5, 4, 1);
+    rect(ctx, PALETTE['light.2'], 6, 10, 4, 1);
+    rect(ctx, PALETTE['light.2'], 6, 5, 1, 6);
+    rect(ctx, PALETTE['light.2'], 9, 5, 1, 6);
+    rect(ctx, PALETTE['light.2'], 7, 7, 2, 2);
   });
 
   // The cap on the energy tube, so a column of colour has something naming it.
   icon(scene, 'icon-energy-bolt', (ctx) => {
-    rect(ctx, '#f6d45a', 8, 1, 3, 6);
-    rect(ctx, '#f6d45a', 5, 6, 6, 3);
-    rect(ctx, '#f6d45a', 5, 8, 3, 7);
-    rect(ctx, '#fff3bd', 8, 2, 1, 4);
-    rect(ctx, '#c9a01f', 5, 12, 3, 3);
+    rect(ctx, PALETTE['light.5'], 8, 1, 3, 6);
+    rect(ctx, PALETTE['light.5'], 5, 6, 6, 3);
+    rect(ctx, PALETTE['light.5'], 5, 8, 3, 7);
+    rect(ctx, PALETTE['light.7'], 8, 2, 1, 4);
+    rect(ctx, PALETTE['light.2'], 5, 12, 3, 3);
   });
 }
 
