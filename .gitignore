@@ -16,3 +16,11 @@ npm-debug.log*
 # Hand-drawn override art (e.g. Sprout Lands free = non-commercial, no redistribution)
 public/assets/override/*.png
 public/assets/override/*.jpg
+
+# Python bytecode from the ad-hoc image tooling
+__pycache__/
+*.pyc
+
+# Subagent-driven-development scratch: ledger, briefs, reports, review packages.
+# Git history is the durable record; this directory is working memory.
+.superpowers/
