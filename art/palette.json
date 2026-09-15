@@ -36,207 +36,209 @@
       "share": 0
     },
     {
-      "name": "neutralDark.0",
+      "name": "outline.0",
       "hex": "#0f0608",
       "share": 0.1696
     },
     {
-      "name": "neutralDark.1",
+      "name": "outline.1",
       "hex": "#1f0106",
       "share": 0.1696
     },
     {
-      "name": "neutralDark.2",
+      "name": "outline.2",
       "hex": "#10111b",
       "share": 0.1696
     },
     {
-      "name": "neutralDark.3",
+      "name": "outline.3",
       "hex": "#260908",
       "share": 0.1696
     },
     {
-      "name": "neutralDark2.0",
+      "name": "shadow.0",
       "hex": "#281825",
       "share": 0.1504
     },
     {
-      "name": "neutralDark2.1",
+      "name": "shadow.1",
       "hex": "#0a2726",
       "share": 0.1504
     },
     {
-      "name": "neutralDark2.2",
+      "name": "shadow.2",
       "hex": "#2d2330",
       "share": 0.1504
     },
     {
-      "name": "neutralDark2.3",
+      "name": "shadow.3",
       "hex": "#332f66",
       "share": 0.1504
     },
     {
-      "name": "orangeDark.0",
+      "name": "clothDeep.0",
       "hex": "#3f100b",
       "share": 0.134
     },
     {
-      "name": "orangeDark.1",
+      "name": "clothDeep.1",
       "hex": "#660e1a",
       "share": 0.134
     },
     {
-      "name": "orangeDark.2",
+      "name": "clothDeep.2",
       "hex": "#5f240c",
       "share": 0.134
     },
     {
-      "name": "orangeDark.3",
+      "name": "clothDeep.3",
       "hex": "#562930",
       "share": 0.134
     },
     {
-      "name": "greenMid.0",
+      "name": "foliage.0",
       "hex": "#07391d",
       "share": 0.1403
     },
     {
-      "name": "greenMid.1",
+      "name": "foliage.1",
       "hex": "#134507",
       "share": 0.1403
     },
     {
-      "name": "greenMid.2",
+      "name": "foliage.2",
       "hex": "#1e413e",
       "share": 0.1403
     },
     {
-      "name": "greenMid.3",
+      "name": "foliage.3",
       "hex": "#175819",
       "share": 0.1403
     },
     {
-      "name": "greenMid.4",
+      "name": "foliage.4",
       "hex": "#4c4a5d",
       "share": 0.1403
     },
     {
-      "name": "orangeMid.0",
+      "name": "clothWarm.0",
       "hex": "#841a20",
       "share": 0.0722
     },
     {
-      "name": "orangeMid.1",
+      "name": "clothWarm.1",
       "hex": "#6b3a24",
       "share": 0.0722
     },
     {
-      "name": "orangeMid.2",
+      "name": "clothWarm.2",
       "hex": "#a21e34",
       "share": 0.0722
     },
     {
-      "name": "orangeMid.3",
+      "name": "clothWarm.3",
       "hex": "#943b22",
       "share": 0.0722
     },
     {
-      "name": "blueMid.0",
+      "name": "water.0",
       "hex": "#3c49ad",
       "share": 0.049
     },
     {
-      "name": "blueMid.1",
+      "name": "water.1",
       "hex": "#7f2c99",
       "share": 0.049
     },
     {
-      "name": "blueMid.2",
+      "name": "water.2",
       "hex": "#206c9f",
       "share": 0.049
     },
     {
-      "name": "blueMid.3",
+      "name": "water.3",
       "hex": "#1896b3",
       "share": 0.049
     },
     {
-      "name": "greenMid2.0",
+      "name": "leaf.0",
       "hex": "#0b6b45",
       "share": 0.0298
     },
     {
-      "name": "greenMid2.1",
+      "name": "leaf.1",
       "hex": "#3b8115",
       "share": 0.0298
     },
     {
-      "name": "greenMid2.2",
+      "name": "leaf.2",
       "hex": "#579b2f",
       "share": 0.0298
     },
     {
-      "name": "greenMid2.3",
+      "name": "leaf.3",
       "hex": "#449a8d",
       "share": 0.0298
     },
     {
-      "name": "redMid.0",
+      "name": "building.0",
       "hex": "#726b7e",
-      "share": 0.0397
+      "share": 0.0397,
+      "note": "farmhouse dominates this group (4258px) and it spans red walls and grey stone. Named for what it draws rather than for a hue it does not have."
     },
     {
-      "name": "redMid.1",
+      "name": "building.1",
       "hex": "#b45045",
       "share": 0.0397
     },
     {
-      "name": "redMid.2",
+      "name": "building.2",
       "hex": "#93828d",
       "share": 0.0397
     },
     {
-      "name": "redMid.3",
+      "name": "building.3",
       "hex": "#ef404a",
       "share": 0.0397
     },
     {
-      "name": "greenLight.0",
+      "name": "light.0",
       "hex": "#5ea64e",
-      "share": 0.215
+      "share": 0.215,
+      "note": "the light end of several materials at once - skin, pale foliage, cream. The clustering merged them at GROUPS=9; the name says what they share, which is lightness, not hue."
     },
     {
-      "name": "greenLight.1",
+      "name": "light.1",
       "hex": "#82a204",
       "share": 0.215
     },
     {
-      "name": "greenLight.2",
+      "name": "light.2",
       "hex": "#b78d64",
       "share": 0.215
     },
     {
-      "name": "greenLight.3",
+      "name": "light.3",
       "hex": "#d28560",
       "share": 0.215
     },
     {
-      "name": "greenLight.4",
+      "name": "light.4",
       "hex": "#ff7b3a",
       "share": 0.215
     },
     {
-      "name": "greenLight.5",
+      "name": "light.5",
       "hex": "#eaa473",
       "share": 0.215
     },
     {
-      "name": "greenLight.6",
+      "name": "light.6",
       "hex": "#acbfb0",
       "share": 0.215
     },
     {
-      "name": "greenLight.7",
+      "name": "light.7",
       "hex": "#f8dbbd",
       "share": 0.215
     }

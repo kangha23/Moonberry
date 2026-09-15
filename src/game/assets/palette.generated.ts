@@ -7,106 +7,106 @@
 
 /** Every colour in the game, as ramp.step. */
 export const PALETTE = {
-  'outline.0': '#000000',
-  'outline.1': '#160609',
-  'outline.2': '#0a131d',
-  'outline.3': '#1b0e14',
-  'warmDeep.0': '#280707',
-  'warmDeep.1': '#370f0b',
-  'warmDeep.2': '#45070f',
-  'warmDeep.3': '#43180c',
-  'shadow.0': '#0c1e24',
-  'shadow.1': '#281826',
-  'shadow.2': '#082c27',
-  'shadow.3': '#2d2330',
+  'soil.0': '#3a2718',
+  'soil.1': '#48331f',
+  'soil.2': '#553d27',
+  'soil.3': '#63492f',
+  'soil.4': '#7d5633',
+  'soil.5': '#8f6540',
+  'soil.6': '#9d7049',
+  'outline.0': '#0f0608',
+  'outline.1': '#1f0106',
+  'outline.2': '#10111b',
+  'outline.3': '#260908',
+  'shadow.0': '#281825',
+  'shadow.1': '#0a2726',
+  'shadow.2': '#2d2330',
+  'shadow.3': '#332f66',
+  'clothDeep.0': '#3f100b',
+  'clothDeep.1': '#660e1a',
+  'clothDeep.2': '#5f240c',
+  'clothDeep.3': '#562930',
   'foliage.0': '#07391d',
-  'foliage.1': '#034339',
-  'foliage.2': '#134507',
+  'foliage.1': '#134507',
+  'foliage.2': '#1e413e',
   'foliage.3': '#175819',
-  'foliage.4': '#0b6b45',
-  'wood.0': '#4c2c14',
-  'wood.1': '#602315',
-  'wood.2': '#74022d',
-  'wood.3': '#494758',
-  'clothCool.0': '#352d6a',
-  'clothCool.1': '#205062',
-  'clothCool.2': '#6b1b8d',
-  'clothCool.3': '#3c49ad',
-  'clothWarm.0': '#871923',
-  'clothWarm.1': '#8f3716',
-  'clothWarm.2': '#7a4c2e',
-  'clothWarm.3': '#a8463f',
-  'clothWarm.4': '#d82a3a',
-  'water.0': '#156c98',
-  'water.1': '#726b7e',
-  'water.2': '#476aca',
-  'water.3': '#1a97b3',
-  'grass.0': '#387e06',
-  'grass.1': '#448c33',
-  'grass.2': '#449a8d',
-  'grass.3': '#5ea64d',
-  'grass.4': '#82a204',
-  'earth.0': '#a17049',
-  'earth.1': '#c8865a',
-  'earth.2': '#fa6353',
-  'earth.3': '#be9d83',
-  'skin.0': '#e3a77f',
-  'skin.1': '#e7d14b',
-  'skin.2': '#d0e3cd',
-  'skin.3': '#fdd5b7',
-  'skin.4': '#f8f3e7',
+  'foliage.4': '#4c4a5d',
+  'clothWarm.0': '#841a20',
+  'clothWarm.1': '#6b3a24',
+  'clothWarm.2': '#a21e34',
+  'clothWarm.3': '#943b22',
+  'water.0': '#3c49ad',
+  'water.1': '#7f2c99',
+  'water.2': '#206c9f',
+  'water.3': '#1896b3',
+  'leaf.0': '#0b6b45',
+  'leaf.1': '#3b8115',
+  'leaf.2': '#579b2f',
+  'leaf.3': '#449a8d',
+  'building.0': '#726b7e',
+  'building.1': '#b45045',
+  'building.2': '#93828d',
+  'building.3': '#ef404a',
+  'light.0': '#5ea64e',
+  'light.1': '#82a204',
+  'light.2': '#b78d64',
+  'light.3': '#d28560',
+  'light.4': '#ff7b3a',
+  'light.5': '#eaa473',
+  'light.6': '#acbfb0',
+  'light.7': '#f8dbbd',
 } as const;
 
 /** The name of any colour. A hex string is not a colour; this is. */
 export type PaletteName =
+  | 'soil.0'
+  | 'soil.1'
+  | 'soil.2'
+  | 'soil.3'
+  | 'soil.4'
+  | 'soil.5'
+  | 'soil.6'
   | 'outline.0'
   | 'outline.1'
   | 'outline.2'
   | 'outline.3'
-  | 'warmDeep.0'
-  | 'warmDeep.1'
-  | 'warmDeep.2'
-  | 'warmDeep.3'
   | 'shadow.0'
   | 'shadow.1'
   | 'shadow.2'
   | 'shadow.3'
+  | 'clothDeep.0'
+  | 'clothDeep.1'
+  | 'clothDeep.2'
+  | 'clothDeep.3'
   | 'foliage.0'
   | 'foliage.1'
   | 'foliage.2'
   | 'foliage.3'
   | 'foliage.4'
-  | 'wood.0'
-  | 'wood.1'
-  | 'wood.2'
-  | 'wood.3'
-  | 'clothCool.0'
-  | 'clothCool.1'
-  | 'clothCool.2'
-  | 'clothCool.3'
   | 'clothWarm.0'
   | 'clothWarm.1'
   | 'clothWarm.2'
   | 'clothWarm.3'
-  | 'clothWarm.4'
   | 'water.0'
   | 'water.1'
   | 'water.2'
   | 'water.3'
-  | 'grass.0'
-  | 'grass.1'
-  | 'grass.2'
-  | 'grass.3'
-  | 'grass.4'
-  | 'earth.0'
-  | 'earth.1'
-  | 'earth.2'
-  | 'earth.3'
-  | 'skin.0'
-  | 'skin.1'
-  | 'skin.2'
-  | 'skin.3'
-  | 'skin.4';
+  | 'leaf.0'
+  | 'leaf.1'
+  | 'leaf.2'
+  | 'leaf.3'
+  | 'building.0'
+  | 'building.1'
+  | 'building.2'
+  | 'building.3'
+  | 'light.0'
+  | 'light.1'
+  | 'light.2'
+  | 'light.3'
+  | 'light.4'
+  | 'light.5'
+  | 'light.6'
+  | 'light.7';
 
 /** The same colours as a flat list, for the quantiser and the lock test. */
 export const PALETTE_HEXES: readonly string[] = Object.values(PALETTE);
