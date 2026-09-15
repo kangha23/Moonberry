@@ -154,6 +154,91 @@ function uniqueNames(names) {
 }
 
 /**
+ * Splits a flat, ordered `colours` array back into its groups.
+ *
+ * `derive` always emits one contiguous run per group, in group order, steps
+ * in order within the group — that's how both a freshly-derived palette and
+ * a previously-written `art/palette.json` are shaped, so grouping by run
+ * rather than by a Map keyed on name is what lets position (not name) be the
+ * thing `carryNames` compares two palettes by.
+ */
+function groupRuns(colours) {
+  const runs = [];
+  for (const entry of colours) {
+    const group = entry.name.slice(0, entry.name.lastIndexOf('.'));
+    if (runs.length === 0 || runs[runs.length - 1].group !== group) {
+      runs.push({ group, entries: [] });
+    }
+    runs[runs.length - 1].entries.push(entry);
+  }
+  return runs;
+}
+
+/**
+ * Carries a human's names on `art/palette.json` forward across a re-run.
+ *
+ * `derive` knows nothing about names that already exist — it always names a
+ * group from where its centroid measures, because that's the only thing it
+ * has. The very first re-run after Task 4's naming gate would otherwise
+ * silently throw the human naming away and replace it with `familyName`'s
+ * descriptive guesses again, which is a defect this project already made
+ * once (the RAMPS-anchor names that turned out to lie) and cannot afford to
+ * make a second time to its own output.
+ *
+ * Structure — the number of groups and the step count within each, in order —
+ * is what's compared, not the names or the colours themselves: names are
+ * exactly the thing being carried, so they can't also be the key, and hexes
+ * are expected to drift a little as the art changes. When structure holds,
+ * each existing name is kept and paired with the newly derived colour at the
+ * same position; when it doesn't, guessing a mapping between an old group and
+ * a new one would be inventing meaning from position alone, so the fresh
+ * descriptive names are written instead and the caller is expected to shout
+ * about it.
+ *
+ * Kept out of `derive` deliberately: `derive` is pure and tested as pure, and
+ * reading `art/palette.json` from inside it would mean a function with no
+ * file-reading in its contract quietly grew one. This is exported instead so
+ * the merge itself — not just the CLI wrapper around it — has a test.
+ */
+export function carryNames(existing, derived) {
+  if (!existing) {
+    return { colours: derived, structureChanged: false, moved: [] };
+  }
+
+  const existingRuns = groupRuns(existing);
+  const derivedRuns = groupRuns(derived);
+  const structureChanged = existingRuns.length !== derivedRuns.length
+    || existingRuns.some((run, i) => run.entries.length !== derivedRuns[i].entries.length);
+
+  if (structureChanged) {
+    return { colours: derived, structureChanged: true, moved: [] };
+  }
+
+  const colours = [];
+  const moved = [];
+  derivedRuns.forEach((derivedRun, g) => {
+    const existingGroup = existingRuns[g].entries;
+    derivedRun.entries.forEach((derivedEntry, s) => {
+      const oldEntry = existingGroup[s];
+      colours.push({ ...derivedEntry, name: oldEntry.name });
+
+      const oldN = Number.parseInt(oldEntry.hex.slice(1), 16);
+      const newN = Number.parseInt(derivedEntry.hex.slice(1), 16);
+      const oldLab = srgbToOklab((oldN >> 16) & 255, (oldN >> 8) & 255, oldN & 255);
+      const newLab = srgbToOklab((newN >> 16) & 255, (newN >> 8) & 255, newN & 255);
+      moved.push({
+        name: oldEntry.name,
+        from: oldEntry.hex,
+        to: derivedEntry.hex,
+        distance: distance(oldLab, newLab),
+      });
+    });
+  });
+
+  return { colours, structureChanged: false, moved };
+}
+
+/**
  * Points to a named palette, with the groups taken from the art.
  *
  * Two passes. The coarse one asks the art where its colours actually are — a
@@ -237,7 +322,13 @@ export function derive(points) {
 
 if (process.argv[1] && process.argv[1].endsWith('derive-palette.mjs')) {
   const points = histogram(RAW_DIR);
-  const colours = derive(points);
+  const derived = derive(points);
+
+  const existing = fs.existsSync(OUT_FILE)
+    ? JSON.parse(fs.readFileSync(OUT_FILE, 'utf8')).colours
+    : null;
+  const { colours, structureChanged, moved } = carryNames(existing, derived);
+
   fs.mkdirSync(path.dirname(OUT_FILE), { recursive: true });
   fs.writeFileSync(
     OUT_FILE,
@@ -249,5 +340,35 @@ if (process.argv[1] && process.argv[1].endsWith('derive-palette.mjs')) {
   if (duplicates.length > 0) {
     console.warn(`\n${duplicates.length} padded entries — pick these by hand:`);
     for (const d of duplicates) console.warn(`  ${d.name}  ${d.hex}`);
+  }
+
+  if (existing && structureChanged) {
+    console.warn(
+      '\n!! STRUCTURE CHANGED — the existing names in art/palette.json no longer line up '
+      + 'with the freshly derived groups (a group gained or lost steps, or the number of '
+      + 'groups changed), so this run wrote fresh descriptive names instead of guessing a '
+      + 'mapping.\n'
+      + `   previous: ${groupRuns(existing).map((r) => `${r.group}(${r.entries.length})`).join(', ')}\n`
+      + `   now:      ${groupRuns(derived).map((r) => `${r.group}(${r.entries.length})`).join(', ')}\n`
+      + '   The previous human naming was DISCARDED. It must be reassigned by hand.',
+    );
+  } else if (existing && moved.length > 0) {
+    const width = Math.max(...moved.map((m) => m.name.split('.')[0].length));
+    console.log('\ncentroid movement (existing names carried over, hexes updated):');
+    for (const m of moved) {
+      const [group, step] = m.name.split('.');
+      const flag = m.distance > 0.05 ? '  <-- re-check by eye' : '';
+      console.log(
+        `  ${group.padEnd(width)}.${step} ${m.from} -> ${m.to}   (moved ${m.distance.toFixed(4)})${flag}`,
+      );
+    }
+    const worthChecking = moved.filter((m) => m.distance > 0.05);
+    if (worthChecking.length > 0) {
+      console.warn(
+        `\n${worthChecking.length} entries moved more than 0.05 in OkLab — a name assigned to `
+        + 'one set of swatches may not describe the new ones:',
+      );
+      for (const m of worthChecking) console.warn(`  ${m.name}  moved ${m.distance.toFixed(4)}`);
+    }
   }
 }

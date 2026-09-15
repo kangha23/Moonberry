@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
 import { distance, srgbToOklab } from './lib/colour.mjs';
-import { allocate, derive, familyName } from './derive-palette.mjs';
+import { allocate, carryNames, derive, familyName } from './derive-palette.mjs';
 
 const PALETTE_FILE = path.join('art', 'palette.json');
 
@@ -145,4 +145,64 @@ test('derive does not depend on the order its points arrive in', () => {
   const forwards = derive(points);
   const backwards = derive([...points].reverse());
   assert.deepEqual(backwards, forwards);
+});
+
+test('carryNames keeps the existing names when structure is unchanged, and updates hexes', () => {
+  // The names here (`water`, `grass`) are deliberately not what `familyName`
+  // would produce for these centroids (they'd come out `blueMid`, `greenMid`
+  // — see the next test). If carryNames silently returned the derived names
+  // instead of carrying the existing ones over, this test would still pass
+  // by accident unless the fixture makes the two disagree.
+  const existing = [
+    { name: 'water.0', hex: '#156c98', share: 0.0432 },
+    { name: 'water.1', hex: '#726b7e', share: 0.0432 },
+    { name: 'grass.0', hex: '#387e06', share: 0.1308 },
+  ];
+  const derived = [
+    { name: 'blueMid.0', hex: '#17709c', share: 0.041 },
+    { name: 'blueMid.1', hex: '#736c80', share: 0.041 },
+    { name: 'greenMid.0', hex: '#397f07', share: 0.129 },
+  ];
+  const result = carryNames(existing, derived);
+  assert.equal(result.structureChanged, false);
+  assert.deepEqual(result.colours.map((c) => c.name), ['water.0', 'water.1', 'grass.0']);
+  assert.deepEqual(result.colours.map((c) => c.hex), ['#17709c', '#736c80', '#397f07']);
+  assert.deepEqual(result.colours.map((c) => c.share), [0.041, 0.041, 0.129]);
+});
+
+test('carryNames does not carry names when a group\'s step count changes', () => {
+  const existing = [
+    { name: 'water.0', hex: '#156c98', share: 0.5 },
+    { name: 'water.1', hex: '#726b7e', share: 0.5 },
+  ];
+  const derived = [
+    { name: 'blueMid.0', hex: '#17709c', share: 0.33 },
+    { name: 'blueMid.1', hex: '#736c80', share: 0.33 },
+    { name: 'blueMid.2', hex: '#1a97b3', share: 0.34 },
+  ];
+  const result = carryNames(existing, derived);
+  assert.equal(result.structureChanged, true);
+  assert.deepEqual(result.colours, derived);
+});
+
+test('carryNames does not carry names when the group count changes', () => {
+  const existing = [{ name: 'water.0', hex: '#156c98', share: 1 }];
+  const derived = [
+    { name: 'blueMid.0', hex: '#17709c', share: 0.5 },
+    { name: 'greenMid.0', hex: '#397f07', share: 0.5 },
+  ];
+  const result = carryNames(existing, derived);
+  assert.equal(result.structureChanged, true);
+  assert.deepEqual(result.colours, derived);
+});
+
+test('carryNames reports how far each entry moved in OkLab', () => {
+  const existing = [{ name: 'outline.0', hex: '#000000', share: 1 }];
+  const derived = [{ name: 'neutralDark.0', hex: '#ffffff', share: 1 }];
+  const result = carryNames(existing, derived);
+  assert.equal(result.moved.length, 1);
+  assert.equal(result.moved[0].name, 'outline.0');
+  // Black to white is close to the largest possible OkLab distance (L runs
+  // roughly 0 to 1, a and b near 0 for both), so this should read close to 1.
+  assert.ok(result.moved[0].distance > 0.9, `expected a large move, got ${result.moved[0].distance}`);
 });
