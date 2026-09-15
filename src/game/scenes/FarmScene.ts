@@ -8,9 +8,10 @@ import {
   createPixelArtTextures,
   fringeTexture,
 } from '../assets/createPixelArtTextures';
-import { LPC_IMAGES, LPC_SHEETS } from '../assets/lpc.generated';
+import { LPC_ANIMAL_SHEETS, LPC_IMAGES, LPC_SHEETS } from '../assets/lpc.generated';
+import { advanceChase, chaseFacing, createChase, type TickChase } from '../view/tickChase';
 import { PALETTE, tint } from '../assets/palette.generated';
-import { HUD, hudLayout, hudZones, type HudLayout } from '../ui/hudLayout';
+import { HUD, hotbarIconSize, hudLayout, hudZones, type HudLayout } from '../ui/hudLayout';
 import { SoundManager } from '../audio/SoundManager';
 import { FOOTSTEP_INTERVAL_MS, footstepFor, musicFor } from '../audio/soundtrack';
 import { connectToFarm, type FarmConnection } from '../net/client';
@@ -32,7 +33,7 @@ import {
 } from '../state/store';
 import type { FarmState, PlayerId, PlayerState } from '../state/types';
 import { npcDef, type NpcId } from '../npcs/definitions';
-import { animalsOn, type Animal } from '../systems/animals';
+import { animalsOn, type Animal, type AnimalKind } from '../systems/animals';
 import type { NpcActor } from '../npcs/schedule';
 import {
   BUILDING_AREA,
@@ -153,8 +154,59 @@ function plotVariant(base: string, tileX: number, tileY: number): string {
   return pick === 0 ? base : `${base}-${pick + 1}`;
 }
 
-/** LPC walkcycle rows: 0 = up, 1 = left, 2 = down, 3 = right (9 frames each). */
+/**
+ * How big each animal is drawn, as a multiplier on its own art.
+ *
+ * Mostly 0.62, which is not a number picked for animals at all: it is what the
+ * player's LPC sheet is drawn at, and it is the factor that turns LPC's world
+ * into this one's. Anything imported from the same set and drawn at the same
+ * number is in proportion with everybody else for free.
+ *
+ * The goat is the exception, and it is an exception in the art rather than in
+ * the taste: bluecarrot16 drew it over daneeklu's llama, so it stands a head
+ * taller than the cow's shoulder and at 0.62 it would look down on the farmer.
+ * Scaled to what a goat is instead, which is about waist height.
+ */
+const ANIMAL_SCALE: Record<AnimalKind, number> = {
+  chicken: 0.62,
+  duck: 0.62,
+  cow: 0.62,
+  goat: 0.46,
+};
+
+/** An animal walk sheet: four frames a row, four rows, same order as the people. */
+const ANIMAL_WALK_FRAMES = 4;
+
+/** LPC walkcycle rows: 0 = up, 1 = left, 2 = down, 3 = right. */
 const WALK_ROW: Record<Direction, number> = { up: 0, left: 1, down: 2, right: 3 };
+
+/**
+ * A row is nine frames wide, and eight of them are the walk.
+ *
+ * The two numbers are different because the sheets that ship here carry eight
+ * poses in a row the loader reads as nine — the ninth column is empty. An
+ * animation built from `+ 1` to `+ 8`, which is what an LPC export with a
+ * separate standing frame wants, therefore ran off the end of the art and
+ * spent a tenth of every second drawing the blank: a square of nothing over
+ * the player, once per stride, for as long as they were moving. Nobody
+ * notices a missing frame; everybody notices the flicker.
+ *
+ * So `STRIDE` is how far apart two rows are in the sheet, and `WALK_FRAMES`
+ * is how many of each row is a person walking. The first frame doubles as the
+ * standing pose, which is what it has always been used for.
+ */
+const WALK_STRIDE = 9;
+const WALK_FRAMES = 8;
+
+/** The frame a sprite facing this way stands on. */
+function standFrame(facing: Direction): number {
+  return WALK_ROW[facing] * WALK_STRIDE;
+}
+
+/** The same, on an animal sheet, where a row is four frames rather than nine. */
+function animalStandFrame(facing: Direction): number {
+  return WALK_ROW[facing] * ANIMAL_WALK_FRAMES;
+}
 
 /** Player id used while playing offline. Online, the server's session id wins. */
 const OFFLINE_PLAYER_ID = 'local';
@@ -338,23 +390,37 @@ interface Villager {
   label: Phaser.GameObjects.Text;
   sheet: string;
   facing: Direction;
+  /** The walk between the last clock step's position and this one's. */
+  chase: TickChase;
 }
 
 /**
  * One animal on screen.
  *
- * `facing` is a sign rather than a `Direction`: the drawings are side-on, so
- * the only thing the renderer has to remember is which way to flip. It is kept
- * here and not read off the state for the same reason a villager's is — the
- * state has no such field, because which way something is turned is a
+ * `facing` is a `Direction` and not a sign any more. It was a sign because the
+ * animals used to be one side-on drawing apiece, mirrored for the other way,
+ * and a mirrored cow is a cow whose head is on the wrong end of a sheet that
+ * only has one head. The real art has all four, so the renderer picks a row
+ * instead of a flip — and a hen walking away from you now shows you her back.
+ *
+ * It is kept here and not read off the state for the same reason a villager's
+ * is: the state has no such field, because which way something is turned is a
  * consequence of how it is being drawn moving.
+ *
+ * `x`/`y` are the animal's own position, kept apart from the sprite's. The
+ * sprite's `y` carries the graze sway on top of it, and sway written back into
+ * the position it was measured from is a number that climbs.
  */
 interface AnimalSprite {
-  sprite: Phaser.GameObjects.Image;
+  sprite: Phaser.GameObjects.Sprite;
   shadow: Phaser.GameObjects.Image;
   /** The exclamation over a hungry animal. Hidden the moment it is fed. */
   marker: Phaser.GameObjects.Image;
-  facing: 1 | -1;
+  facing: Direction;
+  /** The walk sheet it is drawn on, or null while it is on the fallback art. */
+  sheet: string | null;
+  /** The walk between the last clock step's position and this one's. */
+  chase: TickChase;
 }
 
 /**
@@ -671,6 +737,14 @@ export default class FarmScene extends Phaser.Scene {
     LPC_SHEETS.forEach((sheet) =>
       this.load.spritesheet(sheet, `/assets/lpc/${sheet}.png`, { frameWidth: 64, frameHeight: 64 }),
     );
+    // The animals carry their own frame size rather than sharing the people's:
+    // a cow is 88x72 and a hen is 32x30, and the manifest measured both.
+    LPC_ANIMAL_SHEETS.forEach((sheet) =>
+      this.load.spritesheet(sheet.key, sheet.url, {
+        frameWidth: sheet.frameWidth,
+        frameHeight: sheet.frameHeight,
+      }),
+    );
     // Same bargain as the art: a missing file is silence, not a broken game.
     SoundManager.preload(this, AREA_IDS);
   }
@@ -679,6 +753,7 @@ export default class FarmScene extends Phaser.Scene {
     createPixelArtTextures(this);
     this.createWalkAnimations();
     this.createVillagerAnimations();
+    this.createAnimalAnimations();
     this.createScreenLayer();
     this.createWeatherSprites();
     this.createAmbient();
@@ -1809,8 +1884,8 @@ export default class FarmScene extends Phaser.Scene {
       this.anims.create({
         key,
         frames: this.anims.generateFrameNumbers('player-sheet', {
-          start: WALK_ROW[dir] * 9 + 1,
-          end: WALK_ROW[dir] * 9 + 8,
+          start: standFrame(dir),
+          end: standFrame(dir) + WALK_FRAMES - 1,
         }),
         frameRate: 10,
         repeat: -1,
@@ -1824,7 +1899,7 @@ export default class FarmScene extends Phaser.Scene {
     const hasSheet = this.textures.exists('player-sheet');
     const shadow = this.add.image(player.x, player.y + 16, 'shadow');
     const sprite = this.add
-      .sprite(player.x, player.y, hasSheet ? 'player-sheet' : 'player', hasSheet ? WALK_ROW.down * 9 : undefined)
+      .sprite(player.x, player.y, hasSheet ? 'player-sheet' : 'player', hasSheet ? standFrame('down') : undefined)
       .setScale(hasSheet ? 0.62 : 1.2);
     // Remote players are tinted so they read as somebody else at a glance.
     // Was the source literal `bfd8ff`, a pale blue this palette has no match for at all (every
@@ -1873,7 +1948,7 @@ export default class FarmScene extends Phaser.Scene {
         if (moved) avatar.sprite.anims.play(walkKey, true);
         else {
           avatar.sprite.anims.stop();
-          avatar.sprite.setFrame(WALK_ROW[player.facing] * 9);
+          avatar.sprite.setFrame(standFrame(player.facing));
         }
       }
 
@@ -1993,9 +2068,14 @@ export default class FarmScene extends Phaser.Scene {
       // it too — otherwise clicks keep landing on the size it used to be.
       const hit = cell.frame.input?.hitArea as Phaser.Geom.Rectangle | undefined;
       hit?.setSize(hotbar.cell, hotbar.cell);
-      cell.icon.setPosition(centre, hotbar.y).setScale((hotbar.cell / HUD.cell) * HUD.iconScale);
-      cell.count.setPosition(x + hotbar.cell - 3, hotbar.y + hotbar.cell / 2 - 2);
-      cell.key?.setPosition(x + 3, hotbar.y - hotbar.cell / 2 + 1);
+      const icon = hotbarIconSize(hotbar.cell);
+      cell.icon.setPosition(centre, hotbar.y).setDisplaySize(icon, icon);
+      // Both labels sit inside the wood rather than on it. The border does not
+      // stretch with the cell, so the inset is the border plus a pixel at any
+      // cell size.
+      const inset = HUD.slotBorder + 1;
+      cell.count.setPosition(x + hotbar.cell - inset, hotbar.y + hotbar.cell / 2 - inset);
+      cell.key?.setPosition(x + inset, hotbar.y - hotbar.cell / 2 + inset - 2);
       cell.key?.setVisible(hotbar.cell >= 28);
     });
 
@@ -2570,7 +2650,16 @@ export default class FarmScene extends Phaser.Scene {
         .setVisible(false);
 
       // Bottom-right, the way every inventory since Minecraft has done it.
+      //
+      // Outlined, because this is the one HUD label with a picture behind it:
+      // a pale "12" sitting on the pale tin of a watering can is a number you
+      // have to lean in to read. One pixel of outline either side, which is
+      // all a nine-pixel digit has room for — the villagers' name labels use a
+      // heavier one, but they are over a whole farm rather than over 36px of
+      // wood. The key number needs none of this: it sits in the corner on bare
+      // frame, and outlining it only made it shout over the item it labels.
       const count = this.pixelText(0, 0, 16).setOrigin(1, 1).setDepth(DEPTH.hud + 2);
+      count.setStroke(PALETTE['outline.2'], 2);
 
       // Only the first nine have a key, so only those are labelled.
       const key =
@@ -3144,41 +3233,50 @@ export default class FarmScene extends Phaser.Scene {
         this.animalSprites.set(animal.id, drawn);
       }
 
-      const { sprite, shadow, marker } = drawn;
-      const before = sprite.x;
-      const lerp = Math.min(1, delta / 260);
-      const nextX = sprite.x + (animal.position.x - sprite.x) * lerp;
-      const nextY = sprite.y + (animal.position.y - sprite.y) * lerp;
-      const settled = Math.hypot(animal.position.x - nextX, animal.position.y - nextY) < 0.5;
-      sprite.setPosition(
-        settled ? animal.position.x : nextX,
-        settled ? animal.position.y : nextY,
-      );
+      const { sprite, shadow, marker, chase } = drawn;
 
-      // The drawings all face right, so which way an animal is going is a flip
-      // rather than a second sheet. Held through a standstill: an animal that
-      // stopped should still be facing the way it was walking.
-      const dx = sprite.x - before;
-      if (Math.abs(dx) > 0.05) drawn.facing = dx > 0 ? 1 : -1;
-      sprite.setFlipX(drawn.facing < 0);
+      // One step of the reducer's walk, drawn at one speed across the 1.2
+      // seconds it has to cover.
+      const moving = advanceChase(chase, animal.position.x, animal.position.y, delta);
 
-      // A small bob while it is moving, which is the whole of the animation:
-      // four hand-drawn walk cycles would be four things that are nearly right,
-      // and a grazing animal that rocks reads better than one that glides.
-      const bob = Math.abs(dx) > 0.05 ? Math.sin(this.time.now / 110) * 1.5 : 0;
-      sprite.setY(sprite.y + bob);
+      // Which way it is going, as one of the four the art has. Held through a
+      // standstill: an animal that stopped should still face the way it walked.
+      if (moving) drawn.facing = chaseFacing(chase);
+
+      if (drawn.sheet) {
+        const anim = `${drawn.sheet}-walk-${drawn.facing}`;
+        if (this.anims.exists(anim)) {
+          if (moving) sprite.anims.play(anim, true);
+          else {
+            sprite.anims.stop();
+            sprite.setFrame(animalStandFrame(drawn.facing));
+          }
+        }
+      } else {
+        // The fallback art is one side-on drawing, so it can only be flipped.
+        sprite.setFlipX(drawn.facing === 'left');
+      }
+
+      // No sway. There used to be one, back when the whole of an animal's
+      // animation was a sine wave applied to a single static drawing — and it
+      // is worth saying why it is gone rather than just deleting it. The
+      // camera rounds to whole pixels, so a wobble smaller than a pixel does
+      // not read as a gentle rock: it reads as the sprite snapping between two
+      // pixel rows, twice a second, which is the exact thing this pass set out
+      // to remove. The walk cycle is the animation now.
+      sprite.setPosition(chase.x, chase.y);
 
       // The same row-based band the players, the villagers and the buildings
       // sort into, so a cow south of the barn is drawn in front of it.
-      sprite.setDepth(Math.floor(sprite.y / TILE_SIZE) + AVATAR_DEPTH_BASE);
-      shadow.setPosition(sprite.x, sprite.y + sprite.displayHeight / 2 - 2);
+      sprite.setDepth(Math.floor(chase.y / TILE_SIZE) + AVATAR_DEPTH_BASE);
+      shadow.setPosition(chase.x, chase.y + sprite.displayHeight / 2 - 2);
       shadow.setDepth(sprite.depth - 1);
 
       // The one piece of information an animal carries on its head: it has not
       // eaten. Shown rather than narrated, per the house rule — a line in the
       // prompt bar about a hungry goat is a line nobody standing across the
       // field would ever see.
-      marker.setPosition(sprite.x, sprite.y - sprite.displayHeight / 2 - 8);
+      marker.setPosition(chase.x, chase.y - sprite.displayHeight / 2 - 8);
       marker.setDepth(sprite.depth + 4);
       marker.setVisible(!animal.fedToday);
     }
@@ -3471,11 +3569,50 @@ export default class FarmScene extends Phaser.Scene {
 
   private createAnimalSprite(animal: Animal): AnimalSprite {
     const at = animal.position ?? { x: 0, y: 0 };
+    const sheet = `animal-${animal.kind}-sheet`;
+    const hasSheet = this.textures.exists(sheet);
+
     const shadow = this.add.image(at.x, at.y + 8, 'shadow').setScale(0.8);
-    const sprite = this.add.image(at.x, at.y, `animal-${animal.kind}`);
+    const sprite = hasSheet
+      ? this.add.sprite(at.x, at.y, sheet, animalStandFrame('down')).setScale(ANIMAL_SCALE[animal.kind])
+      : this.add.sprite(at.x, at.y, `animal-${animal.kind}`);
     const marker = this.add.image(at.x, at.y - 20, 'animal-hungry').setVisible(false);
     this.areaLayer?.addMultiple([shadow, sprite, marker]);
-    return { sprite, shadow, marker, facing: 1 };
+    return {
+      sprite,
+      shadow,
+      marker,
+      facing: 'down',
+      sheet: hasSheet ? sheet : null,
+      chase: createChase(at.x, at.y),
+    };
+  }
+
+  /**
+   * A walk cycle per animal sheet, built once.
+   *
+   * Four frames rather than the people's eight, which is what the source art
+   * has — and a four-frame amble at eight frames a second is what a grazing
+   * animal looks like. Built here rather than per animal, because fourteen hens
+   * are fourteen sprites playing the same four pictures.
+   */
+  private createAnimalAnimations() {
+    for (const { key } of LPC_ANIMAL_SHEETS) {
+      if (!this.textures.exists(key)) continue;
+      (['up', 'left', 'down', 'right'] as Direction[]).forEach((dir) => {
+        const anim = `${key}-walk-${dir}`;
+        if (this.anims.exists(anim)) return;
+        this.anims.create({
+          key: anim,
+          frames: this.anims.generateFrameNumbers(key, {
+            start: animalStandFrame(dir),
+            end: animalStandFrame(dir) + ANIMAL_WALK_FRAMES - 1,
+          }),
+          frameRate: 8,
+          repeat: -1,
+        });
+      });
+    }
   }
 
   /** A heart, floating off an animal that has just been stroked. */
@@ -3519,24 +3656,15 @@ export default class FarmScene extends Phaser.Scene {
         this.villagers.set(actor.id, villager);
       }
 
-      const { sprite, shadow, label } = villager;
-      const before = { x: sprite.x, y: sprite.y };
+      const { sprite, shadow, label, chase } = villager;
 
-      // Chase the authoritative position rather than snapping to it. The
-      // factor is capped so a big frame cannot overshoot, and the last stretch
-      // is closed outright so a sprite never creeps forever toward a target it
-      // is already standing on.
-      const lerp = Math.min(1, delta / 260);
-      const nextX = sprite.x + (actor.x - sprite.x) * lerp;
-      const nextY = sprite.y + (actor.y - sprite.y) * lerp;
-      const settled = Math.hypot(actor.x - nextX, actor.y - nextY) < 0.5;
-      sprite.setPosition(settled ? actor.x : nextX, settled ? actor.y : nextY);
-
-      const dx = sprite.x - before.x;
-      const dy = sprite.y - before.y;
-      const walking = Math.hypot(dx, dy) > 0.05;
-      const facing: Direction =
-        Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : dy > 0 ? 'down' : 'up';
+      // The same walk the herd gets, and for the same reason — a villager
+      // covers 120 world pixels a step rather than an animal's 60, so the old
+      // exponential ease launched them at 462 px/s against a true pace of 100.
+      // Rowan crossing the square looked like Rowan being thrown across it.
+      const walking = advanceChase(chase, actor.x, actor.y, delta);
+      sprite.setPosition(chase.x, chase.y);
+      const facing = chaseFacing(chase);
 
       // The same row-based band the players and the buildings sort into, so a
       // villager walks behind the market stall and in front of the well.
@@ -3552,7 +3680,7 @@ export default class FarmScene extends Phaser.Scene {
         if (walking) sprite.anims.play(walkKey, true);
         else {
           sprite.anims.stop();
-          sprite.setFrame(WALK_ROW[villager.facing] * 9);
+          sprite.setFrame(standFrame(villager.facing));
         }
       }
     }
@@ -3597,7 +3725,7 @@ export default class FarmScene extends Phaser.Scene {
     const hasSheet = this.textures.exists(def.sheet);
     const shadow = this.add.image(actor.x, actor.y + 16, 'shadow');
     const sprite = this.add
-      .sprite(actor.x, actor.y, hasSheet ? def.sheet : def.texture, hasSheet ? WALK_ROW.down * 9 : undefined)
+      .sprite(actor.x, actor.y, hasSheet ? def.sheet : def.texture, hasSheet ? standFrame('down') : undefined)
       .setScale(hasSheet ? 0.6 : 1.15);
     if (hasSheet && def.tint !== 0xffffff) sprite.setTint(def.tint);
 
@@ -3612,7 +3740,14 @@ export default class FarmScene extends Phaser.Scene {
       .setOrigin(0.5, 1);
 
     this.areaLayer?.addMultiple([shadow, sprite, label]);
-    return { sprite, shadow, label, sheet: hasSheet ? def.sheet : def.texture, facing: 'down' };
+    return {
+      sprite,
+      shadow,
+      label,
+      sheet: hasSheet ? def.sheet : def.texture,
+      facing: 'down',
+      chase: createChase(actor.x, actor.y),
+    };
   }
 
   /**
@@ -3631,8 +3766,8 @@ export default class FarmScene extends Phaser.Scene {
         this.anims.create({
           key,
           frames: this.anims.generateFrameNumbers(sheet, {
-            start: WALK_ROW[dir] * 9 + 1,
-            end: WALK_ROW[dir] * 9 + 8,
+            start: standFrame(dir),
+            end: standFrame(dir) + WALK_FRAMES - 1,
           }),
           // A shade slower than the player, because they are ambling and the
           // player is usually late for something.

@@ -753,14 +753,18 @@ function createBuildingTextures(scene: Phaser.Scene) {
 }
 
 /**
- * The four animals, and the pen they are bought from.
+ * The four animals, and the pen they are bought from — the fallback now.
+ *
+ * All four have real art: `animal-<kind>-sheet.png` is a four-direction walk
+ * cycle from the LPC farm animal set, and the scene prefers it wherever it
+ * loaded. What is drawn here is what a player sees if that art is missing —
+ * the same bargain the player sprite makes with `player-sheet.png`, and the
+ * reason a blocked CDN or a half-cloned checkout is a plainer farm rather than
+ * an empty one.
  *
  * Side-on and facing right, with a flipped copy doing duty for the other
- * direction — the scene mirrors the sprite rather than asking for a second
- * drawing. Four legs and a head is enough silhouette at this size to tell a
- * chicken from a goat across a field, which is the whole job: these are
- * placeholders in the same sense as the buildings and are credited as such,
- * and a hand-drawn `animal-cow.png` preloaded over the top wins.
+ * direction: four legs and a head is enough silhouette at this size to tell a
+ * chicken from a goat across a field, which is all a fallback has to do.
  */
 interface AnimalPalette {
   key: string;
