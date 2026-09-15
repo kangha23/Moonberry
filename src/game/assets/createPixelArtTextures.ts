@@ -419,16 +419,25 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
     // Was 'rgba(232,214,175,0.85)', a tan close enough to light.7 (#f8dbbd)
     // to use it directly — both are pale and warm, just at different
     // saturations.
-    ctx.fillStyle = withAlpha(PALETTE['light.7'], 0.85);
+    //
+    // The migration originally put light.7 here AND on the highlight below
+    // (differing only by alpha, 0.85 vs 0.9), which is the same "two draws,
+    // one colour" defect this fix wave's tile-water pass closed elsewhere:
+    // two ellipses that are meant to read as a body and a brighter highlight
+    // on top of it instead rendered as one flat mote, because canvas alpha
+    // over the same clear background composites to two shades of the SAME
+    // colour, not two different ones. light.6 (#acbfb0) is cooler and a
+    // touch darker than light.7, so the fill now sits visibly behind the
+    // light.7 highlight instead of underneath a second copy of it.
+    ctx.fillStyle = withAlpha(PALETTE['light.6'], 0.85);
     ctx.beginPath();
     ctx.ellipse(6, 5, 5, 2.6, 0, 0, Math.PI * 2);
     ctx.fill();
     // Was 'rgba(255,246,220,0.9)', an almost-white cream. The palette has no
     // true white or pale grey (see art/palette.json's own note on the
-    // light.* group), so this highlight lands on the same light.7 as the
-    // fill above it rather than a second, brighter step — a poor match in
-    // that the two ellipses now share one colour where they used to be two
-    // shades of it, but there is nothing lighter on the palette to reach for.
+    // light.* group), so this highlight stays on light.7 — now genuinely a
+    // highlight, since the fill above it was moved to light.6 rather than
+    // sharing the same colour.
     ctx.fillStyle = withAlpha(PALETTE['light.7'], 0.9);
     ctx.beginPath();
     ctx.ellipse(5, 4, 2.4, 1.4, 0, 0, Math.PI * 2);
@@ -603,11 +612,20 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
     ctx.clearRect(0, 0, 10, 5);
     // Was 'rgba(200,235,245,0.9)', a pale, cool blue — the palette has no
     // pale blue at all (see the water group's own note: it runs
-    // indigo/magenta/teal/teal, never light). The nearest entry by hex
-    // distance is light.7, which is warm rather than cool — a poor match on
-    // hue, kept anyway per this project's rule of using the nearest real
-    // entry rather than inventing a hex for water spray.
-    ctx.strokeStyle = withAlpha(PALETTE['light.7'], 0.9);
+    // indigo/magenta/teal/teal, never light). The first migration pass
+    // mapped this to light.7 by raw hex distance alone, which is the
+    // nearest ENTRY but the wrong choice for what this entry draws: a
+    // splash is an arc of spray thrown up off the same water this texture
+    // sits on top of (the watering-can and rain-drop textures above both
+    // use water.3 for exactly that surface), and light.7 is warm cream —
+    // on a water effect that reads as a stray patch of sand, not spray.
+    // water.3 (#1896b3) is a genuinely cool, water-family colour, and it is
+    // already what every other droplet/ripple texture in this file calls
+    // "water" — so the splash now agrees with its own surroundings on hue,
+    // even though (like the rest of this migration) it is not a pale tint
+    // of it, because the palette has nothing paler in that family to reach
+    // for.
+    ctx.strokeStyle = withAlpha(PALETTE['water.3'], 0.9);
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.ellipse(5, 3, 4, 1.8, 0, Math.PI, 0);

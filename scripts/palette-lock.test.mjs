@@ -34,8 +34,77 @@ const LAB = colours.map((c) => hexToOklab(c.hex));
  *     no colour ever reaches the screen) or the vignette/energy-hit scrim,
  *     which is a black multiplied over the scene at a low alpha to darken
  *     it — a lighting operation, not a drawn surface.
+ *
+ * This same Set is reused, unchanged, for `rgb()`/`rgba()` channel triples
+ * (see RGB_FUNCTION below): `rgba(0,0,0,0.24)` is the same drop-shadow scrim
+ * as `0x000000` and `rgba(255,255,255,0.85)` is the same wash as `0xffffff`,
+ * just spelled with the alpha inline instead of set separately. Giving the
+ * rgb() form its own allowlist would be inventing a second exemption for the
+ * one rationale above, which is exactly the kind of drift a lock is supposed
+ * to prevent.
  */
 const UTILITY_TINTS = new Set([0xffffff, 0x000000]);
+
+/**
+ * `rgb()` / `rgba()` with numeric channels — the hole that let a hand-typed
+ * translucent colour walk straight past this test.
+ *
+ * The hex/`0x` regex a few lines down cannot see inside `rgba(18, 52, 86,
+ * 0.5)`: there is no `#` and no `0x` anywhere in it, so a channel triple
+ * naming an off-palette colour was invisible to "no source file names a
+ * colour the palette does not have" no matter how off-palette it was. A
+ * reviewer proved this by appending `.zz-probe { color: rgba(18, 52, 86,
+ * 0.5); }` to src/styles.css and watching all four tests in this file pass.
+ *
+ * Only the classic, comma-separated, integer-channel form is parsed —
+ * `rgb(r, g, b)` / `rgba(r, g, b, a)` with 0-255 integers for r/g/b and a
+ * plain numeric alpha. Two things are deliberately handled differently:
+ *
+ *   - Space-separated channels (`rgb(18 52 86 / 50%)`) and percentage
+ *     channels (`rgb(7% 20% 34%)`) are legal CSS Color 4 syntax that nothing
+ *     in this codebase currently writes. Rather than silently fail to match
+ *     them — which is exactly the bug this whole extension exists to fix,
+ *     just for a different syntax — RGB_CLASSIC below fails to match them
+ *     too, and that mismatch is treated as its own failure (see
+ *     "unsupported" below) rather than as "no colour found here". Parsing
+ *     every CSS Color 4 permutation correctly would buy precision for a form
+ *     nobody has reached for, at the cost of a hand-rolled colour parser this
+ *     file would then have to keep correct forever; rejecting the form
+ *     outright and pointing at the palette custom property to use instead is
+ *     the cheaper, equally safe option, and it is the one taken here.
+ *   - Anything with no digit in it at all is not a colour literal and is
+ *     skipped rather than flagged. Two idioms this codebase actually uses
+ *     rely on that: `withAlpha()` in createPixelArtTextures.ts builds its
+ *     return value as the template literal `` `rgba(${r},${g},${b},${alpha})`
+ *     `` — the word "rgba(" is right there in the source, but every channel
+ *     is a placeholder, not a number, so the text between the parens has no
+ *     digit in it. And `color-mix(in srgb, var(--pal-cream) 62%, transparent)`
+ *     in styles.css never contains the substring "rgb(" or "rgba(" at all
+ *     (the "srgb" in "in srgb" is followed by a comma, not a paren, so the
+ *     regex below does not even reach it). Neither idiom needs special-casing
+ *     to pass — they were checked by hand against this exact implementation
+ *     before it was trusted, and by the probes in fix-c-report.md — so if a
+ *     later change to this function starts flagging either one, that is a
+ *     regression in the change, not a gap this comment forgot to close.
+ */
+const RGB_FUNCTION = /\brgba?\(([^()]*)\)/g;
+const RGB_CLASSIC =
+  /^\s*(\d{1,3})\s*,\s*(\d{1,3})\s*,\s*(\d{1,3})\s*(?:,\s*[01]?(?:\.\d+)?\s*)?$/;
+
+/**
+ * Returns the packed 0xRRGGBB for a classic `rgb()`/`rgba()` body, the string
+ * `'unsupported'` for one that names actual channel data in a form this test
+ * does not parse (see RGB_FUNCTION above), or `null` when there is no digit
+ * in it at all, meaning it is not a colour literal in the first place.
+ */
+function parseRgbBody(inside) {
+  if (!/\d/.test(inside)) return null;
+  const m = inside.match(RGB_CLASSIC);
+  if (!m) return 'unsupported';
+  const [r, g, b] = [m[1], m[2], m[3]].map(Number);
+  if (r > 255 || g > 255 || b > 255) return 'unsupported';
+  return (r << 16) | (g << 8) | b;
+}
 
 /**
  * The five villager identity tints.
@@ -241,6 +310,25 @@ test('no source file names a colour the palette does not have', () => {
             'colour" is the exact mistake that comment exists to prevent.'
           : `${file}:${line}  ${match[0]}  -> use ${nearestName(n)}`,
       );
+    }
+
+    // The rgb()/rgba() half of the same check — see RGB_FUNCTION's own
+    // comment for what is and is not matched, and why.
+    for (const match of source.matchAll(RGB_FUNCTION)) {
+      const parsed = parseRgbBody(match[1]);
+      if (parsed === null) continue; // no digit in it: not a colour literal (e.g. withAlpha's own template)
+      const line = source.slice(0, match.index).split('\n').length;
+      if (parsed === 'unsupported') {
+        failures.push(
+          `${file}:${line}  ${match[0]}  -> rgb()/rgba() with space-separated or percentage channels is ` +
+            'not recognised by this lock (see the RGB_FUNCTION comment in scripts/palette-lock.test.mjs). ' +
+            "Use a palette custom property instead: color-mix(in srgb, var(--pal-x) N%, transparent) in " +
+            "CSS, or withAlpha(PALETTE['x'], alpha) in canvas code.",
+        );
+        continue;
+      }
+      if (ALLOWED.has(parsed) || UTILITY_TINTS.has(parsed)) continue;
+      failures.push(`${file}:${line}  ${match[0]}  -> use ${nearestName(parsed)}`);
     }
   }
   assert.deepEqual(

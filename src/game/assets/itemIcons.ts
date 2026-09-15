@@ -246,7 +246,16 @@ export interface CropPalette {
 }
 
 export const CROP_PALETTES: Record<CropId, CropPalette> = {
-  turnip: { form: 'root', body: PALETTE['light.7'], light: PALETTE['light.7'], dark: PALETTE['building.2'], seed: PALETTE['light.6'] },
+  // Was light: light.7 — identical to body, the same flatness Task 12 found
+  // and fixed in 'wild-daisy' and 'snow-yam' below: produceIcon's 'root' form
+  // draws `light` as a small highlight strip on top of the `body` fill, and
+  // when the two names the same colour that strip disappears into the fill
+  // it sits on, leaving a flat root with no highlight at all. light.6 is
+  // already this turnip's own `seed` colour, so the highlight now reads as a
+  // second, cooler tone against the cream body rather than a repeat of it —
+  // and, being a small accent rect rather than the dominant fill, it stays a
+  // shading detail on a turnip rather than becoming a second body colour.
+  turnip: { form: 'root', body: PALETTE['light.7'], light: PALETTE['light.6'], dark: PALETTE['building.2'], seed: PALETTE['light.6'] },
   clover: { form: 'bloom', body: PALETTE['light.0'], light: PALETTE['light.1'], dark: PALETTE['leaf.1'], seed: PALETTE['light.0'] },
   strawberry: { form: 'berry', body: PALETTE['building.1'], light: PALETTE['building.3'], dark: PALETTE['clothWarm.2'], seed: PALETTE['building.3'] },
   rhubarb: { form: 'grain', body: PALETTE['building.1'], light: PALETTE['building.3'], dark: PALETTE['clothWarm.2'], seed: PALETTE['building.1'] },

@@ -83,6 +83,28 @@ import {
 
 type KeyMap = Record<string, Phaser.Input.Keyboard.Key>;
 
+/**
+ * A palette colour with an alpha channel, for the one place in this file that
+ * wants a translucent CSS colour rather than an opaque Phaser tint.
+ *
+ * The build-hint tooltip below used to hardcode `'rgba(20,13,8,0.86)'`, a
+ * near-black brown nobody had checked against the palette — invisible to
+ * `scripts/palette-lock.test.mjs` before that test learned to look inside
+ * `rgb()`/`rgba()` literals, and the first thing the widened check found once
+ * it could. outline.0 (#0f0608) is the nearest palette entry and, like the
+ * original, reads as a near-black backdrop. Same helper, same reasoning, as
+ * `withAlpha` in `../assets/createPixelArtTextures.ts` — duplicated locally
+ * rather than imported because that one is not exported and this file needs
+ * exactly one call to it.
+ */
+function withAlpha(hex: string, alpha: number): string {
+  const n = Number.parseInt(hex.slice(1), 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 /** Which drawing a node gets. A tree's is the one for the stage it has reached. */
 function nodeTexture(node: ResourceNode): string {
   if (node.kind === 'tree') return `node-tree-${node.stage ?? 0}`;
@@ -696,7 +718,7 @@ export default class FarmScene extends Phaser.Scene {
         fontSize: '14px',
         color: PALETTE['light.7'],
         align: 'center',
-        backgroundColor: 'rgba(20,13,8,0.86)',
+        backgroundColor: withAlpha(PALETTE['outline.0'], 0.86),
         padding: { x: 12, y: 7 },
       })
       .setOrigin(0.5, 0)

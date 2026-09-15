@@ -95,10 +95,12 @@ const PIN_EXCLUSION_RADIUS = 0.03;
  *
  * `exclude` skips a named subdirectory entirely, wherever it occurs in the
  * walk. The one caller that uses this excludes `art/raw/intent/`: those
- * PNGs exist so `soil` and `soilWet`'s tones vote when this file is read by
- * a human, not so their pixels get counted twice — the pinned ramps already
- * take those exact tones from `art/ramps.json`, so counting them again here
- * would hand the clustering pass credit for colours it did not choose.
+ * PNGs exist so `soil`'s tones vote when this file is read by a human, not
+ * so their pixels get counted twice — the pinned ramps already take those
+ * exact tones from `art/ramps.json`, so counting them again here would hand
+ * the clustering pass credit for colours it did not choose. (`soilWet` used
+ * to vote here too, alongside `soil`; it has since been merged into that
+ * same seven-step `soil` ramp and no longer exists as a group of its own.)
  */
 export function histogram(dir, { exclude = [] } = {}) {
   const counts = new Map();
