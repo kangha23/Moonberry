@@ -865,7 +865,10 @@ describe('the palette module', () => {
   });
 
   it('converts a colour to the number Phaser wants', () => {
-    expect(tint('wood.0')).toBe(Number.parseInt(PALETTE['wood.0'].slice(1), 16));
+    // Every entry, not a named one: group names are data and will move.
+    for (const [name, hex] of Object.entries(PALETTE)) {
+      expect(tint(name as PaletteName), name).toBe(Number.parseInt(hex.slice(1), 16));
+    }
   });
 
   it('contains no two identical colours', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PALETTE, PALETTE_HEXES, tint } from './palette.generated';
+import { PALETTE, PALETTE_HEXES, tint, type PaletteName } from './palette.generated';
 
 /**
  * The palette, checked from the game's side.
@@ -25,8 +25,15 @@ describe('the palette module', () => {
     for (const name of Object.keys(PALETTE)) expect(name).toMatch(/^[a-z][A-Za-z]*\.\d+$/);
   });
 
-  it('converts a colour to the number Phaser wants', () => {
-    expect(tint('wood.0')).toBe(Number.parseInt(PALETTE['wood.0'].slice(1), 16));
+  it('converts every colour to the number Phaser wants', () => {
+    // Every entry rather than a named one. The first version of this test named
+    // `wood.0`, and when the palette was re-derived and the groups renamed, the
+    // test failed for a reason that had nothing to do with `tint` being wrong.
+    // Group names are data and will move again; the conversion is what is being
+    // checked, so the check should not depend on what anything is called.
+    for (const [name, hex] of Object.entries(PALETTE)) {
+      expect(tint(name as PaletteName), name).toBe(Number.parseInt(hex.slice(1), 16));
+    }
   });
 
   it('contains no two identical colours', () => {
