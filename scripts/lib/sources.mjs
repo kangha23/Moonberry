@@ -69,3 +69,38 @@ export function validateSources(json) {
 
   return json;
 }
+
+/**
+ * A table row as the flags `planImport` already takes.
+ *
+ * This is the whole reason the table is worth having: every geometry rule the
+ * game depends on — 32x32 for a tile, 576x256 for a walk cycle, divisible by
+ * four for an animal sheet — lives in `import-lpc.mjs` and is tested there. A
+ * second implementation here would be a second set of rules to keep in step.
+ *
+ * Values come out as strings because that is what the importer's own flag
+ * parser reads: it splits `String(value)` on commas, so `[12, 6]` and `'12,6'`
+ * are the same argument and the string is the honest one.
+ *
+ * `--force` is deliberately not reachable from the table. It exists for a
+ * human who has just changed the loader and knows why the size is different;
+ * a data file asking for it is a cut that should have been fixed instead.
+ */
+export function cutFlags(cut) {
+  const flags = {};
+  if (cut.grid !== undefined) flags.grid = String(cut.grid);
+  if (cut.cell !== undefined) flags.cell = cut.cell.join(',');
+  if (cut.rect !== undefined) flags.rect = cut.rect.join(',');
+  if (cut.scale !== undefined) flags.scale = String(cut.scale);
+  if (cut.flip !== undefined) flags.flip = String(cut.flip);
+  if (cut.recolour !== undefined) {
+    flags.recolour = Object.entries(cut.recolour)
+      .map(([from, to]) => `${from.replace('#', '')}:${to.replace('#', '')}`)
+      .join(',');
+  }
+  if (cut.walkcycle) flags.walkcycle = true;
+  if (cut.animals) flags.animals = true;
+  if (cut.frame !== undefined) flags.frame = String(cut.frame);
+  if (cut.row !== undefined) flags.row = String(cut.row);
+  return flags;
+}

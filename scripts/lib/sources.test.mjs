@@ -10,7 +10,8 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateSources } from './sources.mjs';
+import { validateSources, cutFlags } from './sources.mjs';
+import { planImport } from '../import-lpc.mjs';
 
 const pack = {
   title: '[LPC] Crops',
@@ -74,4 +75,46 @@ test('rejects a target that is also listed as not imported', () => {
 test('rejects a notImported entry with no reason', () => {
   const json = { packs: {}, notImported: { 'tile-grass': '' }, cuts: [] };
   assert.throws(() => validateSources(json), /reason/);
+});
+
+test('turns a grid cell into the flags the importer already understands', () => {
+  assert.deepEqual(cutFlags({ target: 'crop-tomato', grid: 32, cell: [12, 6] }), {
+    grid: '32',
+    cell: '12,6',
+  });
+});
+
+test('passes a rect, a scale, a flip and a recolour straight through', () => {
+  assert.deepEqual(
+    cutFlags({ target: 'tree', rect: [0, 0, 48, 64], scale: 2, flip: 'x', recolour: { efe9e7: '9d7049' } }),
+    { rect: '0,0,48,64', scale: '2', flip: 'x', recolour: 'efe9e7:9d7049' },
+  );
+});
+
+test('turns a walk cycle and an animal cycle into their own flags', () => {
+  assert.deepEqual(cutFlags({ target: 'maeve-sheet', walkcycle: true, row: 0 }), {
+    walkcycle: true,
+    row: '0',
+  });
+  assert.deepEqual(cutFlags({ target: 'animal-cow-sheet', animals: true, frame: 128 }), {
+    animals: true,
+    frame: '128',
+  });
+});
+
+test('never emits --force, because a cut that is the wrong size is a cut to fix', () => {
+  assert.equal('force' in cutFlags({ target: 'tile-path', force: true, grid: 32, cell: [0, 0] }), false);
+});
+
+test('produces flags planImport accepts, end to end', () => {
+  // A 64x64 source read as a grid of 32px cells: cell 1,1 is its bottom-right
+  // quarter, which is exactly the shape a world tile wants.
+  //
+  // Built as a literal rather than with `raster()`, which returns a writer
+  // (`{ pixels, set }`) and not the `{ width, height, pixels }` shape the rest
+  // of png.mjs passes around.
+  const source = { width: 64, height: 64, pixels: new Uint8Array(64 * 64 * 4) };
+  const { image } = planImport(source, 'tile-path', cutFlags({ target: 'tile-path', grid: 32, cell: [1, 1] }));
+  assert.equal(image.width, 32);
+  assert.equal(image.height, 32);
 });
