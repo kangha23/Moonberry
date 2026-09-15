@@ -64,37 +64,58 @@ function hash(x, y, seed = 1) {
  * planks on the farmhouse and the trunk of a tree, and a change to the ramp
  * moves all three together.
  *
- * The names below are the nearest palette entry to each tone this table used
- * to hold, measured in OkLab and picked mechanically — not hand-tuned to
- * look right, because the point of a locked palette is that nothing gets to
- * pick its own colour any more. Several tones land on the same entry: dry's
- * `low`, `base` and `clod` are all nearest to `clothWarm.2`, and its `high`
- * and `crown` both land on `earth.0`; wet's `low`, `base` and `clod` all land
- * on `wood.0`, and its `high` and `crown` both land on `clothWarm.2`. That
- * collapses each ramp from six named tones to three rendered colours — a
- * shallower gradient than the profile below was written for, and a sign that
- * a 48-colour palette does not carry a soil ramp as fine as the one this
- * script used to draw for itself. Wet soil in particular is not a second
- * brown ramp of its own: every one of its tones turned out nearest to an
- * entry in `wood` or `clothWarm` rather than to a `wet`-flavoured group,
- * which is the kind of sharing a locked palette is for.
+ * These are deliberately NOT the nearest palette entry to each of the six
+ * hand-picked tones this table used to hold. An earlier pass did exactly
+ * that — nearest colour, one lookup per tone, done — and it was wrong. Dry's
+ * `low`/`base`/`clod` all happened to be nearest the same entry, and its
+ * `high`/`crown` both landed on a second one, so a six-tone ramp rendered in
+ * three flat colours. That is the **brick wall** the comment on `PROFILE`
+ * below already describes fighting off once — "the first attempt at this
+ * drew each row a flat colour and the result read as a brick wall — regular
+ * horizontal courses with regular breaks in them" — and nearest-neighbour
+ * had reintroduced the exact same defect one level up, because it optimises
+ * each colour's own error and has no notion that the six colours need to
+ * stay apart from each other.
+ *
+ * So instead: five DISTINCT palette entries per ramp, chosen in ascending
+ * lightness order from the warm groups (`earth`, `wood`, `warmDeep` — 4 + 4 +
+ * 4 entries, `wood.3` and `earth.2` excluded because they read as slate-grey
+ * and coral-red rather than brown, which would be a wrong-hue mistake of the
+ * same kind as the one below in `WILD`). The ten slots this needs — five per
+ * ramp — come from those three groups with no entry used in both ramps, so
+ * dry and wet never share a rendered colour: `wood.1`, `wood.2` and all of
+ * `earth` go to dry; all of `warmDeep` and `wood.0` go to wet, keeping wet
+ * uniformly darker, which is the one property "waterlogged earth is darker
+ * than dry" actually needs. `clod` reuses each ramp's `low` entry rather than
+ * getting a sixth slot — a speckle is not a gradient step, and it needs to
+ * read as a mid-tone lump, not as dark as the trough it explicitly is not
+ * supposed to sit in.
+ *
+ * The cost is distance: several of these ten picks are 0.10-0.16 away from
+ * the tone they replace in OkLab, worse than nearest-neighbour's best case
+ * and occasionally worse than its worst. That is the trade this file is
+ * built to make and record, not hide: a visibly-graduated furrow a little
+ * off in hue beats an exactly-matched furrow that reads as three stripes.
+ * See task-8-report.md in the palette-lock plan for the full measurement —
+ * every distance, both the ones nearest-neighbour produced and the ones this
+ * spacing produces, side by side.
  */
 const SOIL = {
   dry: {
-    trough: PALETTE['wood.0'],
-    low: PALETTE['clothWarm.2'],
-    base: PALETTE['clothWarm.2'],
-    high: PALETTE['earth.0'],
-    crown: PALETTE['earth.0'],
-    clod: PALETTE['clothWarm.2'],
+    trough: PALETTE['wood.1'],
+    low: PALETTE['wood.2'],
+    base: PALETTE['earth.0'],
+    high: PALETTE['earth.1'],
+    crown: PALETTE['earth.3'],
+    clod: PALETTE['wood.2'],
   },
   wet: {
-    trough: PALETTE['warmDeep.3'],
-    low: PALETTE['wood.0'],
-    base: PALETTE['wood.0'],
-    high: PALETTE['clothWarm.2'],
-    crown: PALETTE['clothWarm.2'],
-    clod: PALETTE['wood.0'],
+    trough: PALETTE['warmDeep.0'],
+    low: PALETTE['warmDeep.1'],
+    base: PALETTE['warmDeep.2'],
+    high: PALETTE['warmDeep.3'],
+    crown: PALETTE['wood.0'],
+    clod: PALETTE['warmDeep.1'],
   },
 };
 
@@ -206,15 +227,24 @@ function drawSoil(image, wet, variant) {
  * reads as a furrow. That is the palette not carrying enough resolution
  * in the grass ramp for this effect, not a bug in the lookup.
  *
- * Second, `bright` — the highlight on each grass blade — is nearest to
+ * Second, `bright` — the highlight on each grass blade — was nearest to
  * `skin.1` at d=0.101, over twice the 0.05 flag threshold and the worst of
- * all 23 literals this file used to hold. `#9ccc63` is a bright yellow-green
- * and the palette simply has no such colour; the nearest thing to it is a
- * yellow skin tone. Per the migration brief this is used anyway, mechanically,
- * rather than swapped for a hand-picked "close enough" green — but it is a
- * real finding about the palette, not a settled matter: a bright blade
- * highlight rendering in a yellow closer to skin than to any green is worth
- * a second look before this palette is trusted for foliage highlights.
+ * all 23 literals this file used to hold, and rendering it confirmed the
+ * measurement rather than second-guessing it for no reason: the field came
+ * out with yellow confetti scattered across the grass, because `#9ccc63` is
+ * a bright yellow-green and `skin.1` is a yellow skin tone — same rough
+ * lightness, wrong hue family entirely. Nearest-neighbour is the wrong rule
+ * for a colour a palette genuinely does not carry; it will always hand back
+ * *something*, and that something can be closer in OkLab while still being
+ * the wrong kind of colour to put on grass. So `bright` is pinned to
+ * `grass.4`, the lightest entry the `grass` group has (d=0.127 from the
+ * original — farther than `skin.1`, and correct anyway, because a highlight
+ * that reads as green-but-imprecise beats one that reads as yellow). It
+ * happens to equal `light`, which is a different role (a ground speckle
+ * rather than a blade-tip highlight) landing on the same entry by
+ * coincidence of both wanting "the lightest green available" — not a
+ * problem, since nothing here depends on the two being visually distinct
+ * from each other, only from the darker tones around them.
  */
 const WILD = {
   grass: PALETTE['grass.3'],
@@ -223,7 +253,7 @@ const WILD = {
   ridge: PALETTE['grass.3'],
   furrow: PALETTE['grass.1'],
   blade: PALETTE['foliage.4'],
-  bright: PALETTE['skin.1'],
+  bright: PALETTE['grass.4'],
   soil: PALETTE['earth.0'],
   // The darker fleck beside a turned clod, previously its own literal.
   // Nearest is `clothWarm.2` at d=0.085 — also above the flag threshold.
