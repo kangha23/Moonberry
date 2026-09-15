@@ -104,3 +104,40 @@ export function cutFlags(cut) {
   if (cut.row !== undefined) flags.row = String(cut.row);
   return flags;
 }
+
+/**
+ * The folder against the table, both ways.
+ *
+ * `unaccounted` is art on disk that no cut produced and no `notImported` entry
+ * excuses. That is the failure worth catching: a PNG whose origin nobody wrote
+ * down cannot be credited, and the licences here make attribution a condition.
+ *
+ * `stale` is the opposite — a row describing a file that is not there, which
+ * usually means a rename that only happened on one side.
+ */
+export function reconcile({ rawFiles, cuts, notImported = {} }) {
+  const produced = new Set(cuts.map((cut) => cut.target));
+  const excused = new Set(Object.keys(notImported));
+  return {
+    unaccounted: rawFiles.filter((name) => !produced.has(name) && !excused.has(name)).sort(),
+    stale: [...produced].filter((name) => !rawFiles.includes(name)).sort(),
+  };
+}
+
+/**
+ * Packs that art is taken from but that the credits do not mention.
+ *
+ * Matched on the pack's title appearing in the file, because that is what a
+ * reader looks for — a heading with the pack's name on it. Only packs a cut
+ * actually uses are required: declaring a pack and not using it yet is a
+ * legitimate half-finished state, and shipping its art without credit is not.
+ */
+export function missingCredits({ packs, cuts, credits }) {
+  const used = new Set(cuts.map((cut) => cut.pack));
+  return [...used]
+    .filter((name) => {
+      const title = packs[name]?.title;
+      return !title || !credits.includes(title);
+    })
+    .sort();
+}

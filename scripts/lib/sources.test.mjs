@@ -10,7 +10,7 @@
  */
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { validateSources, cutFlags } from './sources.mjs';
+import { validateSources, cutFlags, reconcile, missingCredits } from './sources.mjs';
 import { planImport } from '../import-lpc.mjs';
 
 const pack = {
@@ -117,4 +117,47 @@ test('produces flags planImport accepts, end to end', () => {
   const { image } = planImport(source, 'tile-path', cutFlags({ target: 'tile-path', grid: 32, cell: [1, 1] }));
   assert.equal(image.width, 32);
   assert.equal(image.height, 32);
+});
+
+test('reports art on disk that no cut produced and nothing excuses', () => {
+  const { unaccounted } = reconcile({
+    rawFiles: ['tile-grass', 'crop-tomato', 'mystery'],
+    cuts: [{ target: 'crop-tomato' }],
+    notImported: { 'tile-grass': 'imported before this table existed' },
+  });
+  assert.deepEqual(unaccounted, ['mystery']);
+});
+
+test('reports table rows whose file is not on disk', () => {
+  const { stale } = reconcile({
+    rawFiles: ['crop-tomato'],
+    cuts: [{ target: 'crop-tomato' }, { target: 'crop-melon' }],
+    notImported: {},
+  });
+  assert.deepEqual(stale, ['crop-melon']);
+});
+
+test('is quiet when the folder and the table agree', () => {
+  assert.deepEqual(
+    reconcile({ rawFiles: ['crop-tomato'], cuts: [{ target: 'crop-tomato' }], notImported: {} }),
+    { unaccounted: [], stale: [] },
+  );
+});
+
+test('reports a pack used by a cut but missing from the credits', () => {
+  const packs = {
+    'lpc-crops': { title: '[LPC] Crops' },
+    'lpc-fish': { title: '[LPC] Fish' },
+  };
+  const cuts = [
+    { target: 'crop-tomato', pack: 'lpc-crops' },
+    { target: 'item-carp', pack: 'lpc-fish' },
+  ];
+  const credits = '## [LPC] Crops (CC-BY-SA 3.0+)\n\nApplies to: crop-tomato.\n';
+  assert.deepEqual(missingCredits({ packs, cuts, credits }), ['lpc-fish']);
+});
+
+test('does not demand credits for a pack no cut uses', () => {
+  const packs = { 'lpc-fish': { title: '[LPC] Fish' } };
+  assert.deepEqual(missingCredits({ packs, cuts: [], credits: '' }), []);
 });
