@@ -1,242 +1,242 @@
 {
   "colours": [
     {
-      "name": "neutralDark.0",
+      "name": "outline.0",
       "hex": "#000000",
       "share": 0.1318
     },
     {
-      "name": "neutralDark.1",
+      "name": "outline.1",
       "hex": "#160609",
       "share": 0.1318
     },
     {
-      "name": "neutralDark.2",
+      "name": "outline.2",
       "hex": "#0a131d",
       "share": 0.1318
     },
     {
-      "name": "neutralDark.3",
+      "name": "outline.3",
       "hex": "#1b0e14",
       "share": 0.1318
     },
     {
-      "name": "orangeDark.0",
+      "name": "warmDeep.0",
       "hex": "#280707",
       "share": 0.1263
     },
     {
-      "name": "orangeDark.1",
+      "name": "warmDeep.1",
       "hex": "#370f0b",
       "share": 0.1263
     },
     {
-      "name": "orangeDark.2",
+      "name": "warmDeep.2",
       "hex": "#45070f",
       "share": 0.1263
     },
     {
-      "name": "orangeDark.3",
+      "name": "warmDeep.3",
       "hex": "#43180c",
       "share": 0.1263
     },
     {
-      "name": "neutralDark2.0",
+      "name": "shadow.0",
       "hex": "#0c1e24",
       "share": 0.1319
     },
     {
-      "name": "neutralDark2.1",
+      "name": "shadow.1",
       "hex": "#281826",
       "share": 0.1319
     },
     {
-      "name": "neutralDark2.2",
+      "name": "shadow.2",
       "hex": "#082c27",
       "share": 0.1319
     },
     {
-      "name": "neutralDark2.3",
+      "name": "shadow.3",
       "hex": "#2d2330",
       "share": 0.1319
     },
     {
-      "name": "greenMid.0",
+      "name": "foliage.0",
       "hex": "#07391d",
       "share": 0.1234
     },
     {
-      "name": "greenMid.1",
+      "name": "foliage.1",
       "hex": "#034339",
       "share": 0.1234
     },
     {
-      "name": "greenMid.2",
+      "name": "foliage.2",
       "hex": "#134507",
       "share": 0.1234
     },
     {
-      "name": "greenMid.3",
+      "name": "foliage.3",
       "hex": "#175819",
       "share": 0.1234
     },
     {
-      "name": "greenMid.4",
+      "name": "foliage.4",
       "hex": "#0b6b45",
       "share": 0.1234
     },
     {
-      "name": "orangeMid.0",
+      "name": "wood.0",
       "hex": "#4c2c14",
       "share": 0.0745
     },
     {
-      "name": "orangeMid.1",
+      "name": "wood.1",
       "hex": "#602315",
       "share": 0.0745
     },
     {
-      "name": "orangeMid.2",
+      "name": "wood.2",
       "hex": "#74022d",
       "share": 0.0745
     },
     {
-      "name": "orangeMid.3",
+      "name": "wood.3",
       "hex": "#494758",
       "share": 0.0745
     },
     {
-      "name": "purpleMid.0",
+      "name": "clothCool.0",
       "hex": "#352d6a",
       "share": 0.0334
     },
     {
-      "name": "purpleMid.1",
+      "name": "clothCool.1",
       "hex": "#205062",
       "share": 0.0334
     },
     {
-      "name": "purpleMid.2",
+      "name": "clothCool.2",
       "hex": "#6b1b8d",
       "share": 0.0334
     },
     {
-      "name": "purpleMid.3",
+      "name": "clothCool.3",
       "hex": "#3c49ad",
       "share": 0.0334
     },
     {
-      "name": "orangeMid2.0",
+      "name": "clothWarm.0",
       "hex": "#871923",
       "share": 0.0897
     },
     {
-      "name": "orangeMid2.1",
+      "name": "clothWarm.1",
       "hex": "#8f3716",
       "share": 0.0897
     },
     {
-      "name": "orangeMid2.2",
+      "name": "clothWarm.2",
       "hex": "#7a4c2e",
       "share": 0.0897
     },
     {
-      "name": "orangeMid2.3",
+      "name": "clothWarm.3",
       "hex": "#a8463f",
       "share": 0.0897
     },
     {
-      "name": "orangeMid2.4",
+      "name": "clothWarm.4",
       "hex": "#d82a3a",
       "share": 0.0897
     },
     {
-      "name": "blueMid.0",
+      "name": "water.0",
       "hex": "#156c98",
       "share": 0.0432
     },
     {
-      "name": "blueMid.1",
+      "name": "water.1",
       "hex": "#726b7e",
       "share": 0.0432
     },
     {
-      "name": "blueMid.2",
+      "name": "water.2",
       "hex": "#476aca",
       "share": 0.0432
     },
     {
-      "name": "blueMid.3",
+      "name": "water.3",
       "hex": "#1a97b3",
       "share": 0.0432
     },
     {
-      "name": "greenLight.0",
+      "name": "grass.0",
       "hex": "#387e06",
       "share": 0.1308
     },
     {
-      "name": "greenLight.1",
+      "name": "grass.1",
       "hex": "#448c33",
       "share": 0.1308
     },
     {
-      "name": "greenLight.2",
+      "name": "grass.2",
       "hex": "#449a8d",
       "share": 0.1308
     },
     {
-      "name": "greenLight.3",
+      "name": "grass.3",
       "hex": "#5ea64d",
       "share": 0.1308
     },
     {
-      "name": "greenLight.4",
+      "name": "grass.4",
       "hex": "#82a204",
       "share": 0.1308
     },
     {
-      "name": "yellowLight.0",
+      "name": "earth.0",
       "hex": "#a17049",
       "share": 0.0337
     },
     {
-      "name": "yellowLight.1",
+      "name": "earth.1",
       "hex": "#c8865a",
       "share": 0.0337
     },
     {
-      "name": "yellowLight.2",
+      "name": "earth.2",
       "hex": "#fa6353",
       "share": 0.0337
     },
     {
-      "name": "yellowLight.3",
+      "name": "earth.3",
       "hex": "#be9d83",
       "share": 0.0337
     },
     {
-      "name": "yellowLight2.0",
+      "name": "skin.0",
       "hex": "#e3a77f",
       "share": 0.0812
     },
     {
-      "name": "yellowLight2.1",
+      "name": "skin.1",
       "hex": "#e7d14b",
       "share": 0.0812
     },
     {
-      "name": "yellowLight2.2",
+      "name": "skin.2",
       "hex": "#d0e3cd",
       "share": 0.0812
     },
     {
-      "name": "yellowLight2.3",
+      "name": "skin.3",
       "hex": "#fdd5b7",
       "share": 0.0812
     },
     {
-      "name": "yellowLight2.4",
+      "name": "skin.4",
       "hex": "#f8f3e7",
       "share": 0.0812
     }
