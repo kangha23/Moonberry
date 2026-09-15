@@ -29,7 +29,8 @@
     "lpc:import": "node scripts/import-lpc.mjs",
     "lpc:manifest": "node scripts/generate-lpc-manifest.mjs",
     "palette:derive": "node scripts/derive-palette.mjs",
-    "palette:module": "node scripts/generate-palette-module.mjs"
+    "palette:module": "node scripts/generate-palette-module.mjs",
+    "palette:apply": "node scripts/apply-palette.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.0.3",
