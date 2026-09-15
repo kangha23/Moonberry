@@ -14,6 +14,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { encodePng, raster } from './lib/png.mjs';
+import { PALETTE } from './lib/palette-data.mjs';
 
 const OUT_DIR = path.join('public', 'assets', 'ui');
 
@@ -24,16 +25,58 @@ function hash(x, y, seed = 3) {
   return ((h ^ (h >>> 16)) >>> 0) / 4294967295;
 }
 
+/**
+ * The wood ramp, now named palette positions rather than literals.
+ *
+ * `edge` through `rim` form one continuous lightness ramp (the border walks
+ * outward-to-inward through edge, dark, plankShade, plank, plankLit,
+ * rimShade, up to the bright highlight rim), and per-colour nearest-neighbour
+ * is the wrong tool for a ramp like this for the same reason it was wrong for
+ * the soil ramp in `generate-plot-art.mjs`: it minimises each step's own
+ * error with no notion that neighbouring steps have to stay apart from each
+ * other visually.
+ *
+ * Two steps needed a deliberate push away from their unrestricted nearest
+ * entry to avoid exactly that collapse:
+ *
+ * - `rimShade` (`#8a5a2e`) is nearest to `soil.4` (d=0.0281) — but `plankLit`
+ *   (`#7d5231`) is *also* nearest to `soil.4` (d=0.0106), and the two are
+ *   directly adjacent where the plank's lit face meets the rim's shaded
+ *   corner. Snapping both to `soil.4` would erase that seam — the last step
+ *   before the highlight rim disappears into the plank behind it. Moved
+ *   `rimShade` to `soil.5` instead (d=0.0330, a cost of +0.0049), the next
+ *   step up the same `soil` ramp, which keeps the six wood/rim steps at six
+ *   distinct colours in the order the eye expects: `soil.0` < `soil.2` <
+ *   `soil.3` < `soil.4` < `soil.5` < `light.2`.
+ * - `fill` (`#2b1f18`, `frame-wood.png`'s panel interior) is nearest to
+ *   `shadow.0` (d=0.0402) — the same entry `inner` (the border's innermost
+ *   ring, directly touching that fill) is nearest to (d=0.0384). Losing that
+ *   seam would mean `frame-wood.png` loses its innermost border line against
+ *   the panel it borders — the one place in this file where the original
+ *   hexes still carried a real (if modest, d=0.0239 in the original colours)
+ *   intentional step. Moved `fill` to `shadow.2` instead (d=0.0426, a cost of
+ *   +0.0024), which keeps that seam visible for a negligible accuracy loss.
+ *
+ * `plateFill`, the third frame's interior (see the `files` table below), is
+ * the one case where doing nothing was correct: its original hex (`#241a14`)
+ * and `inner`'s (`#241a13`) differ by one unit in a single channel — the
+ * artist made them the same colour on purpose, so both being nearest to
+ * `shadow.0` is a faithful result, not a collapse to fix.
+ */
 const WOOD = {
-  edge: '#140d08',
-  dark: '#3a2516',
-  plank: '#6b4429',
-  plankLit: '#7d5231',
-  plankShade: '#573620',
-  rim: '#c9924f',
-  rimShade: '#8a5a2e',
-  inner: '#241a13',
-  fill: '#2b1f18',
+  edge: PALETTE['outline.0'],
+  dark: PALETTE['soil.0'],
+  plank: PALETTE['soil.3'],
+  plankLit: PALETTE['soil.4'],
+  plankShade: PALETTE['soil.2'],
+  rim: PALETTE['light.2'],
+  // Overridden — see the block comment above. Unrestricted nearest is
+  // `soil.4` (d=0.0281), which duplicates `plankLit`.
+  rimShade: PALETTE['soil.5'],
+  inner: PALETTE['shadow.0'],
+  // Overridden — see the block comment above. Unrestricted nearest is
+  // `shadow.0` (d=0.0402), which duplicates `inner`.
+  fill: PALETTE['shadow.2'],
 };
 
 /**
@@ -112,20 +155,37 @@ const files = {
   // Panels: the satchel, the stall, the forge, the morning summary.
   'frame-wood.png': frame(12, WOOD.fill),
   // Cells: one hotbar slot, one inventory slot. Same wood, a quarter the trim.
-  'frame-slot.png': frame(4, '#1f1710'),
+  // Nearest to the original `#1f1710` is `outline.3` (d=0.0429) — already
+  // distinct from `inner`'s `shadow.0`, so no override needed here the way
+  // `fill` above needed one: this frame's border-to-interior seam survives
+  // nearest-neighbour on its own.
+  'frame-slot.png': frame(4, PALETTE['outline.3']),
   // Bars and readouts that sit directly on the world and must not swallow it.
-  'frame-plate.png': frame(6, '#241a14'),
+  // Reuses `inner`'s `shadow.0` on purpose — see the `plateFill` note in the
+  // `WOOD` comment above: the original `#241a14` and `inner`'s `#241a13`
+  // were already the same colour to the eye, so matching them here is
+  // faithful, not a missed override.
+  'frame-plate.png': frame(6, PALETTE['shadow.0']),
 };
 
-fs.mkdirSync(OUT_DIR, { recursive: true });
-for (const [file, data] of Object.entries(files)) {
-  fs.writeFileSync(path.join(OUT_DIR, file), data);
-  console.log(`wrote ${path.join(OUT_DIR, file)} (${data.length} bytes)`);
-}
+/**
+ * Guarded the same way `generate-plot-art.mjs` is, and for the same reason:
+ * before this guard, the whole module ran its file-writing side effects the
+ * moment anything imported it, so nothing could `import` this file to check
+ * its `PALETTE[...]` references without also regenerating three PNGs and a
+ * README as a side effect. See `generate-ui.test.mjs` for the check that
+ * guard now makes possible.
+ */
+function main() {
+  fs.mkdirSync(OUT_DIR, { recursive: true });
+  for (const [file, data] of Object.entries(files)) {
+    fs.writeFileSync(path.join(OUT_DIR, file), data);
+    console.log(`wrote ${path.join(OUT_DIR, file)} (${data.length} bytes)`);
+  }
 
-fs.writeFileSync(
-  path.join(OUT_DIR, 'README.md'),
-  `# Interface frames
+  fs.writeFileSync(
+    path.join(OUT_DIR, 'README.md'),
+    `# Interface frames
 
 Generated by \`scripts/generate-ui.mjs\` — run \`npm run generate:ui\` after editing it.
 
@@ -142,5 +202,10 @@ drifts.
 | \`frame-slot.png\` | 4px | One inventory or hotbar cell |
 | \`frame-plate.png\` | 6px | Readouts laid over the world: clock, prompt bar, quest |
 `,
-);
-console.log(`wrote ${path.join(OUT_DIR, 'README.md')}`);
+  );
+  console.log(`wrote ${path.join(OUT_DIR, 'README.md')}`);
+}
+
+if (process.argv[1] && process.argv[1].endsWith('generate-ui.mjs')) {
+  main();
+}

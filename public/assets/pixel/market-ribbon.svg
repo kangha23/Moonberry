@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 32" shape-rendering="crispEdges" role="img" aria-label="Moonberry market ribbon">
-  <rect x="0" y="8" width="96" height="18" fill="#5c3723"/>
-  <rect x="4" y="5" width="88" height="18" fill="#d78345"/>
-  <rect x="8" y="8" width="80" height="12" fill="#ffd36d"/>
-  <path fill="#8f4f30" d="M0 8h14v18H0l7-9zM82 8h14l-7 9 7 9H82z"/>
-  <text x="48" y="18" text-anchor="middle" font-family="monospace" font-size="8" font-weight="700" fill="#4d2b1c">MOONBERRY</text>
+  <rect x="0" y="8" width="96" height="18" fill="#553d27"/>
+  <rect x="4" y="5" width="88" height="18" fill="#d28560"/>
+  <rect x="8" y="8" width="80" height="12" fill="#eaa473"/>
+  <path fill="#7d5633" d="M0 8h14v18H0l7-9zM82 8h14l-7 9 7 9H82z"/>
+  <text x="48" y="18" text-anchor="middle" font-family="monospace" font-size="8" font-weight="700" fill="#48331f">MOONBERRY</text>
 </svg>

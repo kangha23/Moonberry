@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" shape-rendering="crispEdges" role="img" aria-label="Quest star icon">
   <rect width="32" height="32" fill="none"/>
-  <path fill="#57331f" d="M14 2h4v6h6v4h4v6h-6v6h-4v6h-4v-6H8v-6H2v-6h6V8h6z"/>
-  <path fill="#ffd36d" d="M14 4h4v7h7v4h-7v7h-4v-7H7v-4h7z"/>
-  <path fill="#fff2a6" d="M15 6h2v7h7v2h-7v7h-2v-7H8v-2h7z"/>
+  <path fill="#553d27" d="M14 2h4v6h6v4h4v6h-6v6h-4v6h-4v-6H8v-6H2v-6h6V8h6z"/>
+  <path fill="#eaa473" d="M14 4h4v7h7v4h-7v7h-4v-7H7v-4h7z"/>
+  <path fill="#f8dbbd" d="M15 6h2v7h7v2h-7v7h-2v-7H8v-2h7z"/>
 </svg>
