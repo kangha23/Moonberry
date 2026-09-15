@@ -8,12 +8,28 @@
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { distance, srgbToOklab } from './lib/colour.mjs';
-import { allocate, carryNames, derive, familyName } from './derive-palette.mjs';
+import { encodePng, raster } from './lib/png.mjs';
+import {
+  allocate, carryNames, derive, excludeNearPinned, familyName, histogram, pinnedRamp,
+} from './derive-palette.mjs';
 
 const PALETTE_FILE = path.join('art', 'palette.json');
+const RAMPS_FILE = path.join('art', 'ramps.json');
+
+function realRamps() {
+  return JSON.parse(fs.readFileSync(RAMPS_FILE, 'utf8')).ramps;
+}
+
+function hueAndLightness(hex) {
+  const n = Number.parseInt(hex.slice(1), 16);
+  const lab = srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255);
+  const hue = ((Math.atan2(lab.b, lab.a) * 180) / Math.PI + 360) % 360;
+  return { ...lab, hue };
+}
 
 function samplePoints() {
   const points = [];
@@ -205,4 +221,106 @@ test('carryNames reports how far each entry moved in OkLab', () => {
   // Black to white is close to the largest possible OkLab distance (L runs
   // roughly 0 to 1, a and b near 0 for both), so this should read close to 1.
   assert.ok(result.moved[0].distance > 0.9, `expected a large move, got ${result.moved[0].distance}`);
+});
+
+test('pinned soil ramp: 7 entries, one hue family, strictly ascending, evenly spaced', () => {
+  // `soil` used to be two ramps (`soil`, `soilWet`) because a human could
+  // keep dry and wet earth apart by eye. They overlapped in lightness the
+  // moment both were pinned independently — wet earth is dark earth, so the
+  // two hue-identical ramps interleaved. Merging into one ramp is supposed
+  // to guarantee non-overlap by construction: this is the direct check of
+  // that guarantee, not just of the two ramps that used to exist.
+  //
+  // 7, not 9: an exhaustive brute-force search over every subset of the 10
+  // source tones found that no selection of 9 (best 0.0195) or even 8 (best
+  // 0.0279) of them can reach the 0.030 floor — 7 is the most this exact
+  // `from` list supports, at 0.0403. See `soil's ramp size is exactly what
+  // its source tones can support` below for the direct check of that
+  // ceiling, so a future edit to `from` fails loudly rather than quietly
+  // shipping a crowded ramp.
+  const palette = derive(samplePoints(), realRamps());
+  const soil = palette.filter((entry) => entry.name.startsWith('soil.'));
+  assert.equal(soil.length, 7, `expected 7 soil entries, got ${soil.length}`);
+  const lab = soil.map((entry) => hueAndLightness(entry.hex));
+  for (const point of lab) {
+    assert.ok(point.hue >= 48 && point.hue <= 72, `soil hue ${point.hue} outside 48-72`);
+  }
+  for (let i = 1; i < lab.length; i += 1) {
+    assert.ok(lab[i].L > lab[i - 1].L, `soil.${i} is not strictly ascending in lightness`);
+    const d = distance(lab[i], lab[i - 1]);
+    assert.ok(d >= 0.03, `soil.${i - 1} and soil.${i} are only ${d.toFixed(4)} apart`);
+  }
+});
+
+test("soil's ramp size is exactly what its source tones can support", () => {
+  // The direct regression for the brute-force result: `steps` in
+  // art/ramps.json must never exceed what `from` can actually separate at
+  // 0.030, in either direction. Exhaustive search confirmed 9 source tones
+  // cannot support more than 7 steps at that spacing (the best 9-of-10 and
+  // 8-of-10 subsets only reach 0.0195 and 0.0279) and confirmed 7 is
+  // achievable (0.0403). If a future edit changes `from` without
+  // re-running that check, this fails loudly instead of shipping a ramp
+  // that is quietly crowded past what anyone can actually tell apart.
+  const ramps = realRamps();
+  const soilRamp = ramps.find((r) => r.name === 'soil');
+  assert.equal(soilRamp.steps, 7, `soil is declared at ${soilRamp.steps} steps, expected 7`);
+  const palette = derive(samplePoints(), ramps);
+  const soil = palette.filter((entry) => entry.name.startsWith('soil.'));
+  const lab = soil.map((entry) => hueAndLightness(entry.hex));
+  for (let i = 1; i < lab.length; i += 1) {
+    assert.ok(distance(lab[i], lab[i - 1]) >= 0.03, `soil.${i - 1}/soil.${i} below the 0.030 floor`);
+  }
+});
+
+test('excludeNearPinned drops points within the radius and keeps points outside it', () => {
+  const pinned = pinnedRamp({ name: 'soil', steps: 1, from: ['#5b3c22'] });
+  const identical = { ...srgbToOklab(0x5b, 0x3c, 0x22), weight: 5 };
+  const nearby = { ...srgbToOklab(0x5c, 0x3d, 0x23), weight: 2 }; // one bit off, well inside 0.03
+  const far = { ...srgbToOklab(20, 200, 20), weight: 3 }; // a saturated green, nowhere near a brown
+  const result = excludeNearPinned([identical, nearby, far], pinned);
+  assert.deepEqual(result, [far], 'only the point far from every pinned colour should survive');
+});
+
+test('derive with the real ramps still returns 48 unique, non-duplicate entries', () => {
+  const palette = derive(samplePoints(), realRamps());
+  assert.equal(palette.length, 48);
+  assert.equal(new Set(palette.map((entry) => entry.name)).size, 48, 'names collided');
+  const hexes = palette.map((entry) => entry.hex);
+  assert.equal(new Set(hexes).size, hexes.length, 'a hex was duplicated');
+});
+
+test('pinned ramps do not depend on the order points arrive in', () => {
+  // The pinned half never reads `points` at all, so reversing the derived
+  // half's input must leave `soil` and `soilWet` byte-for-byte identical even
+  // though it's free to change the derived groups.
+  const points = samplePoints();
+  const ramps = realRamps();
+  const forwards = derive(points, ramps);
+  const backwards = derive([...points].reverse(), ramps);
+  const pinnedOnly = (palette) => palette.filter((e) => e.name.startsWith('soil'));
+  assert.deepEqual(pinnedOnly(backwards), pinnedOnly(forwards));
+});
+
+test('histogram skips a named subdirectory when excluded', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'derive-palette-histogram-'));
+  try {
+    fs.mkdirSync(path.join(dir, 'kept'));
+    fs.mkdirSync(path.join(dir, 'skip'));
+    const one = raster(1, 1);
+    one.set(0, 0, '#112233');
+    fs.writeFileSync(path.join(dir, 'kept', 'a.png'), encodePng(1, 1, one.pixels));
+    const two = raster(1, 1);
+    two.set(0, 0, '#445566');
+    fs.writeFileSync(path.join(dir, 'skip', 'b.png'), encodePng(1, 1, two.pixels));
+
+    const everything = histogram(dir);
+    const keys = (points) => points.map((p) => `${p.L.toFixed(6)},${p.a.toFixed(6)},${p.b.toFixed(6)}`);
+    assert.equal(everything.length, 2, 'both colours should be counted with no exclusion');
+
+    const excluded = histogram(dir, { exclude: ['skip'] });
+    assert.equal(excluded.length, 1, 'the excluded folder\'s colour should be gone');
+    assert.deepEqual(keys(excluded), keys(everything).slice(0, 1));
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

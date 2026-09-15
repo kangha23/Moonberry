@@ -20,24 +20,47 @@ import { distance, kmeans, nearestIndex, oklabToSrgb, srgbToOklab } from './lib/
 import { decodePng } from './lib/png.mjs';
 
 const RAW_DIR = path.join('art', 'raw');
+const RAMPS_FILE = path.join('art', 'ramps.json');
 const OUT_FILE = path.join('art', 'palette.json');
 const SEED = 20260915;
 
 /**
- * How many colour groups the art is split into before fine clustering.
+ * How many colour groups the DERIVED half of the art is split into before
+ * fine clustering.
  *
- * Eleven because that is roughly how many distinguishable colour families a
- * small pixel-art game has — ground, foliage, wood, water, skin, cloth, metal,
- * and a few accents. The number is a judgement; where the eleven *sit* is not,
- * and that is the whole change from the first attempt.
+ * Was eleven, back when clustering was asked to produce every ramp, soil
+ * included. Soil is pinned now (see `pinnedRamp`), so eleven groups over
+ * the remaining art spread each group thinner than it needs to be.
+ * Re-measured 9 against 10 twice as this file's design settled — once at
+ * 39 derived entries (`soil` pinned at 9 steps) and again at 41 (`soil`
+ * corrected to 7, per the brute-force spacing proof): 9 won both times on
+ * mean per-group spread (each group's own weighted mean distance from its
+ * centroid). At 41 entries, on the real art with `art/raw/intent/` and
+ * every point within 0.03 of a pinned `soil` tone excluded: 9 groups give
+ * mean spread 0.0593 against 0.0544 for 10. See the derivation report for
+ * the full numbers from both checks.
  */
-const GROUPS = 11;
+const GROUPS = 9;
 
 /** Entries in the finished palette. */
 const TOTAL = 48;
 
-/** The fewest entries any group gets, however little of the art it covers. */
+/** The fewest entries any derived group gets, however little art it covers. */
 const MIN_STEPS = 3;
+
+/**
+ * How close a histogram point has to be to a pinned colour, in OkLab, before
+ * it is treated as already served by that colour and dropped from the
+ * derived half's input.
+ *
+ * Without this, the derived clustering has no idea a pinned ramp exists: it
+ * independently found real soil-adjacent browns elsewhere in the art (wood,
+ * bark) and built a group right on top of `soil`, because nothing told it
+ * that territory was already spoken for. 0.030 matches the JND floor this
+ * file's own output is held to — a pixel this close to a pinned colour would
+ * fail that floor anyway if the derived half spent a second entry on it.
+ */
+const PIN_EXCLUSION_RADIUS = 0.03;
 
 function hex([r, g, b]) {
   return `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
@@ -65,14 +88,22 @@ function hex([r, g, b]) {
  * its input again for the same reason, so this isn't the only line of
  * defence — but fixing it here as well means a directory walk can never be
  * the thing that introduces the nondeterminism in the first place.
+ *
+ * `exclude` skips a named subdirectory entirely, wherever it occurs in the
+ * walk. The one caller that uses this excludes `art/raw/intent/`: those
+ * PNGs exist so `soil` and `soilWet`'s tones vote when this file is read by
+ * a human, not so their pixels get counted twice — the pinned ramps already
+ * take those exact tones from `art/ramps.json`, so counting them again here
+ * would hand the clustering pass credit for colours it did not choose.
  */
-export function histogram(dir) {
+export function histogram(dir, { exclude = [] } = {}) {
   const counts = new Map();
   const walk = (current) => {
     const entries = [...fs.readdirSync(current, { withFileTypes: true })].sort((a, b) => (
       a.name < b.name ? -1 : a.name > b.name ? 1 : 0
     ));
     for (const entry of entries) {
+      if (entry.isDirectory() && exclude.includes(entry.name)) continue;
       const full = path.join(current, entry.name);
       if (entry.isDirectory()) {
         walk(full);
@@ -141,6 +172,110 @@ export function familyName({ L, a, b }) {
     [200, 'teal'], [260, 'blue'], [320, 'purple'], [360, 'red'],
   ];
   return `${families.find(([limit]) => hue < limit)[1]}${tone}`;
+}
+
+/**
+ * The size-`count` subset of `points` (any order) whose sorted-by-lightness
+ * form has the largest possible minimum gap between neighbours.
+ *
+ * Exhaustive over every C(points.length, count) combination — a ramp's
+ * `from` list is a hand-typed set of a handful to a few dozen tones, not a
+ * histogram, so exact search is cheap and there is no reason to settle for
+ * an approximation. Ties (more than one subset sharing the best minimum
+ * gap) resolve to the combination found first in index order, which is
+ * deterministic given a fixed `from` list — the same tiebreak every run.
+ */
+function maxSpacedSubset(points, count) {
+  const sorted = [...points].sort((a, b) => a.L - b.L || a.a - b.a || a.b - b.b);
+  const indices = sorted.map((_, i) => i);
+  let best = null;
+  let bestMinGap = -Infinity;
+  const combo = [];
+  const choose = (start) => {
+    if (combo.length === count) {
+      let minGap = Infinity;
+      for (let i = 1; i < combo.length; i += 1) {
+        minGap = Math.min(minGap, distance(sorted[combo[i]], sorted[combo[i - 1]]));
+      }
+      if (minGap > bestMinGap) {
+        bestMinGap = minGap;
+        best = [...combo];
+      }
+      return;
+    }
+    for (let i = start; i <= indices.length - (count - combo.length); i += 1) {
+      combo.push(i);
+      choose(i + 1);
+      combo.pop();
+    }
+  };
+  choose(0);
+  return best.map((i) => sorted[i]);
+}
+
+/**
+ * Turns a declared ramp's fixed `from` hexes into `steps` entries.
+ *
+ * Clustering optimises for coverage: it puts a centroid where pixels are
+ * dense, which is exactly wrong for a ramp that needs resolution in a narrow
+ * band and needs to stay in one hue family. Soil's browns sit perceptually
+ * next to wood, skin and bark, so asking the coarse clustering below to find
+ * soil on its own let it split the same six tones across three different
+ * buckets at every group count from 9 to 15 tried — no allocation rule fixes
+ * a conflict of objectives. So soil is not discovered; it is declared, in
+ * `art/ramps.json`, and pinned here before the derived half runs at all.
+ *
+ * Selecting which `steps` of `from` to keep is `maxSpacedSubset`, not
+ * `kmeans` — that distinction mattered in practice, not just in theory.
+ * `kmeans` minimises within-cluster variance, which is a different target
+ * from "keep the sorted output evenly spaced": asked for 7 of `soil`'s 10
+ * source tones, it produced a minimum gap of 0.0272, below the 0.030 floor
+ * this file's output is held to, even though an exhaustive search over
+ * every 7-of-10 subset proved 0.0403 achievable. `kmeans` also averages —
+ * a centroid it returns is rarely one of the original tones — which fights
+ * the same design choice a second way: these colours were designed, not
+ * measured, so blending two of them into a shade nobody drew is not an
+ * improvement, it's a fabrication. Keeping the exact subset that maximises
+ * spacing serves both problems: the gap the criteria check, and the design
+ * intent `pinnedRamp` already existed to protect.
+ */
+export function pinnedRamp({ name, steps, from }) {
+  const points = from.map((h) => {
+    const n = Number.parseInt(h.slice(1), 16);
+    return { ...srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255), weight: 1 };
+  });
+  const chosen = steps >= points.length
+    ? [...points].sort((a, b) => a.L - b.L || a.a - b.a || a.b - b.b)
+    : maxSpacedSubset(points, steps);
+  return chosen.map((point, step) => ({
+    name: `${name}.${step}`,
+    hex: hex(oklabToSrgb(point)),
+    // Not a pixel proportion — these colours were declared, not measured, so
+    // there is no share of the art to report. 0 says "not applicable" rather
+    // than inventing a number the ramp was never given.
+    share: 0,
+  }));
+}
+
+/**
+ * Drops any point already served by a pinned colour, before the derived
+ * half's clustering ever sees it.
+ *
+ * This filters `points`, not the finished derived palette, and that
+ * direction matters: a centroid computed after the fact, then nudged or
+ * discarded because it turned out too close to a pinned colour, is no
+ * longer the centroid of anything — it stops meaning "the middle of this
+ * bucket's pixels" and starts meaning "the middle of this bucket's pixels,
+ * except we changed our mind afterwards." Removing the pixels first means
+ * every centroid the derived half produces is still an honest centroid of
+ * whatever pixels remain.
+ */
+export function excludeNearPinned(points, pinned, radius = PIN_EXCLUSION_RADIUS) {
+  const pinnedLab = pinned.map((entry) => {
+    const n = Number.parseInt(entry.hex.slice(1), 16);
+    return srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255);
+  });
+  return points.filter((point) => !pinnedLab.some((pin) => distance(point, pin) <= radius));
 }
 
 /** Two groups can land in the same family; names still have to be unique. */
@@ -239,48 +374,59 @@ export function carryNames(existing, derived) {
 }
 
 /**
- * Points to a named palette, with the groups taken from the art.
+ * Points to a named palette: a few pinned ramps, then the rest derived.
  *
- * Two passes. The coarse one asks the art where its colours actually are — a
- * weighted k-means for `GROUPS` centroids, which become the bucket centres.
- * The fine one clusters within each bucket at the size `allocate` gave it.
+ * `ramps` (from `art/ramps.json`) are placed first, verbatim per
+ * `pinnedRamp`, and take no part in anything below — they are not
+ * candidates the coarse clustering can win or lose, because clustering was
+ * the thing that lost them: soil's browns sit perceptually next to wood,
+ * skin and bark, so a coarse pass asked to find "soil" on its own happily
+ * split it across three buckets no matter how many groups it was given.
+ * That is a conflict between what clustering optimises for (coverage —
+ * put a centroid where pixels are dense) and what a gradient needs
+ * (resolution in a narrow band, held to one hue family). No allocation rule
+ * fixes a conflict of objectives, so this stops asking clustering to solve
+ * it and declares the ramp instead.
  *
- * The first version of this function planted eleven anchors by hand and
- * assigned pixels to the nearest one. Measured against the real art, one
- * anchor — a dark desaturated brown called `wood` — turned out to be nearest
- * to *everything dark* and swallowed 104 of 299 colours and 49% of all pixels,
- * while `accent` held 0.52% of the pixels and was handed the largest ramp.
- * Anchors drawn from the data cannot fail that way: a catch-all region is
- * exactly what a k-means centroid splits.
- *
- * The second version allocated steps by raw pixel weight, and that rebuilt a
- * smaller copy of the exact defect this whole project exists to remove: a
- * game's outlines and shadow pixels dominate by pixel count while spanning
- * almost no colour range, so weight-only allocation handed a near-black group
- * eleven steps for colours indistinguishable to the eye, while a group with a
- * real gradient across it went short. An entry is earned by RANGE, not by
- * volume — `spread` is each group's weighted mean distance from its own
- * centroid, i.e. how much colour it actually covers, and the score handed to
- * `allocate` is `sqrt(share) * spread` rather than share alone. The square
- * root keeps volume mattering — a large family still outscores a tiny one —
- * without letting volume alone buy steps that spend themselves on
- * differences nobody will ever see.
+ * The rest of the budget (`TOTAL` minus what the pinned ramps spent) is
+ * still found the way the whole palette used to be: a coarse, weighted
+ * k-means for `GROUPS` centroids, then a fine k-means inside each bucket at
+ * the size `allocate` gives it, sized by `sqrt(share) * spread` so a large
+ * family still outscores a tiny one without volume alone buying steps that
+ * spend themselves on differences nobody will ever see. `points` is
+ * expected to have already excluded `art/raw/intent/` (see `histogram`'s
+ * `exclude` option) — those pixels already paid for the pinned ramps, and
+ * letting them vote again here would double their weight for free.
  *
  * The points are sorted by (L, a, b, weight) before anything else touches
  * them. `kmeans`'s k-means++ seeding picks its first centroid positionally
  * from whatever order the points array arrives in, so an unsorted caller —
  * `histogram`'s directory walk is one, but not the only possible one — makes
  * the palette a function of incidental ordering rather than of the art
- * itself. Reversing an unsorted input once moved 44 of the 48 output
- * entries. Sorting here, at the one place every caller passes through,
- * protects the guarantee regardless of where the points came from. `weight`
- * is the tiebreak: two distinct colours never collide on (L, a, b), but a
+ * itself. Reversing an unsorted input once moved most of the derived output.
+ * Sorting here, at the one place every caller passes through, protects the
+ * guarantee regardless of where the points came from. `weight` is the
+ * tiebreak: two distinct colours never collide on (L, a, b), but a
  * comparator that stops at `b` would let two points that do coincide there
  * keep whatever relative order they arrived in, which is exactly the
- * dependency this exists to remove.
+ * dependency this exists to remove. `ramps` needs no such protection: it
+ * never touches `points`, so its output cannot depend on their order.
+ *
+ * Before any of that, `points` is filtered through `excludeNearPinned`. A
+ * pixel within `PIN_EXCLUSION_RADIUS` of a pinned colour is already served
+ * by the palette; letting it vote again is how a derived group ended up
+ * built right on top of `soil` the first time this ran — the coarse
+ * clustering had no way to know soil-adjacent browns elsewhere in the art
+ * (wood, bark) were already spoken for. Filtering the input, rather than
+ * discarding or nudging a centroid afterwards, keeps every centroid the
+ * derived half produces an honest centroid of the pixels that remain.
  */
-export function derive(points) {
-  const sorted = [...points].sort((p, q) => (
+export function derive(points, ramps = []) {
+  const pinned = ramps.flatMap(pinnedRamp);
+  const budget = TOTAL - pinned.length;
+
+  const eligible = excludeNearPinned(points, pinned);
+  const sorted = [...eligible].sort((p, q) => (
     p.L - q.L || p.a - q.a || p.b - q.b || p.weight - q.weight
   ));
   const anchors = kmeans(sorted, GROUPS, SEED);
@@ -300,29 +446,37 @@ export function derive(points) {
   });
   const scores = weights.map((w, i) => Math.sqrt(w / totalWeight) * spread[i]);
 
-  const sizes = allocate(scores);
+  const sizes = allocate(scores, budget);
   const names = uniqueNames(anchors.map(familyName));
 
-  const palette = [];
+  const derived = [];
   anchors.forEach((_, index) => {
     const centroids = kmeans(buckets[index], sizes[index], SEED + index + 1);
     for (let step = 0; step < sizes[index]; step += 1) {
       const centroid = centroids[Math.min(step, centroids.length - 1)];
-      palette.push({
+      derived.push({
         name: `${names[index]}.${step}`,
         hex: centroid ? hex(oklabToSrgb(centroid)) : hex([0, 0, 0]),
         share: Number((weights[index] / totalWeight).toFixed(4)),
       });
     }
   });
-  return palette;
+  return [...pinned, ...derived];
 }
 
 // --- CLI ---------------------------------------------------------------------
 
 if (process.argv[1] && process.argv[1].endsWith('derive-palette.mjs')) {
-  const points = histogram(RAW_DIR);
-  const derived = derive(points);
+  const { ramps } = JSON.parse(fs.readFileSync(RAMPS_FILE, 'utf8'));
+  const points = histogram(RAW_DIR, { exclude: ['intent'] });
+  const derived = derive(points, ramps);
+
+  const pinned = ramps.flatMap(pinnedRamp);
+  const eligible = excludeNearPinned(points, pinned);
+  console.log(
+    `pin exclusion — ${points.length - eligible.length} of ${points.length} histogram points `
+    + `dropped (within ${PIN_EXCLUSION_RADIUS} of a pinned colour), ${eligible.length} left to cluster`,
+  );
 
   const existing = fs.existsSync(OUT_FILE)
     ? JSON.parse(fs.readFileSync(OUT_FILE, 'utf8')).colours

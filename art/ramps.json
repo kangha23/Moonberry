@@ -1,0 +1,13 @@
+{
+  "ramps": [
+    {
+      "name": "soil",
+      "steps": 7,
+      "note": "ONE ramp, not two, and 7 steps, not 5+4=9. One ramp: the generator's separate 'dry' and 'wet' tone sets exist because a human could keep them apart by eye, but both sit in the same brown hue family, so two independently-pinned ramps overlapped in lightness the one time this was tried (dry soil.0 landed on top of wet soil.2). Merging guarantees non-overlap by construction instead of checking for it afterwards. Seven steps, not nine: an exhaustive brute-force search over every subset of these 10 source tones found that no selection of 9 (or even 8) of them can reach the 0.030 OkLab minimum-gap floor the palette requires -- the best achievable is 0.0195 at 9 and 0.0279 at 8. 7 is the most this exact list supports, at 0.0403. That 7 also matches what generate-plot-art.mjs's PROFILE needs (5 tones per state -- trough/low/base/high/crown -- with dry reading the light 5 and wet reading the dark 5, sharing 3 in the middle: 5+5-3=7) is corroborating, not the reason. If `from` ever changes, re-run the brute-force check before raising `steps` back toward 9 -- and do not lower it below 7 either, since 7 is exactly what both the spacing floor and the furrow profile need, not a conservative floor with room to spare.",
+      "from": [
+        "#3a2718", "#48331f", "#553d27", "#63492f", "#6f5336",
+        "#5b3c22", "#6d4a2b", "#7d5633", "#8f6540", "#9d7049"
+      ]
+    }
+  ]
+}
