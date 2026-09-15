@@ -465,7 +465,7 @@ Create `scripts/derive-palette.test.mjs`:
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { srgbToOklab } from './lib/colour.mjs';
-import { RAMPS, derive } from './derive-palette.mjs';
+import { allocate, derive, familyName } from './derive-palette.mjs';
 
 function samplePoints() {
   const points = [];
@@ -483,22 +483,43 @@ function samplePoints() {
   return points;
 }
 
-test('the ramp table sums to exactly 48', () => {
-  const total = RAMPS.reduce((sum, ramp) => sum + ramp.steps.length, 0);
-  assert.equal(total, 48, `ramps declare ${total} colours`);
+test('allocate hands out exactly the total, however lopsided the weights', () => {
+  for (const weights of [
+    [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+    [486, 127, 123, 62, 55, 39, 38, 33, 22, 9, 5],
+    [1000, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+  ]) {
+    const sizes = allocate(weights);
+    assert.equal(sizes.reduce((a, b) => a + b, 0), 48, `${weights} summed wrong`);
+    for (const size of sizes) assert.ok(size >= 3, `a group got ${size}, below the floor`);
+  }
 });
 
-test('every ramp name is unique', () => {
-  const names = RAMPS.flatMap((ramp) => ramp.steps.map((step) => `${ramp.name}.${step}`));
-  assert.equal(new Set(names).size, names.length);
+test('allocate gives the heavier group more', () => {
+  // The whole point: entries follow the art. A family covering half the pixels
+  // earns more steps than one covering half a percent.
+  const [heavy, light] = allocate([900, 100, 100, 100, 100, 100, 100, 100, 100, 100, 100]);
+  assert.ok(heavy > light, `heavy got ${heavy}, light got ${light}`);
 });
 
-test('derive returns 48 named colours', () => {
+test('allocate refuses a floor that cannot fit', () => {
+  assert.throws(() => allocate([1, 1, 1], 48, 20));
+});
+
+test('familyName describes hue and lightness, and never claims meaning', () => {
+  assert.equal(familyName(srgbToOklab(20, 20, 22)), 'neutralDark');
+  assert.equal(familyName(srgbToOklab(240, 240, 240)), 'neutralLight');
+  assert.match(familyName(srgbToOklab(74, 122, 48)), /^green/);
+  assert.match(familyName(srgbToOklab(90, 140, 200)), /^(blue|teal)/);
+});
+
+test('derive returns 48 colours with unique names', () => {
   const palette = derive(samplePoints());
   assert.equal(palette.length, 48);
+  const names = palette.map((entry) => entry.name);
+  assert.equal(new Set(names).size, 48, 'names collided');
   for (const entry of palette) {
     assert.match(entry.hex, /^#[0-9a-f]{6}$/, `${entry.name} had hex ${entry.hex}`);
-    assert.ok(entry.name.includes('.'), `${entry.name} is not a ramp.step name`);
   }
 });
 
@@ -507,21 +528,31 @@ test('derive is deterministic', () => {
   assert.deepEqual(derive(points), derive(points));
 });
 
-test('each ramp comes out ordered dark to light', () => {
+test('each group comes out ordered dark to light', () => {
   const palette = derive(samplePoints());
-  for (const ramp of RAMPS) {
-    const entries = palette.filter((e) => e.name.startsWith(`${ramp.name}.`));
-    assert.equal(entries.length, ramp.steps.length);
-    const lightness = entries.map((e) => {
-      const n = parseInt(e.hex.slice(1), 16);
-      return srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255).L;
-    });
+  const groups = new Map();
+  for (const entry of palette) {
+    const group = entry.name.split('.')[0];
+    if (!groups.has(group)) groups.set(group, []);
+    const n = Number.parseInt(entry.hex.slice(1), 16);
+    groups.get(group).push(srgbToOklab((n >> 16) & 255, (n >> 8) & 255, n & 255).L);
+  }
+  for (const [group, lightness] of groups) {
     for (let i = 1; i < lightness.length; i += 1) {
-      assert.ok(lightness[i] >= lightness[i - 1], `${ramp.name} is not ordered at step ${i}`);
+      assert.ok(lightness[i] >= lightness[i - 1], `${group} is not ordered at step ${i}`);
     }
   }
 });
-```
+
+test('no group is a catch-all and none is starved', () => {
+  // The defect this redesign exists to prevent: a hand-placed anchor that was
+  // nearest to everything dark took 49% of the art, while another took 0.52%
+  // and was handed the largest ramp. Data-drawn groups cannot skew that far.
+  const palette = derive(samplePoints());
+  const shares = [...new Set(palette.map((entry) => `${entry.name.split('.')[0]}:${entry.share}`))]
+    .map((row) => Number(row.split(':')[1]));
+  assert.ok(Math.max(...shares) < 0.45, `a group took ${Math.max(...shares)} of the art`);
+});
 
 - [ ] **Step 2: Run the test to verify it fails**
 
@@ -559,97 +590,118 @@ const OUT_FILE = path.join('art', 'palette.json');
 const SEED = 20260915;
 
 /**
- * The ramps, their sizes, and the colour each one claims territory around.
+ * How many colour groups the art is split into before fine clustering.
  *
- * An anchor is not a palette entry — it is a flag planted in OkLab space that
- * says "pixels nearest here are soil". Every pixel in the art is assigned to
- * the nearest anchor, then k-means runs inside each bucket at that ramp's
- * size. That is what makes the output both exactly 48 and namable: a global
- * k-means gives 48 anonymous centroids and no way to say which is soil.
- *
- * The anchors for soil, wood and skin are deliberately separated in lightness
- * as well as hue. All three are brown, and anchors that differed only in hue
- * would let one bucket swallow another's pixels.
+ * Eleven because that is roughly how many distinguishable colour families a
+ * small pixel-art game has — ground, foliage, wood, water, skin, cloth, metal,
+ * and a few accents. The number is a judgement; where the eleven *sit* is not,
+ * and that is the whole change from the first attempt.
  */
-export const RAMPS = [
-  { name: 'soil', anchor: [125, 86, 51], steps: ['trough', 'low', 'base', 'high', 'crown'] },
-  { name: 'grass', anchor: [74, 122, 48], steps: ['deep', 'shade', 'base', 'lit', 'bleached'] },
-  { name: 'foliage', anchor: [47, 82, 35], steps: ['deep', 'shade', 'base', 'lit'] },
-  { name: 'wood', anchor: [78, 53, 36], steps: ['deep', 'shade', 'base', 'lit'] },
-  { name: 'stone', anchor: [138, 138, 146], steps: ['deep', 'shade', 'base', 'lit'] },
-  { name: 'water', anchor: [60, 110, 160], steps: ['deep', 'shade', 'base', 'lit'] },
-  { name: 'skin', anchor: [224, 168, 120], steps: ['deep', 'shade', 'base', 'lit'] },
-  { name: 'clothWarm', anchor: [190, 90, 60], steps: ['deep', 'shade', 'base', 'lit'] },
-  { name: 'clothCool', anchor: [80, 90, 150], steps: ['deep', 'shade', 'base', 'lit'] },
-  { name: 'metal', anchor: [200, 204, 212], steps: ['deep', 'shade', 'base', 'lit'] },
-  { name: 'accent', anchor: [220, 180, 70], steps: ['gold', 'berry', 'bloom', 'sky', 'ember', 'bone'] },
-];
+const GROUPS = 11;
 
-function hex([r, g, b]) {
-  return `#${[r, g, b].map((n) => n.toString(16).padStart(2, '0')).join('')}`;
+/** Entries in the finished palette. */
+const TOTAL = 48;
+
+/** The fewest entries any group gets, however little of the art it covers. */
+const MIN_STEPS = 3;
+
+/**
+ * Splits `total` entries across groups by how much of the art each covers.
+ *
+ * Largest-remainder, so the parts sum to exactly `total` rather than to
+ * whatever rounding happens to leave. The floor matters as much as the
+ * proportion: a group holding two percent of the pixels still needs enough
+ * steps to read as a ramp rather than as three unrelated colours.
+ */
+export function allocate(weights, total = TOTAL, floor = MIN_STEPS) {
+  const spare = total - floor * weights.length;
+  if (spare < 0) {
+    throw new Error(`${weights.length} groups do not fit in ${total} at a floor of ${floor}`);
+  }
+  const sum = weights.reduce((a, b) => a + b, 0);
+  const exact = weights.map((w) => (spare * w) / sum);
+  const counts = exact.map((e) => Math.floor(e));
+  const short = spare - counts.reduce((a, b) => a + b, 0);
+  const byRemainder = exact
+    .map((e, i) => ({ i, fraction: e - Math.floor(e) }))
+    .sort((p, q) => q.fraction - p.fraction || p.i - q.i);
+  for (let k = 0; k < short; k += 1) counts[byRemainder[k].i] += 1;
+  return counts.map((c) => c + floor);
 }
 
 /**
- * Every opaque colour in a folder tree, with the number of pixels using it.
+ * A provisional name for a group, from where it actually sits in OkLab.
  *
- * A histogram rather than a pixel list because the art is ~60k pixels and only
- * ~320 distinct colours: clustering the distinct colours with their counts as
- * weights is the same computation, three orders of magnitude cheaper.
+ * Descriptive, not semantic — `warmDark` claims only what can be measured,
+ * where `wood` claims a meaning no measurement supports. The first attempt at
+ * this file named groups semantically from anchors chosen by hand, and the
+ * names came out lying: a bucket called `accent.sky` held orange, because
+ * nothing had checked that the art contained a sky blue at all.
  *
- * Pixels below alpha 8 are skipped entirely. A fully transparent pixel still
- * carries RGB in the file — usually black — and counting it would hand a
- * palette entry to a colour nobody has ever seen.
+ * A human replaces these with semantic names in the next task, once there is a
+ * swatch sheet to look at. Until then the names are honest about being guesses.
  */
-export function histogram(dir) {
-  const counts = new Map();
-  const walk = (current) => {
-    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
-      const full = path.join(current, entry.name);
-      if (entry.isDirectory()) {
-        walk(full);
-      } else if (entry.name.endsWith('.png')) {
-        const { width, height, pixels } = decodePng(fs.readFileSync(full));
-        for (let i = 0; i < width * height; i += 1) {
-          if (pixels[i * 4 + 3] < 8) continue;
-          const key = (pixels[i * 4] << 16) | (pixels[i * 4 + 1] << 8) | pixels[i * 4 + 2];
-          counts.set(key, (counts.get(key) ?? 0) + 1);
-        }
-      }
-    }
-  };
-  walk(dir);
+export function familyName({ L, a, b }) {
+  const tone = L < 0.35 ? 'Dark' : L < 0.62 ? 'Mid' : 'Light';
+  if (Math.hypot(a, b) < 0.035) return `neutral${tone}`;
+  const hue = ((Math.atan2(b, a) * 180) / Math.PI + 360) % 360;
+  const families = [
+    [20, 'red'], [50, 'orange'], [95, 'yellow'], [160, 'green'],
+    [200, 'teal'], [260, 'blue'], [320, 'purple'], [360, 'red'],
+  ];
+  return `${families.find(([limit]) => hue < limit)[1]}${tone}`;
+}
 
-  return [...counts.entries()].map(([key, weight]) => ({
-    ...srgbToOklab((key >> 16) & 255, (key >> 8) & 255, key & 255),
-    weight,
-  }));
+/** Two groups can land in the same family; names still have to be unique. */
+function uniqueNames(names) {
+  const seen = new Map();
+  return names.map((name) => {
+    const count = (seen.get(name) ?? 0) + 1;
+    seen.set(name, count);
+    return count === 1 ? name : `${name}${count}`;
+  });
 }
 
 /**
- * Points to a named palette: bucket by anchor, cluster inside each bucket.
+ * Points to a named palette, with the groups taken from the art.
  *
- * A bucket can come out smaller than its ramp — the art may simply contain
- * fewer than four distinct purples. `kmeans` returns what it has in that case,
- * and the shortfall is padded by repeating the lightest entry, so the ramp
- * keeps its declared length and downstream code can rely on `soil.crown`
- * existing. A padded ramp is visible in the JSON as duplicate hex values,
- * which is the signal for a human to pick something better by hand.
+ * Two passes. The coarse one asks the art where its colours actually are — a
+ * weighted k-means for `GROUPS` centroids, which become the bucket centres.
+ * The fine one clusters within each bucket at the size `allocate` gave it.
+ *
+ * The first version of this function planted eleven anchors by hand and
+ * assigned pixels to the nearest one. Measured against the real art, one
+ * anchor — a dark desaturated brown called `wood` — turned out to be nearest
+ * to *everything dark* and swallowed 104 of 299 colours and 49% of all pixels,
+ * while `accent` held 0.52% of the pixels and was handed the largest ramp.
+ * Anchors drawn from the data cannot fail that way: a catch-all region is
+ * exactly what a k-means centroid splits.
  */
 export function derive(points) {
-  const anchors = RAMPS.map((ramp) => srgbToOklab(...ramp.anchor));
-  const buckets = RAMPS.map(() => []);
-  for (const point of points) buckets[nearestIndex(point, anchors)].push(point);
+  const anchors = kmeans(points, GROUPS, SEED);
+
+  const buckets = anchors.map(() => []);
+  const weights = anchors.map(() => 0);
+  for (const point of points) {
+    const index = nearestIndex(point, anchors);
+    buckets[index].push(point);
+    weights[index] += point.weight;
+  }
+
+  const sizes = allocate(weights);
+  const names = uniqueNames(anchors.map(familyName));
 
   const palette = [];
-  RAMPS.forEach((ramp, index) => {
-    const centroids = kmeans(buckets[index], ramp.steps.length, SEED + index);
-    ramp.steps.forEach((step, position) => {
-      const centroid = centroids[Math.min(position, centroids.length - 1)];
+  anchors.forEach((_, index) => {
+    const centroids = kmeans(buckets[index], sizes[index], SEED + index + 1);
+    for (let step = 0; step < sizes[index]; step += 1) {
+      const centroid = centroids[Math.min(step, centroids.length - 1)];
       palette.push({
-        name: `${ramp.name}.${step}`,
-        hex: centroid ? hex(oklabToSrgb(centroid)) : hex(ramp.anchor),
+        name: `${names[index]}.${step}`,
+        hex: centroid ? hex(oklabToSrgb(centroid)) : hex([0, 0, 0]),
+        share: Number((weights[index] / points.reduce((s, p) => s + p.weight, 0)).toFixed(4)),
       });
-    });
+    }
   });
   return palette;
 }
@@ -720,11 +772,34 @@ console.log("open art/palette-preview.html");
 '
 ```
 
-- [ ] **Step 2: Open it and check three things**
+- [ ] **Step 2: Name the groups**
 
-1. **Does every ramp read dark-to-light without a jump?** A step that breaks the run means the bucket was too small.
-2. **Does any name lie?** If `wood.base` is visibly green, the anchor lost its bucket to `foliage` — fix by editing the hex by hand, or by moving that anchor in `RAMPS` and re-running.
-3. **Any duplicate hex?** Those are padded entries the script warned about. Replace by hand with something that fits the ramp.
+The script emits descriptive names — `greenMid.0`, `neutralDark.2` — because it
+can measure hue and lightness but cannot know what a colour is *for*. Naming is
+this step's actual work, and it is why the step is human.
+
+For each of the eleven groups, look at its swatches together and give it a
+semantic name: the thing it is used to draw. `greenDark` may be `foliage`;
+`orangeMid` may be `soil`; `neutralDark` is probably `outline` or `shadow`.
+Where a group genuinely has no single job, keep the descriptive name — an
+honest `warmMid` is better than a `leather` that four sprites contradict.
+
+Record the mapping in `art/palette.json` by rewriting the `name` field on every
+entry, keeping the `.0 .1 .2` step suffixes and their order.
+
+**Do not rename a group to something the swatches do not show.** The previous
+version of this palette failed exactly there: its names were assigned from
+anchors picked before anyone looked at the art, and `accent.sky` ended up
+holding orange.
+
+- [ ] **Step 2b: Check the three things that make a palette usable**
+
+1. **Does every group read dark-to-light without a jump?** A break in the run
+   means the group was allocated more steps than it has distinct colours.
+2. **Does any name lie?** Compare each swatch against its new name.
+3. **Any duplicate hex?** Two identical entries mean a group had fewer colours
+   than steps. Replace one by hand, or reduce that group and give the entry to
+   a group that needs it — the total must stay 48.
 
 - [ ] **Step 3: Record what was changed**
 
