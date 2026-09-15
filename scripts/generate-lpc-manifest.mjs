@@ -18,6 +18,8 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { decodePng } from './lib/png.mjs';
+import { ANIMAL } from './import-lpc.mjs';
 
 const ART_DIR = path.join('public', 'assets', 'lpc');
 const OUT_FILE = path.join('src', 'game', 'assets', 'lpc.generated.ts');
@@ -61,8 +63,32 @@ const files = fs
   .map((file) => file.slice(0, -4))
   .sort();
 
-const sheets = files.filter((name) => name.endsWith('-sheet'));
+// Two kinds of sheet, and they are not interchangeable: a person is nine 64px
+// frames a row and an animal is four frames of whatever size that animal needs,
+// so loading one with the other's frame size gives a texture of slices. The
+// name is the only thing the folder knows, so the name carries the difference.
+const sheets = files.filter((name) => name.endsWith('-sheet') && !name.startsWith('animal-'));
+const animalSheets = files.filter((name) => name.startsWith('animal-') && name.endsWith('-sheet'));
 const images = files.filter((name) => !name.endsWith('-sheet'));
+
+/**
+ * One animal sheet's frame size, measured rather than declared.
+ *
+ * The grid is always four by four; the frame is the file divided by it. Reading
+ * it off the file is what lets the importer trim each animal to its own size —
+ * nothing here has to be told that a cow is bigger than a chicken, and nobody
+ * has to remember to update a table when the art is recut.
+ */
+function animalFrame(name) {
+  const image = decodePng(fs.readFileSync(path.join(ART_DIR, `${name}.png`)));
+  if (image.width % ANIMAL.cols !== 0 || image.height % ANIMAL.rows !== 0) {
+    throw new Error(
+      `${name}.png is ${image.width}x${image.height}, which does not divide ` +
+        `${ANIMAL.cols} by ${ANIMAL.rows}. Recut it with "--animals".`,
+    );
+  }
+  return { width: image.width / ANIMAL.cols, height: image.height / ANIMAL.rows };
+}
 
 // A `crop-*.png` that is neither a stage nor a crop is almost always a typo in
 // a file name, and it would otherwise fail as a type error in the generated
@@ -112,6 +138,31 @@ ${images.map((name) => `  ['${name}', '/assets/lpc/${name}.png'],`).join('\n')}
  */
 export const LPC_SHEETS = [${sheets.map((name) => `'${name}'`).join(', ')}] as const;
 
+/**
+ * The animal walk sheets, with the frame size each one was trimmed to.
+ *
+ * Four frames across and four directions down, in the same row order as the
+ * people. The size differs per animal because the art does: a cow needs three
+ * times a chicken's box, and padding them all to the largest would put a cow's
+ * worth of empty space around every hen — which the game would then measure
+ * when it went looking for somewhere to hang a shadow.
+ */
+export interface LpcAnimalSheet {
+  key: string;
+  url: string;
+  frameWidth: number;
+  frameHeight: number;
+}
+
+export const LPC_ANIMAL_SHEETS: readonly LpcAnimalSheet[] = [
+${animalSheets
+  .map((name) => {
+    const frame = animalFrame(name);
+    return `  { key: '${name}', url: '/assets/lpc/${name}.png', frameWidth: ${frame.width}, frameHeight: ${frame.height} },`;
+  })
+  .join('\n')}
+];
+
 ${sheetType}
 
 /**
@@ -128,6 +179,7 @@ fs.writeFileSync(OUT_FILE, `${banner}${body}`);
 
 console.log(`wrote ${OUT_FILE}`);
 console.log(`  images ${images.length}, sheets ${sheets.length} (${sheets.join(', ') || 'none'})`);
+console.log(`  animal sheets ${animalSheets.length} (${animalSheets.join(', ') || 'none'})`);
 console.log(`  crops drawn ${drawnCrops.length}/${crops.length}: ${drawnCrops.join(', ') || 'none'}`);
 
 const missingCrops = crops.filter((id) => !drawnCrops.includes(id));

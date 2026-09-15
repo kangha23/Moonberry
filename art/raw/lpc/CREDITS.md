@@ -74,6 +74,46 @@ keeps every one of them a clear tile away from paths, shores and field edges.
 Full per-item credits vendored at
 [`credits/CREDITS-plants.txt`](credits/CREDITS-plants.txt).
 
+## [LPC] Style Farm Animals (CC-BY 3.0 or GPL 2.0+)
+
+Applies to: `animal-chicken-sheet.png`, `animal-cow-sheet.png` and
+`animal-duck-sheet.png`.
+
+> "LPC Style Farm Animals" by Daniel Eddeland (daneeklu), commissioned by
+> Thomas Bruno (tebruno99). License: CC-BY 3.0 or GPL 2.0+.
+> https://opengameart.org/content/lpc-style-farm-animals
+
+Cut from `chicken_walk.png` and `cow_walk.png` with
+`scripts/import-lpc.mjs --animals`, which takes the four walk rows and trims
+the empty space off every frame at once. The source draws each animal in a box
+big enough for the largest of them — 128px for the cow, of which it uses about
+seventy — and the game measures a frame to decide where an animal's shadow and
+its hunger marker go, so the padding had to come off before it became a
+measurement.
+
+**`animal-duck-sheet.png` is a recolour of the chicken, not a separate
+drawing.** The set has one bird in it and this farm keeps two, so the duck is
+the hen in a mallard's colours: brown body, dark green head, orange bill, done
+as a colour map at import time rather than a tint at draw time so the bill
+stays orange while the feathers turn brown. The silhouette is still a hen's.
+Anyone who finds a real LPC duck should replace it — the import line is in the
+repo's history and the recolour flag is `--recolour`.
+
+## [LPC] Goat (CC-BY 3.0 or GPL 2.0+)
+
+Applies to: `animal-goat-sheet.png`.
+
+> "LPC Goat" by bluecarrot16. License: CC-BY 3.0 / GPL 2.0+.
+> Based on "LPC Style Farm Animals" by Daniel Eddeland (daneeklu),
+> commissioned by Thomas Bruno (tebruno99). License: CC-BY 3.0 / GPL 2+.
+> https://opengameart.org/content/lpc-goat
+
+The source sheet is eight rows — walk, then a grazing cycle. Only the four walk
+rows are imported. It is drawn over the llama from the same set and therefore
+stands taller than a goat does, which is why `ANIMAL_SCALE` in `FarmScene.ts`
+draws it smaller than everything else from this set rather than at the 0.62 the
+rest of the LPC art shares.
+
 ## CC0 (public domain, no attribution required — credited anyway)
 
 - Ground decoration reference: **Kenney Tiny Farm** (CC0)

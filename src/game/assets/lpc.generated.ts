@@ -68,6 +68,29 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
  */
 export const LPC_SHEETS = ['player-sheet', 'rowan-sheet'] as const;
 
+/**
+ * The animal walk sheets, with the frame size each one was trimmed to.
+ *
+ * Four frames across and four directions down, in the same row order as the
+ * people. The size differs per animal because the art does: a cow needs three
+ * times a chicken's box, and padding them all to the largest would put a cow's
+ * worth of empty space around every hen — which the game would then measure
+ * when it went looking for somewhere to hang a shadow.
+ */
+export interface LpcAnimalSheet {
+  key: string;
+  url: string;
+  frameWidth: number;
+  frameHeight: number;
+}
+
+export const LPC_ANIMAL_SHEETS: readonly LpcAnimalSheet[] = [
+  { key: 'animal-chicken-sheet', url: '/assets/lpc/animal-chicken-sheet.png', frameWidth: 32, frameHeight: 30 },
+  { key: 'animal-cow-sheet', url: '/assets/lpc/animal-cow-sheet.png', frameWidth: 72, frameHeight: 72 },
+  { key: 'animal-duck-sheet', url: '/assets/lpc/animal-duck-sheet.png', frameWidth: 32, frameHeight: 30 },
+  { key: 'animal-goat-sheet', url: '/assets/lpc/animal-goat-sheet.png', frameWidth: 54, frameHeight: 66 },
+];
+
 export type LpcSheet = (typeof LPC_SHEETS)[number];
 
 /**
