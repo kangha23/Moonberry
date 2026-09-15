@@ -28,7 +28,8 @@
     "maps:build": "node scripts/build-maps.mjs",
     "lpc:import": "node scripts/import-lpc.mjs",
     "lpc:manifest": "node scripts/generate-lpc-manifest.mjs",
-    "palette:derive": "node scripts/derive-palette.mjs"
+    "palette:derive": "node scripts/derive-palette.mjs",
+    "palette:module": "node scripts/generate-palette-module.mjs"
   },
   "dependencies": {
     "@vitejs/plugin-react": "^6.0.3",
