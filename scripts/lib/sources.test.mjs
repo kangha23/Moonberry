@@ -77,6 +77,60 @@ test('rejects a notImported entry with no reason', () => {
   assert.throws(() => validateSources(json), /reason/);
 });
 
+test('rejects a pack missing required metadata: title, page, or licence', () => {
+  // Each omitted field makes the pack invalid, because the licence requires
+  // crediting the author and the source. A pack with no title cannot be credited
+  // by name, a pack with no page loses the canonical source, and a pack with no
+  // licence loses the terms that made the use legal.
+  assert.throws(
+    () =>
+      validateSources({
+        packs: { 'lpc-crops': { ...pack, title: undefined } },
+        cuts: [],
+      }),
+    /title/,
+  );
+
+  assert.throws(
+    () =>
+      validateSources({
+        packs: { 'lpc-crops': { ...pack, page: undefined } },
+        cuts: [],
+      }),
+    /page/,
+  );
+
+  assert.throws(
+    () =>
+      validateSources({
+        packs: { 'lpc-crops': { ...pack, licence: undefined } },
+        cuts: [],
+      }),
+    /licence/,
+  );
+});
+
+test('rejects a pack with no authors or empty authors, because the licence requires attribution', () => {
+  const noAuthors = { ...pack, authors: [] };
+  assert.throws(() => validateSources({ packs: { 'lpc-crops': noAuthors }, cuts: [] }), /authors/);
+
+  const notAnArray = { ...pack, authors: null };
+  assert.throws(() => validateSources({ packs: { 'lpc-crops': notAnArray }, cuts: [] }), /authors/);
+});
+
+test('rejects a pack file entry with no source url', () => {
+  const badFile = { ...pack, files: { 'crops.png': { sha256: 'a'.repeat(64) } } };
+  assert.throws(() => validateSources({ packs: { 'lpc-crops': badFile }, cuts: [] }), /source url/);
+});
+
+test('rejects a cut with no target', () => {
+  const json = {
+    packs: { 'lpc-crops': pack },
+    cuts: [{ pack: 'lpc-crops', file: 'crops.png', grid: 32, cell: [1, 1] }],
+  };
+  assert.throws(() => validateSources(json), /no target/);
+});
+
 test('turns a grid cell into the flags the importer already understands', () => {
   assert.deepEqual(cutFlags({ target: 'crop-tomato', grid: 32, cell: [12, 6] }), {
     grid: '32',
