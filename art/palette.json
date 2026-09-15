@@ -1,0 +1,197 @@
+{
+  "generated": "2026-09-15T09:29:41.217Z",
+  "colours": [
+    {
+      "name": "soil.trough",
+      "hex": "#74472b"
+    },
+    {
+      "name": "soil.low",
+      "hex": "#913505"
+    },
+    {
+      "name": "soil.base",
+      "hex": "#8d4735"
+    },
+    {
+      "name": "soil.high",
+      "hex": "#9f3a35"
+    },
+    {
+      "name": "soil.crown",
+      "hex": "#875e3f"
+    },
+    {
+      "name": "grass.deep",
+      "hex": "#397e06"
+    },
+    {
+      "name": "grass.shade",
+      "hex": "#448c33"
+    },
+    {
+      "name": "grass.base",
+      "hex": "#728b43"
+    },
+    {
+      "name": "grass.lit",
+      "hex": "#64a446"
+    },
+    {
+      "name": "grass.bleached",
+      "hex": "#4ab525"
+    },
+    {
+      "name": "foliage.deep",
+      "hex": "#073a1f"
+    },
+    {
+      "name": "foliage.shade",
+      "hex": "#134507"
+    },
+    {
+      "name": "foliage.base",
+      "hex": "#1b5503"
+    },
+    {
+      "name": "foliage.lit",
+      "hex": "#105d31"
+    },
+    {
+      "name": "wood.deep",
+      "hex": "#000000"
+    },
+    {
+      "name": "wood.shade",
+      "hex": "#1c1519"
+    },
+    {
+      "name": "wood.base",
+      "hex": "#4e1911"
+    },
+    {
+      "name": "wood.lit",
+      "hex": "#413d5f"
+    },
+    {
+      "name": "stone.deep",
+      "hex": "#91828b"
+    },
+    {
+      "name": "stone.shade",
+      "hex": "#1299b0"
+    },
+    {
+      "name": "stone.base",
+      "hex": "#bb86c5"
+    },
+    {
+      "name": "stone.lit",
+      "hex": "#b19996"
+    },
+    {
+      "name": "water.deep",
+      "hex": "#227174"
+    },
+    {
+      "name": "water.shade",
+      "hex": "#156c99"
+    },
+    {
+      "name": "water.base",
+      "hex": "#726b7e"
+    },
+    {
+      "name": "water.lit",
+      "hex": "#486fc7"
+    },
+    {
+      "name": "skin.deep",
+      "hex": "#d5855e"
+    },
+    {
+      "name": "skin.shade",
+      "hex": "#f27981"
+    },
+    {
+      "name": "skin.base",
+      "hex": "#e9a375"
+    },
+    {
+      "name": "skin.lit",
+      "hex": "#c4b49d"
+    },
+    {
+      "name": "clothWarm.deep",
+      "hex": "#ba4a45"
+    },
+    {
+      "name": "clothWarm.shade",
+      "hex": "#a46d3c"
+    },
+    {
+      "name": "clothWarm.base",
+      "hex": "#b4871f"
+    },
+    {
+      "name": "clothWarm.lit",
+      "hex": "#b88751"
+    },
+    {
+      "name": "clothCool.deep",
+      "hex": "#6b1b8d"
+    },
+    {
+      "name": "clothCool.shade",
+      "hex": "#3c49ad"
+    },
+    {
+      "name": "clothCool.base",
+      "hex": "#924b81"
+    },
+    {
+      "name": "clothCool.lit",
+      "hex": "#9b4caa"
+    },
+    {
+      "name": "metal.deep",
+      "hex": "#42d2e6"
+    },
+    {
+      "name": "metal.shade",
+      "hex": "#fdd5b7"
+    },
+    {
+      "name": "metal.base",
+      "hex": "#e6e7c7"
+    },
+    {
+      "name": "metal.lit",
+      "hex": "#f7f2ef"
+    },
+    {
+      "name": "accent.gold",
+      "hex": "#c89622"
+    },
+    {
+      "name": "accent.berry",
+      "hex": "#77bf67"
+    },
+    {
+      "name": "accent.bloom",
+      "hex": "#9fc137"
+    },
+    {
+      "name": "accent.sky",
+      "hex": "#ffa749"
+    },
+    {
+      "name": "accent.ember",
+      "hex": "#bbda45"
+    },
+    {
+      "name": "accent.bone",
+      "hex": "#f7cd4d"
+    }
+  ]
+}
