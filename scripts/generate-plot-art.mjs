@@ -55,67 +55,53 @@ function hash(x, y, seed = 1) {
  * lightest thing in the tile is the crown of a ridge in the middle of it, and
  * the darkest is the trough — so where two tiles meet, two troughs meet, and
  * the join disappears into a furrow instead of announcing itself.
- */
-/**
- * Soil, in the two states a plot can be in.
  *
  * The tones are no longer written here. They are ramp positions in
  * `art/palette.json`, so the furrows in a field are the same browns as the
  * planks on the farmhouse and the trunk of a tree, and a change to the ramp
  * moves all three together.
  *
- * These are deliberately NOT the nearest palette entry to each of the six
- * hand-picked tones this table used to hold. An earlier pass did exactly
- * that — nearest colour, one lookup per tone, done — and it was wrong. Dry's
- * `low`/`base`/`clod` all happened to be nearest the same entry, and its
- * `high`/`crown` both landed on a second one, so a six-tone ramp rendered in
- * three flat colours. That is the **brick wall** the comment on `PROFILE`
- * below already describes fighting off once — "the first attempt at this
- * drew each row a flat colour and the result read as a brick wall — regular
- * horizontal courses with regular breaks in them" — and nearest-neighbour
- * had reintroduced the exact same defect one level up, because it optimises
- * each colour's own error and has no notion that the six colours need to
- * stay apart from each other.
+ * `art/palette.json` carries a `soil` group of 7 entries, `soil.0`–`soil.6`
+ * ascending in lightness, PINNED rather than clustered: they are the exact
+ * seven hexes this table's own dry and wet tones reduce to under
+ * maximum-spacing subset selection, recovered from the pre-migration source
+ * rather than approximated. That makes this the rare case where nearest
+ * colour and hand-tuned colour are the same thing — dry's five tones
+ * (`trough`…`crown`) land on `soil.2`–`soil.6` at distances of 0 to 0.02, and
+ * wet's five land on `soil.0`–`soil.4` at 0 to 0.028, both computed and
+ * checked against `art/palette.json` rather than assumed. The two ramps
+ * overlap at `soil.2`/`soil.3`/`soil.4` — dry's `trough`/`low`/`base` are
+ * wet's `base`/`high`/`crown` — which is exactly why the group was sized at
+ * 7 rather than 10: a five-tone gradient each way, sharing the three tones
+ * in the middle, needs no more. `clod` reuses each ramp's `low` entry
+ * (mechanically nearest for both dry and wet) rather than taking a sixth
+ * slot, since a speckle is not a gradient step.
  *
- * So instead: five DISTINCT palette entries per ramp, chosen in ascending
- * lightness order from the warm groups (`earth`, `wood`, `warmDeep` — 4 + 4 +
- * 4 entries, `wood.3` and `earth.2` excluded because they read as slate-grey
- * and coral-red rather than brown, which would be a wrong-hue mistake of the
- * same kind as the one below in `WILD`). The ten slots this needs — five per
- * ramp — come from those three groups with no entry used in both ramps, so
- * dry and wet never share a rendered colour: `wood.1`, `wood.2` and all of
- * `earth` go to dry; all of `warmDeep` and `wood.0` go to wet, keeping wet
- * uniformly darker, which is the one property "waterlogged earth is darker
- * than dry" actually needs. `clod` reuses each ramp's `low` entry rather than
- * getting a sixth slot — a speckle is not a gradient step, and it needs to
- * read as a mid-tone lump, not as dark as the trough it explicitly is not
- * supposed to sit in.
- *
- * The cost is distance: several of these ten picks are 0.10-0.16 away from
- * the tone they replace in OkLab, worse than nearest-neighbour's best case
- * and occasionally worse than its worst. That is the trade this file is
- * built to make and record, not hide: a visibly-graduated furrow a little
- * off in hue beats an exactly-matched furrow that reads as three stripes.
- * See task-8-report.md in the palette-lock plan for the full measurement —
- * every distance, both the ones nearest-neighbour produced and the ones this
- * spacing produces, side by side.
+ * An earlier version of this table used nearest-colour to spread six tones
+ * per ramp across a smaller, unpinned palette, found that most of them
+ * collapsed onto the same 2-3 entries, and switched to hand-picking distinct
+ * entries by lightness instead, accepting worse per-colour distance to keep
+ * the gradient readable. That trade is gone along with the palette that
+ * forced it: with the real tones present, nearest-colour is correct again,
+ * and a comment explaining why to avoid it would now be describing a
+ * technique this file no longer uses.
  */
 const SOIL = {
   dry: {
-    trough: PALETTE['wood.1'],
-    low: PALETTE['wood.2'],
-    base: PALETTE['earth.0'],
-    high: PALETTE['earth.1'],
-    crown: PALETTE['earth.3'],
-    clod: PALETTE['wood.2'],
+    trough: PALETTE['soil.2'],
+    low: PALETTE['soil.3'],
+    base: PALETTE['soil.4'],
+    high: PALETTE['soil.5'],
+    crown: PALETTE['soil.6'],
+    clod: PALETTE['soil.3'],
   },
   wet: {
-    trough: PALETTE['warmDeep.0'],
-    low: PALETTE['warmDeep.1'],
-    base: PALETTE['warmDeep.2'],
-    high: PALETTE['warmDeep.3'],
-    crown: PALETTE['wood.0'],
-    clod: PALETTE['warmDeep.1'],
+    trough: PALETTE['soil.0'],
+    low: PALETTE['soil.1'],
+    base: PALETTE['soil.2'],
+    high: PALETTE['soil.3'],
+    crown: PALETTE['soil.4'],
+    clod: PALETTE['soil.0'],
   },
 };
 
@@ -168,14 +154,16 @@ function drawSoil(image, wet, variant) {
   // one across a field. In the furrow, never on the crown — water runs down.
   //
   // Neither of these two is nearest to anything in the `water` group: the
-  // highlight is closer to `grass.2` and the shadow beside it to `water.1`,
-  // both a little past the 0.05 OkLab threshold this migration was told to
-  // flag rather than paper over (0.056 and 0.056). That is a real gap — a
-  // muted teal-grey puddle glint is not a colour this 48-entry palette
-  // actually carries — but the nearest entries are still teal-toned, so the
-  // pixels read as a wet glint rather than as an obviously wrong hue.
-  const PUDDLE_HIGHLIGHT = PALETTE['grass.2'];
-  const PUDDLE_SHADOW = PALETTE['water.1'];
+  // highlight is closest to `leaf.3`, a muted teal, and the shadow beside it
+  // to `building.0`, a grey-purple the farmhouse walls also use. Both sit a
+  // little past the 0.05 OkLab flag threshold (0.056 either way). A muted
+  // teal-grey puddle glint is not a colour this palette's `water` group
+  // actually carries — its four entries are all far more saturated blues and
+  // purples than a small still puddle would show — but the nearest entries
+  // outside that group are still cool-toned, so the pixels read as a wet
+  // glint rather than as an obviously wrong hue.
+  const PUDDLE_HIGHLIGHT = PALETTE['leaf.3'];
+  const PUDDLE_SHADOW = PALETTE['building.0'];
   for (let i = 0; i < 7; i += 1) {
     const x = 3 + Math.floor(hash(i, 29, variant) * (TILE - 8));
     const row = Math.floor(hash(i, 41, variant) * 4) * 8;
@@ -189,75 +177,51 @@ function drawSoil(image, wet, variant) {
  * Unworked ground that could be worked.
  *
  * It has to say "you may plant here" without saying it forty times in the same
- * voice. Two faults were fixed here rather than one. The version this replaces
- * put an identical leafy clump dead in the centre of every cell, which made a
- * fallow field a pegboard; the first attempt at a fix over-corrected into
- * per-pixel noise, which read as **television static**. Grass is neither. It
- * is patches — so the speckle is computed on a coarse grid and the blades are
- * few, tall and off-centre.
- */
-/**
- * Unworked ground that could be worked.
+ * voice. Three faults were fixed here, in order: an identical leafy clump
+ * dead in the centre of every cell, which made a fallow field a pegboard;
+ * the first fix over-correcting into per-pixel noise, which read as
+ * **television static**; and the second fix leaving the tile the *same
+ * green as ordinary grass*, so a player could no longer see which ground was
+ * theirs to plant. So this is drier and yellower than the lawn around it,
+ * carries the ghost of an old furrow, and the speckle is computed on a
+ * coarse grid with a few tall, off-centre blades rather than per-pixel noise.
  *
- * Three faults were fixed here rather than one. The version this replaces put
- * an identical leafy clump dead in the centre of every cell, which made a
- * fallow field a pegboard. The first attempt at a fix over-corrected into
- * per-pixel noise, which read as television static. The second fixed that but
- * left the tile the *same green as ordinary grass*, so a player could no
- * longer see which ground was theirs to plant — which traded an ugly
- * affordance for no affordance at all.
+ * Every tone is a lookup into `art/palette.json`, named for the nearest
+ * palette entry to the hand-picked colour this table used to hold. `grass`
+ * and `ridge` both land on `light.0`, and `dark` and `furrow` both land on
+ * `leaf.1` — the ridge band meant to sit a shade lighter than the grass
+ * around it, and the furrow band meant to sit a shade darker than the dark
+ * speckle, both collapse onto the tone next to them, so the ghost furrow's
+ * lit shoulder is invisible and only its dark trough side still reads. That
+ * is this palette not carrying separate entries for those two pairs, not a
+ * bug in the lookup, and it was not part of what this round of the migration
+ * was asked to fix.
  *
- * So this is drier and yellower than the lawn around it, and carries the ghost
- * of an old furrow. The signal lives at the scale of the field rather than of
- * the tile, which is where it belongs.
- */
-/**
- * As with `SOIL`, every tone here is now a lookup into `art/palette.json`
- * rather than a literal, named for the palette entry nearest it in OkLab.
- *
- * Two things this measurement turned up are worth flagging rather than
- * quietly accepting.
- *
- * First, `grass` and `ridge` both land on `grass.3`, and `dark` and `furrow`
- * both land on `grass.1` — so the ridge band that is supposed to sit a shade
- * lighter than the surrounding grass, and the furrow band a shade darker
- * than the dark speckle, both collapse onto the tone next to them. The
- * "ghost of an old furrow" this tile draws will render with its lit shoulder
- * invisible against the grass around it; only the dark trough side still
- * reads as a furrow. That is the palette not carrying enough resolution
- * in the grass ramp for this effect, not a bug in the lookup.
- *
- * Second, `bright` — the highlight on each grass blade — was nearest to
- * `skin.1` at d=0.101, over twice the 0.05 flag threshold and the worst of
- * all 23 literals this file used to hold, and rendering it confirmed the
- * measurement rather than second-guessing it for no reason: the field came
- * out with yellow confetti scattered across the grass, because `#9ccc63` is
- * a bright yellow-green and `skin.1` is a yellow skin tone — same rough
- * lightness, wrong hue family entirely. Nearest-neighbour is the wrong rule
- * for a colour a palette genuinely does not carry; it will always hand back
- * *something*, and that something can be closer in OkLab while still being
- * the wrong kind of colour to put on grass. So `bright` is pinned to
- * `grass.4`, the lightest entry the `grass` group has (d=0.127 from the
- * original — farther than `skin.1`, and correct anyway, because a highlight
- * that reads as green-but-imprecise beats one that reads as yellow). It
- * happens to equal `light`, which is a different role (a ground speckle
- * rather than a blade-tip highlight) landing on the same entry by
- * coincidence of both wanting "the lightest green available" — not a
- * problem, since nothing here depends on the two being visually distinct
- * from each other, only from the darker tones around them.
+ * `bright` — the highlight on each grass blade — is the one entry NOT taken
+ * from its unrestricted nearest neighbour. That neighbour is `light.6`
+ * (`#acbfb0`), a pale sage-grey with almost no chroma; the `light` group is
+ * a catch-all for "the light end of several materials at once" (skin, pale
+ * foliage, cream — see its note in `art/palette.json`) and for this one tone
+ * the catch-all's nearest match is a cream, not a foliage green. That is the
+ * same class of mistake an earlier version of this table made by pinning
+ * `bright` to a literal skin tone: technically closest in OkLab, visibly
+ * wrong on grass. So `bright` is pinned instead to `leaf.2`, the brightest,
+ * most saturated entry in `leaf` or `foliage` — a deliberately worse OkLab
+ * match (0.168 against 0.118) for a hue that actually reads as a lit blade
+ * tip rather than a grey smudge.
  */
 const WILD = {
-  grass: PALETTE['grass.3'],
-  dark: PALETTE['grass.1'],
-  light: PALETTE['grass.4'],
-  ridge: PALETTE['grass.3'],
-  furrow: PALETTE['grass.1'],
-  blade: PALETTE['foliage.4'],
-  bright: PALETTE['grass.4'],
-  soil: PALETTE['earth.0'],
+  grass: PALETTE['light.0'],
+  dark: PALETTE['leaf.1'],
+  light: PALETTE['light.1'],
+  ridge: PALETTE['light.0'],
+  furrow: PALETTE['leaf.1'],
+  blade: PALETTE['leaf.0'],
+  bright: PALETTE['leaf.2'],
+  soil: PALETTE['soil.6'],
   // The darker fleck beside a turned clod, previously its own literal.
-  // Nearest is `clothWarm.2` at d=0.085 — also above the flag threshold.
-  soilShade: PALETTE['clothWarm.2'],
+  // Nearest is `soil.5` at d=0.060.
+  soilShade: PALETTE['soil.5'],
 };
 
 function drawWild(image, variant) {
@@ -326,4 +290,14 @@ function main() {
   for (const file of written) process.stdout.write(`${file}\n`);
 }
 
-main();
+// Guarded, like the repo's other generator scripts, so a test can `import`
+// this module and get a plain module — its exports, its source text for
+// inspection — rather than a side effect that writes nine PNGs to disk.
+// Before this guard existed, nothing *could* import the file, which is also
+// why nothing noticed when a palette re-derivation quietly orphaned 14 of
+// the 17 `PALETTE[...]` names below: the only way to exercise this file was
+// to run it and look at the PNGs it wrote, and 835 passing tests never did
+// that. See `generate-plot-art.test.mjs` for the check that now would.
+if (process.argv[1] && process.argv[1].endsWith('generate-plot-art.mjs')) {
+  main();
+}
