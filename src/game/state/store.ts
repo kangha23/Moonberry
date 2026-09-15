@@ -4,6 +4,7 @@ import type { BuildingKind } from '../systems/buildings';
 import type { GameEvent, Intent } from './intents';
 import { clearSave, loadFarm, saveFarm, type SaveStorage } from './persistence';
 import { applyIntent, createFarmState } from './reducer';
+import { applyDevSeed, devSeedMessage } from '../dev/seedHerd';
 import type { FarmState, PlayerId } from './types';
 
 export interface FarmStoreState {
@@ -152,10 +153,20 @@ export function joinAsLocalPlayer(playerId: PlayerId, name: string): void {
 export function initFarm(storage?: SaveStorage): void {
   listeners.clear();
   const restored = loadFarm(storage);
+  const loaded = restored ?? createFarmState();
+
+  // The `?dev=herd` shortcut, and the only place it can go: after the save is
+  // read and before anything has drawn it. Behind `import.meta.env.DEV`, so
+  // the module is not in a production bundle at all — `location` is read here
+  // rather than inside it to keep the seeder itself testable in node.
+  const search = import.meta.env.DEV ? (globalThis.location?.search ?? '') : '';
+  const farm = search ? applyDevSeed(loaded, search) : loaded;
+  const note = search ? devSeedMessage(search) : null;
+
   farmStore.setState({
-    farm: restored ?? createFarmState(),
+    farm,
     localPlayerId: null,
-    message: restored ? RESTORED_MESSAGE : INITIAL_MESSAGE,
+    message: note ?? (restored ? RESTORED_MESSAGE : INITIAL_MESSAGE),
     restored: restored !== null,
   });
 }
