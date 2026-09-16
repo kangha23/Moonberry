@@ -131,6 +131,18 @@ test('rejects a cut with no target', () => {
   assert.throws(() => validateSources(json), /no target/);
 });
 
+test('rejects a target that is not a safe path segment', () => {
+  // A layered cut's target becomes a directory name under art/sources/ (see
+  // layerFolder in art-sync.mjs), which that folder then gets swept clean of
+  // anything not in the cut's own layers. "../../../evil" would point that
+  // sweep at a real directory outside art/sources/ entirely.
+  const json = {
+    packs: { 'lpc-crops': pack },
+    cuts: [{ target: '../../../evil', pack: 'lpc-crops', file: 'crops.png', grid: 32, cell: [1, 1] }],
+  };
+  assert.throws(() => validateSources(json), /path/);
+});
+
 test('turns a grid cell into the flags the importer already understands', () => {
   assert.deepEqual(cutFlags({ target: 'crop-tomato', grid: 32, cell: [12, 6] }), {
     grid: '32',
@@ -315,6 +327,57 @@ test('rejects a layer with no source url', () => {
     ],
   };
   assert.throws(() => validateSources(json), /source url/);
+});
+
+test('rejects an empty layers, which would sweep the cache folder with nothing to refill it', () => {
+  const json = {
+    packs: { 'lpc-generator': generatorPack },
+    cuts: [{ target: 'maeve-sheet', pack: 'lpc-generator', walkcycle: true, layers: {} }],
+  };
+  assert.throws(() => validateSources(json), /empty "layers"/);
+});
+
+test('rejects a layer name carrying a path separator', () => {
+  const json = {
+    packs: { 'lpc-generator': generatorPack },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        walkcycle: true,
+        layers: { '010 ../body.png': { from: 'https://example.invalid/b.png', sha256: 'a'.repeat(64) } },
+      },
+    ],
+  };
+  assert.throws(() => validateSources(json), /not a safe file name/);
+
+  const backslash = {
+    packs: { 'lpc-generator': generatorPack },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        walkcycle: true,
+        layers: { '010 body\\evil.png': { from: 'https://example.invalid/b.png', sha256: 'a'.repeat(64) } },
+      },
+    ],
+  };
+  assert.throws(() => validateSources(backslash), /not a safe file name/);
+});
+
+test('rejects a layer name containing "..", even with no path separator', () => {
+  const json = {
+    packs: { 'lpc-generator': generatorPack },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        walkcycle: true,
+        layers: { '010..png': { from: 'https://example.invalid/b.png', sha256: 'a'.repeat(64) } },
+      },
+    ],
+  };
+  assert.throws(() => validateSources(json), /not a safe file name/);
 });
 
 test('rejects a cut naming both a file and layers, which silently resolves to layers', () => {

@@ -75,6 +75,19 @@ export function validateSources(json) {
   for (const cut of cuts) {
     const { target } = cut;
     if (!target) throw new Error('A cut has no target.');
+    // The same rule `planImport` in import-lpc.mjs already enforces on a
+    // target, for the same reason plus one: a layered cut's target becomes a
+    // directory name under art/sources/ (see layerFolder in art-sync.mjs),
+    // and that directory gets swept of anything not in the cut's current
+    // layers. An unvalidated target of e.g. "../../../evil" would point that
+    // sweep at a real directory outside art/sources/ entirely and delete
+    // whatever it finds there.
+    if (!/^[a-z0-9-]+$/.test(target)) {
+      throw new Error(
+        `Cut target "${target}" must be lower-case letters, digits and dashes, with no extension, ` +
+          'path separator or "..". It is used to build a filesystem path under art/sources/.',
+      );
+    }
     if (seen.has(target)) throw new Error(`Two cuts both write "${target}".`);
     seen.add(target);
 
@@ -96,8 +109,32 @@ export function validateSources(json) {
     }
 
     if (cut.layers) {
+      // An empty `layers: {}` is a truthy object, so it would otherwise sail
+      // through every check below having named zero layers — and then
+      // layerFolder would sweep the cut's cache directory clean, with
+      // nothing in the table to write back into it.
+      if (Object.keys(cut.layers).length === 0) {
+        throw new Error(
+          `Cut "${target}" has an empty "layers". A layered cut needs at least one layer to ` +
+            'composite; remove "layers" entirely if this cut is not ready yet.',
+        );
+      }
+
       const positions = new Map();
       for (const [name, entry] of Object.entries(cut.layers)) {
+        // Layer names are written as files inside a directory built from the
+        // cut's target (see layerFolder in art-sync.mjs), so a name carrying
+        // a path separator or ".." can write or delete outside it. Unlike the
+        // target above, a layer name legitimately contains a space and a dot
+        // ("010 body.png"), so it gets its own, narrower rule rather than the
+        // target's `[a-z0-9-]+`.
+        if (/[\\/]/.test(name) || name.includes('..')) {
+          throw new Error(
+            `Cut "${target}" layer "${name}" is not a safe file name: it must not contain a path ` +
+              'separator or "..".',
+          );
+        }
+
         const numbered = name.match(/^(\d+)\s/);
         if (!numbered) {
           throw new Error(

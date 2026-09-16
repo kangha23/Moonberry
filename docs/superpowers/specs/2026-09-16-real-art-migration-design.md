@@ -142,7 +142,7 @@ Runs in `npm test`. Two assertions:
 
 - every PNG in `art/raw/lpc/` is either produced by a `cut` or listed in
   `notImported` with a reason
-- every `pack` referenced by a cut appears in `public/assets/lpc/CREDITS.md`
+- every `pack` referenced by a cut appears in `art/raw/lpc/CREDITS.md`
 
 `notImported` is the escape hatch, and it is a map rather than a list so that
 each entry has to say *why*. It covers two cases: art drawn by hand for this
@@ -153,10 +153,20 @@ An art file with no recorded source, or with no attribution, becomes a red
 build rather than a line somebody forgot. The licences here are CC-BY-SA and
 GPL; attribution is a condition, not a courtesy.
 
-**CREDITS.md is not generated.** It is prose explaining why each choice was
-made — which crop is a stand-in for which, why the duck is a recoloured hen,
-why the goat is drawn smaller than the rest of its set. Generating it would
-destroy the part of it worth having. `--check` only stops it going stale.
+**The prose in `CREDITS.md` is hand-written, not generated — but the file
+`--check` reads and the file the game ships are not the same file.**
+`art/raw/lpc/CREDITS.md` is where a person writes it: why each choice was
+made, which crop is a stand-in for which, why the duck is a recoloured hen,
+why the goat is drawn smaller than the rest of its set. Generating *that*
+file would destroy the part of it worth having.
+
+`public/assets/lpc/CREDITS.md`, the copy the game actually ships, *is*
+generated — `apply-palette.mjs` writes it from the raw file plus a
+modification notice the licences require for the colour-reduction that step
+performs, on every `palette:apply` run. `--check` reads the raw file, not the
+generated one: crediting a new pack is then one edit, in the file a person
+actually writes, rather than an edit to a file the next `palette:apply` would
+silently overwrite. `--check` only stops that one file going stale.
 
 ### 3. `edge-*` sampled from real tiles
 
