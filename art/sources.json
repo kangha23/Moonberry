@@ -260,6 +260,269 @@
         0,
         10
       ]
+    },
+    {
+      "target": "node-tree-0",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "rect": [
+        493,
+        996,
+        10,
+        20
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-tree-1",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "rect": [
+        135,
+        832,
+        17,
+        31
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-tree-2",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "rect": [
+        398,
+        970,
+        34,
+        45
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-tree-3",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "rect": [
+        288,
+        962,
+        32,
+        59
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-tree-4",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "rect": [
+        333,
+        960,
+        36,
+        59
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-stump",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "rect": [
+        6,
+        768,
+        20,
+        30
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-grass",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "rect": [
+        322,
+        327,
+        28,
+        23
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-weed",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "rect": [
+        192,
+        327,
+        32,
+        25
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-forage-purple-mushroom",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        0,
+        22
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-forage-wild-daisy",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        1,
+        3
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-forage-poppy",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        8,
+        9
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-forage-buttercup",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        9,
+        9
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-forage-daffodil",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        9,
+        4
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-forage-wild-grape",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        3,
+        19
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-forage-chestnut",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        3,
+        7
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-forage-wild-greens",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        10,
+        10
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
+    },
+    {
+      "target": "node-forage-wild-leek",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        0,
+        10
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74
     }
   ]
 }

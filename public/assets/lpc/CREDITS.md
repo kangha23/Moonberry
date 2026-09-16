@@ -68,6 +68,24 @@ and `item-wild-leek` (0, 10). Note the coordinates in this file are quoted the
 way the pack's own documentation reads them; `art/sources.json` is zero-based,
 and `npm run art:sync -- --verify` is what decides which is right.
 
+Also seventeen resource nodes from the same sheet — the five tree growth
+stages, the stump, the grass clump, the bramble, and one for each of the nine
+forage items above. These are not grid cells: a node is drawn in a 64x80 box
+with its feet on a floor line at y=74, which is where the scene hangs it off
+the ground, so each one is a `rect` of the sheet padded into that box by
+`--box 64x80 --floor 74`. The exact rectangles are in `art/sources.json`.
+
+The tree stages were chosen for silhouette rather than for being the same
+drawing five times: a sprout, a bare sapling with its first leaves, a young
+round tree, a tall thin one, and a full canopy. Two candidates that looked
+right in the sheet turned out to be hedges rather than trees, which only
+became obvious once they were rendered standing on the floor line — worth
+knowing before picking the next batch by eye.
+
+`node-rock` and `node-boulder` keep their generated art: this is a pack of
+flowers, plants, fungi and wood, and there is no stone in it. So does
+`node-chip`, which is a 6x6 particle rather than an object.
+
 The three remaining forage items keep their generated icons, because this pack
 has no mineral and no root vegetable in it: `item-quartz`, `item-snow-yam` and
 `item-winter-root`.
