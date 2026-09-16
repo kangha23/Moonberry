@@ -11,8 +11,27 @@ export interface FakeScene {
   /** Texture keys whose source image was read, e.g. by the fringe builder. */
   sampled: string[];
   drawImageCalls: number;
-  scene: never;
+  scene: Phaser.Scene;
 }
+
+/**
+ * The three `TextureManager` methods this fake stands in for, typed against
+ * Phaser's own signatures rather than cast away with `never`.
+ *
+ * `never` let this drift from `Phaser.Scene` with nothing to notice: `never`
+ * is assignable to anything, so `scene as never` type-checked no matter what
+ * shape `scene` actually had, and a renamed or re-signatured method on the
+ * real `TextureManager` would never be compared against this file. Typing the
+ * piece that is actually implemented, against `Pick<Phaser.Textures.
+ * TextureManager, ...>`, makes `tsc` check `exists`/`get`/`createCanvas`
+ * here against Phaser's real declarations.
+ *
+ * The cast to `Phaser.Scene` at the bottom of this file is still there and
+ * still necessary — nothing this small can structurally satisfy the rest of
+ * that class, and `createPixelArtTextures` needs a real one — but everything
+ * upstream of that one cast is now checked.
+ */
+type FakeTextureManager = Pick<Phaser.Textures.TextureManager, 'exists' | 'get' | 'createCanvas'>;
 
 export function fakeScene(existing: string[] = []): FakeScene {
   const keys: string[] = [];
@@ -36,19 +55,21 @@ export function fakeScene(existing: string[] = []): FakeScene {
       },
     );
 
-  const scene = {
-    textures: {
-      exists: (key: string) => existing.includes(key) || keys.includes(key),
-      get: (key: string) => ({
+  const textures: FakeTextureManager = {
+    exists: (key) => existing.includes(key) || keys.includes(key),
+    get: (key) =>
+      ({
         getSourceImage: () => {
-          sampled.push(key);
+          sampled.push(String(key));
           return { width: 32, height: 32 };
         },
-      }),
-      createCanvas: (key: string) => {
-        keys.push(key);
-        return { getContext: () => ctx(), refresh: () => undefined };
-      },
+      }) as unknown as Phaser.Textures.Texture,
+    createCanvas: (key) => {
+      keys.push(key);
+      return {
+        getContext: () => ctx(),
+        refresh: () => undefined,
+      } as unknown as Phaser.Textures.CanvasTexture;
     },
   };
 
@@ -58,6 +79,6 @@ export function fakeScene(existing: string[] = []): FakeScene {
     get drawImageCalls() {
       return state.drawImageCalls;
     },
-    scene: scene as never,
+    scene: { textures } as unknown as Phaser.Scene,
   };
 }

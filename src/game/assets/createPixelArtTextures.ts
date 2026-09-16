@@ -1632,8 +1632,14 @@ export const FRINGE_BOUNDARIES: ReadonlyArray<{ over: 'grass' | 'path'; under: '
  */
 function createEdgeTextures(scene: Phaser.Scene) {
   for (const [index, { over, under }] of FRINGE_BOUNDARIES.entries()) {
-    const tile = scene.textures.get(`tile-${over}`)?.getSourceImage() as CanvasImageSource | undefined;
-    if (!tile) continue;
+    // No `?.`/existence guard: `tile-grass` and `tile-path` are both created,
+    // unconditionally, earlier in this same function (the `withTexture(scene,
+    // 'tile-grass', ...)`/`'tile-path'` draws happen before this is called),
+    // and `textures.get()` never returns `undefined` even for a key that is
+    // missing — it hands back Phaser's own `__MISSING` texture instead. A
+    // guard that can never trigger is not defensive; it is a claim the reader
+    // has to re-verify every time, for nothing.
+    const tile = scene.textures.get(`tile-${over}`).getSourceImage() as CanvasImageSource;
     for (let mask = 1; mask <= 15; mask += 1) {
       withTexture(scene, fringeTexture(over, under, mask), TILE, TILE, (ctx) =>
         drawFringe(ctx, mask, index * 17 + 3, tile),

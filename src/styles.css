@@ -385,16 +385,13 @@ p {
 
 /* --- the satchel ---------------------------------------------------------- */
 
-/* Pixel art must stay pixels at any size. */
+/* Pixel art must stay pixels at any size — including a 32px sprite shown at
+   48, which the browser would otherwise smooth, reading as blurry rather
+   than larger next to the crisp icons around it. Class selectors are
+   tag-agnostic, so this already matches the <img> the manifest renders; no
+   separate img.item-icon rule is needed. */
 .item-icon {
   display: block;
-  image-rendering: pixelated;
-}
-
-/* A 32px sprite shown at 48 has to stay a 32px sprite. Without this the
-   browser smooths it, and one icon in a grid of crisp ones reads as blurry
-   rather than as larger. */
-img.item-icon {
   image-rendering: pixelated;
 }
 

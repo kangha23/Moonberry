@@ -738,7 +738,7 @@ export default class FarmScene extends Phaser.Scene {
       this.load.spritesheet(sheet, `/assets/lpc/${sheet}.png`, { frameWidth: 64, frameHeight: 64 }),
     );
     // The animals carry their own frame size rather than sharing the people's:
-    // a cow is 88x72 and a hen is 32x30, and the manifest measured both.
+    // a cow is 72x72 and a hen is 32x30, and the manifest measured both.
     LPC_ANIMAL_SHEETS.forEach((sheet) =>
       this.load.spritesheet(sheet.key, sheet.url, {
         frameWidth: sheet.frameWidth,
