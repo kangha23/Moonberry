@@ -1501,18 +1501,6 @@ function createVillagerTextures(scene: Phaser.Scene) {
 
 // --- boundary fringes --------------------------------------------------------
 
-/**
- * The two materials that spill over their neighbours.
- *
- * Grass creeps over a path and hangs over a bank; a path juts out over water.
- * Nothing creeps over grass, because grass is the ground everything else was
- * cut into.
- */
-const FRINGE_PALETTES: Record<'grass' | 'path', { body: string; dark: string; light: string }> = {
-  grass: { body: PALETTE['light.0'], dark: PALETTE['leaf.1'], light: PALETTE['light.1'] },
-  path: { body: PALETTE['light.5'], dark: PALETTE['soil.6'], light: PALETTE['light.5'] },
-};
-
 /** One rectangle of a fringe, and what it is for. */
 export interface FringeSpan {
   x: number;
@@ -1576,15 +1564,45 @@ export function fringeSpans(mask: number, seed: number): FringeSpan[] {
   return spans;
 }
 
+/**
+ * One fringe: the material of a neighbouring tile, drawn over this one.
+ *
+ * The fringe used to be three flat colours standing in for grass. It is now
+ * cut out of the grass — the mask is drawn, the composite is switched to
+ * `source-in`, and the real tile is painted through it. Grass spilling over a
+ * path is now literally the pixels of the grass beside it, which is one fewer
+ * place for a hand-picked green to disagree with the art.
+ *
+ * It still works under the fallback, because it samples whatever `tile-grass`
+ * currently is rather than a file it hopes is there.
+ */
 function drawFringe(
   ctx: CanvasRenderingContext2D,
   mask: number,
-  palette: { body: string; dark: string; light: string },
   seed: number,
+  tile: CanvasImageSource,
 ) {
   ctx.clearRect(0, 0, TILE, TILE);
-  for (const span of fringeSpans(mask, seed)) {
-    rect(ctx, palette[span.role], span.x, span.y, span.w, span.h);
+  const spans = fringeSpans(mask, seed);
+
+  // Any opaque colour: only the alpha of this pass survives the composite.
+  for (const span of spans) {
+    if (span.role !== 'dark') rect(ctx, PALETTE['light.0'], span.x, span.y, span.w, span.h);
+  }
+
+  ctx.globalCompositeOperation = 'source-in';
+  ctx.drawImage(tile, 0, 0, TILE, TILE);
+  ctx.globalCompositeOperation = 'source-over';
+
+  // The leading edge and the highlight go on top of the real pixels. Both are
+  // translucent, so they shade the tile rather than replacing it — a fringe
+  // that is only the tile has no edge, and the map goes back to looking flat.
+  for (const span of spans) {
+    if (span.role === 'dark') {
+      rect(ctx, withAlpha(PALETTE['shadow.1'], 0.35), span.x, span.y, span.w, span.h);
+    } else if (span.role === 'light') {
+      rect(ctx, withAlpha(PALETTE['light.1'], 0.45), span.x, span.y, span.w, span.h);
+    }
   }
 }
 
@@ -1613,13 +1631,15 @@ export const FRINGE_BOUNDARIES: ReadonlyArray<{ over: 'grass' | 'path'; under: '
  * it is what stops a dirt path being a rectangle cut out of a lawn.
  */
 function createEdgeTextures(scene: Phaser.Scene) {
-  FRINGE_BOUNDARIES.forEach(({ over, under }, index) => {
+  for (const [index, { over, under }] of FRINGE_BOUNDARIES.entries()) {
+    const tile = scene.textures.get(`tile-${over}`)?.getSourceImage() as CanvasImageSource | undefined;
+    if (!tile) continue;
     for (let mask = 1; mask <= 15; mask += 1) {
       withTexture(scene, fringeTexture(over, under, mask), TILE, TILE, (ctx) =>
-        drawFringe(ctx, mask, FRINGE_PALETTES[over], index * 17 + 3),
+        drawFringe(ctx, mask, index * 17 + 3, tile),
       );
     }
-  });
+  }
 }
 
 // --- the clock, and the icons beside it --------------------------------------

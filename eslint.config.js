@@ -33,6 +33,13 @@ export default [
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Base no-undef cannot see TS-only global types (e.g. `CanvasImageSource`,
+      // a lib.dom.d.ts union with no runtime counterpart), so it flags every
+      // one of them as an undefined identifier. `tsc -b` in `npm run build`
+      // already checks every identifier in these files with full type
+      // information, which is what typescript-eslint's own docs recommend
+      // relying on instead.
+      'no-undef': 'off',
     },
   },
   {

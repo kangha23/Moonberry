@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { fringeSpans } from './createPixelArtTextures';
+import { createPixelArtTextures, fringeSpans } from './createPixelArtTextures';
+import { fakeScene } from './fakeScene';
 
 /**
  * The fringe geometry, which is what stops a dirt path being a rectangle cut
@@ -50,5 +51,25 @@ describe('fringe spans', () => {
         .map((span) => span.h),
     );
     expect(depths.size).toBeGreaterThan(1);
+  });
+});
+
+describe('edge textures', () => {
+  it('cuts each fringe out of the tile it is made of', () => {
+    const fake = fakeScene();
+    createPixelArtTextures(fake.scene);
+
+    // The fringe is now the real grass and the real path, sampled. If this
+    // stops happening the edges silently go back to being flat colour, which
+    // is exactly the regression nobody notices in a diff.
+    expect(fake.sampled).toContain('tile-grass');
+    expect(fake.sampled).toContain('tile-path');
+    expect(fake.drawImageCalls).toBeGreaterThanOrEqual(45);
+  });
+
+  it('still builds all 45 overlays', () => {
+    const fake = fakeScene();
+    createPixelArtTextures(fake.scene);
+    expect(fake.keys.filter((key) => key.startsWith('edge-')).length).toBe(45);
   });
 });
