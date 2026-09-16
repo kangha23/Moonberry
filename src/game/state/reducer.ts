@@ -30,7 +30,6 @@ import {
   checkPlacement,
   isComplete,
   nextBuildingId,
-  solidRects,
   type Building,
   type BuildingKind,
 } from '../systems/buildings';
@@ -95,7 +94,6 @@ import {
   nextPlaceableId,
   placeableAt,
   placeableById,
-  solidPlaceableRects,
   sprinklerTiles,
   type Chest,
   type Machine,
@@ -117,13 +115,18 @@ import {
   nodeAt,
   nodeDef,
   seedNodes,
-  solidNodeRects,
   startNodeDay,
   workNodes,
   type ResourceNode,
 } from '../systems/resources';
 import { buyFromStall } from '../systems/shop';
-import { advanceTime, createTimeState, isRainy, seasonForDay, weatherForDay } from '../systems/time';
+import {
+  advanceTime,
+  createTimeState,
+  isRainy,
+  seasonForDay,
+  weatherForDay,
+} from '../systems/time';
 import {
   AREAS,
   PLAYER_SPEED,
@@ -144,8 +147,6 @@ import {
   tileAt,
   worldToTile,
   type AreaId,
-  type Blockers,
-  type Direction,
   type Point,
 } from '../world/areas';
 import type { ApplyResult, GameEvent, Intent } from './intents';
@@ -162,6 +163,7 @@ import {
   type PlayerId,
   type PlayerState,
 } from './types';
+import { blockersFor, facingFor, unchanged, say, onlineMembers, withPlayer } from './rules/common';
 
 /**
  * Real milliseconds per in-game clock step.
@@ -265,40 +267,6 @@ function createPlayer(id: PlayerId, name: string, spawn: Point): PlayerState {
     fishing: null,
     online: true,
   };
-}
-
-/**
- * Everything standing in the way of a player on this map.
- *
- * Two sources now, which is exactly why `Blockers` is an object: the third one
- * spec 13 brings is a field here rather than a fourth argument at every call
- * site that has to be threaded through.
- */
-function blockersFor(state: FarmState, area: AreaId): Blockers {
-  return {
-    buildings: solidRects(buildingsOn(state.buildings, area)),
-    nodes: solidNodeRects(state.nodes, area),
-    placeables: solidPlaceableRects(state.placeables, area),
-  };
-}
-
-function facingFor(dx: number, dy: number, fallback: Direction): Direction {
-  if (dx === 0 && dy === 0) return fallback;
-  if (Math.abs(dx) > Math.abs(dy)) return dx > 0 ? 'right' : 'left';
-  return dy > 0 ? 'down' : 'up';
-}
-
-function unchanged(state: FarmState): ApplyResult {
-  return { state, events: [] };
-}
-
-function say(playerId: PlayerId, text: string): GameEvent {
-  return { kind: 'message', playerId, text };
-}
-
-/** Everyone with a place here who is actually connected right now. */
-function onlineMembers(state: FarmState): PlayerState[] {
-  return Object.values(state.players).filter((player) => player.online);
 }
 
 /**
@@ -618,15 +586,6 @@ function applyBuy(state: FarmState, playerId: PlayerId, item: string, count: num
       players: { ...state.players, [playerId]: { ...player, inventory: result.inventory } },
     },
     events,
-  };
-}
-
-/** Writes one player back, bumping the revision. The shape of half of these. */
-function withPlayer(state: FarmState, player: PlayerState): FarmState {
-  return {
-    ...state,
-    revision: state.revision + 1,
-    players: { ...state.players, [player.id]: player },
   };
 }
 
