@@ -42,6 +42,7 @@ import {
   type Point,
 } from '../world/areas';
 import { AreaView } from './farm/area';
+import { AtmosphereView } from './farm/atmosphere';
 import { AvatarView } from './farm/avatars';
 import { FishingHud } from './farm/fishing';
 import { GroundView } from './farm/ground';
@@ -50,12 +51,7 @@ import { HerdView } from './farm/herd';
 import { ScreenLayer } from './farm/screen';
 import { MorningSummary } from './farm/summary';
 import { VillagerView } from './farm/villagers';
-import {
-  AVATAR_DEPTH_BASE,
-  DEPTH,
-  PROSE_FONT,
-  type SceneContext,
-} from './farm/shared';
+import { AVATAR_DEPTH_BASE, DEPTH, PROSE_FONT, type SceneContext } from './farm/shared';
 
 type KeyMap = Record<string, Phaser.Input.Keyboard.Key>;
 
@@ -149,6 +145,8 @@ export default class FarmScene extends Phaser.Scene {
   private screen!: ScreenLayer;
   /** The prompt bar, the hotbar, the clock and the rest of the always-on HUD. */
   private hud!: Hud;
+  /** The weather, the washes, and what in the area moves with the clock. */
+  private atmosphere!: AtmosphereView;
   /** The morning panel, and the tally it reports. */
   private summary!: MorningSummary;
   /** The float, the line, the bar and the catch card. */
@@ -163,12 +161,6 @@ export default class FarmScene extends Phaser.Scene {
    * be struck. See `handleInteractions`.
    */
   private lastCastPhase: CastPhase | null = null;
-
-  private rainDrops: Phaser.GameObjects.Image[] = [];
-  private fireflies: Phaser.GameObjects.Image[] = [];
-  private clouds: Phaser.GameObjects.Image[] = [];
-  private petals: Phaser.GameObjects.Image[] = [];
-  private butterflies: Phaser.GameObjects.Image[] = [];
 
   private audio!: SoundManager;
 
@@ -205,13 +197,9 @@ export default class FarmScene extends Phaser.Scene {
    */
   private actSource: 'pointer' | 'key' = 'key';
 
-  private smokeTimer = 0;
   private boundsTimer = 0;
   private dustTimer = 0;
   private footstepTimer = 0;
-  private waterTimer = 0;
-  private waterFrame = 0;
-  private lastWeather = '';
   private unsubscribeEvents: (() => void) | null = null;
   private stopAutosave: (() => void) | null = null;
   private connection: FarmConnection | null = null;
@@ -255,23 +243,29 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   create() {
+    // The views are made first and draw nothing yet. What they draw, and in
+    // what order, is still decided by the calls below: two things at the same
+    // depth are drawn in the order they were added, and the screen layer draws
+    // its children in the order they were put in it.
     this.screen = new ScreenLayer(this);
     const context = this.createContext();
     this.groundView = new GroundView(context);
-    this.fishingHud = new FishingHud(context, this.screen);
-    this.summary = new MorningSummary(this, this.screen);
-    this.hud = new Hud(context, this.screen);
     this.areaView = new AreaView(context, this.groundView);
     this.avatarView = new AvatarView(context);
     this.villagerView = new VillagerView(context);
     this.herdView = new HerdView(context);
+    this.hud = new Hud(context, this.screen);
+    this.summary = new MorningSummary(this, this.screen);
+    this.fishingHud = new FishingHud(context, this.screen);
+    this.atmosphere = new AtmosphereView(context, this.screen, this.hud, this.areaView);
+
     createPixelArtTextures(this);
     this.avatarView.createWalkAnimations();
     this.villagerView.createVillagerAnimations();
     this.herdView.createAnimalAnimations();
     this.screen.create();
-    this.createWeatherSprites();
-    this.createAmbient();
+    this.atmosphere.createWeatherSprites();
+    this.atmosphere.createAmbient();
     this.hud.createUi();
     this.summary.createSummaryPanel();
     this.fishingHud.createFishingUi();
@@ -418,7 +412,7 @@ export default class FarmScene extends Phaser.Scene {
     this.updateCursor();
     this.updateBuildGhost();
     this.fishingHud.updateFishing(time);
-    this.updateAtmosphere(delta);
+    this.atmosphere.updateAtmosphere(delta);
     this.updateMusic();
     this.hud.refreshUi();
   }
@@ -511,7 +505,7 @@ export default class FarmScene extends Phaser.Scene {
         // `dayStarted`, and the morning panel is where it belongs.
         this.summary.witheredOvernight = event;
       } else if (event.kind === 'dayStarted') {
-        this.updateWeatherPresentation();
+        this.atmosphere.updateWeatherPresentation();
         // Every plot, not only the ones that changed: the wilt tint depends on
         // the date, so on the twenty-sixth of a season a field that did nothing
         // overnight still has to be repainted grey.
@@ -1083,8 +1077,8 @@ export default class FarmScene extends Phaser.Scene {
 
     this.groundView.refreshAllPlots();
     // Force the weather presentation to reapply against the new camera.
-    this.lastWeather = '';
-    this.updateWeatherPresentation();
+    this.atmosphere.lastWeather = '';
+    this.atmosphere.updateWeatherPresentation();
   }
 
   /**
@@ -1140,7 +1134,7 @@ export default class FarmScene extends Phaser.Scene {
     );
 
     this.layoutHud();
-    this.spreadAtmosphere();
+    this.atmosphere.spreadAtmosphere();
     this.areaView.fitCameraBounds();
   }
 
@@ -1154,230 +1148,6 @@ export default class FarmScene extends Phaser.Scene {
     this.buildHint.setPosition(width / 2, Math.min(96, height * 0.14));
     this.fishingHud.layout(width, height);
     this.summary.layout(width, height);
-  }
-
-  /**
-   * The weather, which is drawn on the glass rather than in the world.
-   *
-   * Rain, fireflies, petals and cloud shadows are pinned to the screen, so
-   * they belong to the screen layer and have to be re-scattered whenever it
-   * changes size. Their drifts are tweens, and a tween remembers the numbers
-   * it was built with, so this kills and rebuilds them rather than trying to
-   * move a target mid-flight.
-   */
-  private spreadAtmosphere() {
-    const { width, height } = this.hud.layout;
-
-    this.rainDrops.forEach((drop, i) => drop.setPosition((i * 73) % width, (i * 43) % height));
-
-    this.fireflies.forEach((firefly, i) => {
-      this.tweens.killTweensOf(firefly);
-      firefly.setPosition((i * 131) % width, height * 0.12 + ((i * 47) % Math.max(60, height * 0.7)));
-      this.tweens.add({
-        targets: firefly,
-        x: firefly.x + 16,
-        y: firefly.y - 12,
-        yoyo: true,
-        repeat: -1,
-        duration: 1200 + i * 35,
-        ease: 'Sine.inOut',
-      });
-    });
-
-    this.clouds.forEach((cloud, i) => {
-      cloud.setPosition((i * 317) % width, height * 0.06 + ((i * 97) % Math.max(40, height * 0.32)));
-    });
-
-    this.petals.forEach((petal, i) => petal.setPosition((i * 173) % width, (i * 89) % height));
-
-    this.butterflies.forEach((butterfly, i) => {
-      this.tweens.killTweensOf(butterfly);
-      butterfly.setPosition(
-        Math.min(width - 40, 200 + i * 220),
-        Math.min(height - 120, 200 + ((i * 130) % 240)),
-      );
-      this.tweens.add({
-        targets: butterfly,
-        x: butterfly.x + 42,
-        y: butterfly.y - 26,
-        yoyo: true,
-        repeat: -1,
-        duration: 2600 + i * 700,
-        ease: 'Sine.inOut',
-      });
-      this.tweens.add({
-        targets: butterfly,
-        scaleX: 0.6,
-        yoyo: true,
-        repeat: -1,
-        duration: 180,
-        ease: 'Sine.inOut',
-      });
-    });
-  }
-
-  private createWeatherSprites() {
-    for (let i = 0; i < 58; i += 1) {
-      const drop = this.add.image(0, 0, 'rain-drop').setDepth(DEPTH.weather).setAlpha(0);
-      this.screen.add(drop);
-      this.rainDrops.push(drop);
-    }
-
-    for (let i = 0; i < 20; i += 1) {
-      const firefly = this.add.image(0, 0, 'firefly').setDepth(DEPTH.weather + 1).setAlpha(0);
-      this.screen.add(firefly);
-      this.fireflies.push(firefly);
-    }
-  }
-
-  private createAmbient() {
-    for (let i = 0; i < 4; i += 1) {
-      const cloud = this.add
-        .image(0, 0, 'cloud-shadow')
-        .setDepth(DEPTH.weather - 2)
-        .setAlpha(0.8)
-        .setScale(1 + (i % 3) * 0.4);
-      this.screen.add(cloud);
-      this.clouds.push(cloud);
-    }
-    for (let i = 0; i < 14; i += 1) {
-      const petal = this.add
-        .image(0, 0, i % 3 === 0 ? 'petal' : 'firefly')
-        .setDepth(DEPTH.weather + 2)
-        .setAlpha(i % 3 === 0 ? 0.85 : 0);
-      petal.setData('seed', i * 1.7);
-      petal.setData('isPetal', i % 3 === 0);
-      this.screen.add(petal);
-      this.petals.push(petal);
-    }
-    for (let i = 0; i < 3; i += 1) {
-      const butterfly = this.add.image(0, 0, 'butterfly').setDepth(DEPTH.weather + 3).setScale(1.2);
-      this.screen.add(butterfly);
-      this.butterflies.push(butterfly);
-    }
-  }
-
-  private updateAtmosphere(delta: number) {
-    const farm = this.farm;
-    const time = this.time.now / 1000;
-    // Under a roof there is no sky: no dusk, no night, no rain, nothing flying
-    // past. Everything that belongs to the weather is switched off here rather
-    // than when the area is built, because the clock keeps turning it back on.
-    const indoor = this.builtArea !== null && areaMap(this.builtArea).indoor;
-
-    this.waterTimer += delta;
-    if (this.waterTimer > 380 && this.textures.exists('tile-water-2') && this.textures.exists('tile-water-3')) {
-      this.waterTimer = 0;
-      this.waterFrame = (this.waterFrame + 1) % 3;
-      const key = this.waterFrame === 0 ? 'tile-water' : this.waterFrame === 1 ? 'tile-water-2' : 'tile-water-3';
-      this.areaView.waterSprites.forEach((sprite) => sprite.setTexture(key));
-    }
-    this.areaView.waterSprites.forEach((sprite, i) => {
-      sprite.setAlpha(0.96 + Math.sin(time * 2 + i * 0.7) * 0.04);
-    });
-
-    this.clouds.forEach((cloud, i) => {
-      cloud.setVisible(!indoor);
-      cloud.x += delta * 0.008 * (1 + (i % 3) * 0.4);
-      if (cloud.x > this.hud.layout.width + 100) cloud.x = -100;
-    });
-
-    // Hours past this morning's midnight, so 1am reads as 25 and the night
-    // keeps getting darker instead of brightening back into dawn.
-    const hour = farm.time.totalMinutes / 60;
-    const fireflyNight = farm.weather === 'Firefly Shower' || hour >= 19 || hour < 6;
-    this.petals.forEach((petal) => {
-      petal.setVisible(!indoor);
-      const seed = Number(petal.getData('seed') ?? 0);
-      const isPetal = Boolean(petal.getData('isPetal'));
-      petal.y += delta * 0.012;
-      petal.x += Math.sin(time * 1.2 + seed) * delta * 0.01;
-      petal.setAngle(Math.sin(time + seed) * 18);
-      if (petal.y > this.hud.layout.height + 12) {
-        petal.y = -12;
-        petal.x = (seed * 137) % this.hud.layout.width;
-      }
-      if (!isPetal) petal.setAlpha(fireflyNight ? 0.7 + Math.sin(time * 3 + seed) * 0.25 : 0);
-    });
-
-    if (this.areaView.chimney) {
-      this.smokeTimer += delta;
-      if (this.smokeTimer > 900) {
-        this.smokeTimer = 0;
-        const smoke = this.add
-          .image(this.areaView.chimney.x + Phaser.Math.Between(-2, 2), this.areaView.chimney.y, 'smoke')
-          .setDepth(7)
-          .setScale(0.5)
-          .setAlpha(0.6);
-        this.areaLayer?.add(smoke);
-        this.tweens.add({
-          targets: smoke,
-          y: smoke.y - 34,
-          x: smoke.x + 10,
-          scale: 1.2,
-          alpha: 0,
-          duration: 2400,
-          onComplete: () => smoke.destroy(),
-        });
-      }
-    }
-
-    const eveningAlpha = Phaser.Math.Clamp((hour - 18) / 4, 0, 0.42);
-    const dawnAlpha = Phaser.Math.Clamp((7 - hour) / 2, 0, 0.18);
-    this.hud.dayNightOverlay.setAlpha(indoor ? 0 : Math.max(eveningAlpha, dawnAlpha));
-    const sunset = hour >= 16.5 && hour <= 19 ? Math.sin(((hour - 16.5) / 2.5) * Math.PI) * 0.16 : 0;
-    this.hud.sunsetOverlay.setAlpha(indoor ? 0 : sunset);
-
-    if (this.areaView.houseGlow) {
-      const nightGlow = hour >= 18 || hour < 6.5 ? 0.75 : hour >= 17 ? 0.35 : 0;
-      this.areaView.houseGlow.setAlpha(nightGlow + Math.sin(time * 2.2) * 0.05);
-    }
-
-    if (this.areaView.hearthGlow) {
-      // Brighter once it is dark outside, when it is the room's only light.
-      // Two sines at unrelated rates, so the flicker never settles into a beat.
-      const base = hour >= 18 || hour < 6.5 ? 0.72 : 0.5;
-      this.areaView.hearthGlow.setAlpha(base + Math.sin(time * 7.3) * 0.06 + Math.sin(time * 12.1) * 0.04);
-    }
-    // A frame every seventh of a second or so, off the clock rather than a
-    // timer, so a rebuilt room picks the flicker up mid-stride.
-    this.areaView.hearthFire?.setTexture(`hearth-fire-${Math.floor(time * 7) % 2}`);
-
-    const showButterflies = !indoor && farm.weather !== 'Drizzle' && hour >= 8 && hour < 18;
-    this.butterflies.forEach((b) => b.setVisible(showButterflies));
-
-    const rainy = !indoor && farm.weather === 'Drizzle';
-    this.rainDrops.forEach((drop, index) => {
-      if (!rainy) return;
-      drop.y += delta * (0.28 + (index % 5) * 0.018);
-      drop.x += delta * 0.05;
-      if (drop.y > this.hud.layout.height + 10) {
-        drop.y = -10;
-        drop.x = (drop.x + 173) % this.hud.layout.width;
-      }
-    });
-  }
-
-  private updateWeatherPresentation() {
-    const { weather } = this.farm;
-    if (weather === this.lastWeather) return;
-    this.lastWeather = weather;
-    // `buildArea` clears `lastWeather`, so walking through a door lands here
-    // and the weather is put away (or brought back) on the step itself.
-    const indoor = this.builtArea !== null && areaMap(this.builtArea).indoor;
-    const rainy = !indoor && weather === 'Drizzle';
-    const fireflyWeather = !indoor && weather === 'Firefly Shower';
-    this.rainDrops.forEach((drop) => drop.setAlpha(rainy ? 0.72 : 0));
-    this.fireflies.forEach((fly) => fly.setAlpha(fireflyWeather ? 0.85 : 0));
-    // Rainy was the source literal `203142`, whose mechanical nearest is `shadow.2` (d=0.0507)
-    // - but firefly weather (the source literal `1c2636`) also lands on `shadow.2` (d=0.0308),
-    // and these three backdrops must stay distinct or two different weathers
-    // look identical. `shadow.3` (#332f66, H244) is the second-nearest for
-    // rainy (d=0.0738) and a closer hue match to its blue (H210) than
-    // `shadow.2`'s blue-purple (H286) is, so rainy moves there instead.
-    this.cameras.main.setBackgroundColor(
-      rainy ? PALETTE['shadow.3'] : fireflyWeather ? PALETTE['shadow.2'] : PALETTE['shadow.1'],
-    );
   }
 
   /**
