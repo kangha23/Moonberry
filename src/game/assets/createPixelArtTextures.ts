@@ -1513,13 +1513,69 @@ const FRINGE_PALETTES: Record<'grass' | 'path', { body: string; dark: string; li
   path: { body: PALETTE['light.5'], dark: PALETTE['soil.6'], light: PALETTE['light.5'] },
 };
 
+/** One rectangle of a fringe, and what it is for. */
+export interface FringeSpan {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  role: 'body' | 'dark' | 'light';
+}
+
 /**
- * One fringe: the material of a neighbouring tile, drawn over this one.
+ * The shape of one fringe, without the colours.
  *
  * The depth wobbles pixel by pixel and the leading edge is dithered, which is
  * the entire trick — a fringe of even depth is a second straight line drawn
- * beside the first, and the map still looks like a spreadsheet.
+ * beside the first, and the map still looks like a spreadsheet. None of that
+ * depends on what the fringe is made of, so it lives here where it can be
+ * tested without a canvas.
  */
+export function fringeSpans(mask: number, seed: number): FringeSpan[] {
+  const spans: FringeSpan[] = [];
+  const body = (x: number, y: number, w: number, h: number) => spans.push({ x, y, w, h, role: 'body' });
+  const dot = (role: 'body' | 'dark' | 'light', x: number, y: number) => spans.push({ x, y, w: 1, h: 1, role });
+  const depthAt = (i: number, side: number) => 3 + Math.floor(hash(i, side, seed) * 5);
+
+  if (mask & 1) {
+    for (let x = 0; x < TILE; x += 1) {
+      const d = depthAt(x, 1);
+      body(x, 0, 1, d);
+      dot('dark', x, d - 1);
+      if (hash(x, 31, seed) > 0.66) dot('body', x, d);
+      if (hash(x, 57, seed) > 0.82) dot('light', x, Math.max(0, d - 3));
+    }
+  }
+  if (mask & 2) {
+    for (let y = 0; y < TILE; y += 1) {
+      const d = depthAt(y, 2);
+      body(TILE - d, y, d, 1);
+      dot('dark', TILE - d, y);
+      if (hash(y, 41, seed) > 0.66) dot('body', TILE - d - 1, y);
+      if (hash(y, 67, seed) > 0.82) dot('light', TILE - Math.max(1, d - 2), y);
+    }
+  }
+  if (mask & 4) {
+    for (let x = 0; x < TILE; x += 1) {
+      const d = depthAt(x, 4);
+      body(x, TILE - d, 1, d);
+      dot('dark', x, TILE - d);
+      if (hash(x, 53, seed) > 0.66) dot('body', x, TILE - d - 1);
+      if (hash(x, 79, seed) > 0.82) dot('light', x, TILE - Math.max(1, d - 2));
+    }
+  }
+  if (mask & 8) {
+    for (let y = 0; y < TILE; y += 1) {
+      const d = depthAt(y, 8);
+      body(0, y, d, 1);
+      dot('dark', d - 1, y);
+      if (hash(y, 61, seed) > 0.66) dot('body', d, y);
+      if (hash(y, 83, seed) > 0.82) dot('light', Math.max(0, d - 3), y);
+    }
+  }
+  return spans;
+}
+
 function drawFringe(
   ctx: CanvasRenderingContext2D,
   mask: number,
@@ -1527,45 +1583,8 @@ function drawFringe(
   seed: number,
 ) {
   ctx.clearRect(0, 0, TILE, TILE);
-
-  const depthAt = (i: number, side: number) => 3 + Math.floor(hash(i, side, seed) * 5);
-
-  const run = (side: number, place: (i: number, d: number) => void) => {
-    for (let i = 0; i < TILE; i += 1) place(i, depthAt(i, side));
-  };
-
-  // North: the neighbour's ground hangs down into the top of this tile.
-  if (mask & 1) {
-    run(1, (x, d) => {
-      rect(ctx, palette.body, x, 0, 1, d);
-      px(ctx, palette.dark, x, d - 1);
-      if (hash(x, 31, seed) > 0.66) px(ctx, palette.body, x, d);
-      if (hash(x, 57, seed) > 0.82) px(ctx, palette.light, x, Math.max(0, d - 3));
-    });
-  }
-  if (mask & 2) {
-    run(2, (y, d) => {
-      rect(ctx, palette.body, TILE - d, y, d, 1);
-      px(ctx, palette.dark, TILE - d, y);
-      if (hash(y, 41, seed) > 0.66) px(ctx, palette.body, TILE - d - 1, y);
-      if (hash(y, 67, seed) > 0.82) px(ctx, palette.light, TILE - Math.max(1, d - 2), y);
-    });
-  }
-  if (mask & 4) {
-    run(4, (x, d) => {
-      rect(ctx, palette.body, x, TILE - d, 1, d);
-      px(ctx, palette.dark, x, TILE - d);
-      if (hash(x, 53, seed) > 0.66) px(ctx, palette.body, x, TILE - d - 1);
-      if (hash(x, 79, seed) > 0.82) px(ctx, palette.light, x, TILE - Math.max(1, d - 2));
-    });
-  }
-  if (mask & 8) {
-    run(8, (y, d) => {
-      rect(ctx, palette.body, 0, y, d, 1);
-      px(ctx, palette.dark, d - 1, y);
-      if (hash(y, 61, seed) > 0.66) px(ctx, palette.body, d, y);
-      if (hash(y, 83, seed) > 0.82) px(ctx, palette.light, Math.max(0, d - 3), y);
-    });
+  for (const span of fringeSpans(mask, seed)) {
+    rect(ctx, palette[span.role], span.x, span.y, span.w, span.h);
   }
 }
 
