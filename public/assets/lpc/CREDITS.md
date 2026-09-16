@@ -723,11 +723,15 @@ they fit without rescaling.
 - **Farm Tool Icon 24x24** by Sandesu (vayasandesu), CC-BY-SA 4.0
   https://vayasandesu.itch.io/farm-tool-icon-24x24
 
-The free `Spritesheet.png` from that page, cached as
-`art/sources/sandesu-farm-tools/farm-tools.png` (not committed; download it by
-hand from the page — itch.io serves it through a signed link). Each 24px icon is
-centred in a 32px box, not scaled, so its pixels stay the size of the rest of
-the satchel. What this game takes from it:
+The free `Spritesheet.png` from that page is committed, unmodified, at
+`art/vendor/sandesu-farm-tools/farm-tools.png`, which CC-BY-SA 4.0 allows with
+this attribution. It is the one pack kept in the repo rather than downloaded:
+itch.io serves it through an expiring signed link a script cannot follow, so
+`npm run art:sync` copies it into the cache from there (the table's `vendored`
+field) and checks it against the same sha256 pin. Each icon is
+trimmed to its drawing, scaled 1.4x through Scale3x (`"smooth": 1.4`) so it
+fills a 32px slot like the rest of the satchel, and centred in a 32px box. Its
+pixels are therefore not 1:1 with the source. What this game takes from it:
 
 - `item-hoe`, `item-watering-can`, `item-axe`, `item-pickaxe` and their
   `copper-`, `steel-` and `gold-` rungs — the sheet's iron, copper, silver and

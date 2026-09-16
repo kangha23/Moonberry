@@ -79,6 +79,14 @@ function archiveFileName(url) {
 async function packFile(packName, fileName, entry, subDir = '') {
   const cacheName = entry.extract ? archiveFileName(entry.from) : fileName;
   const archive = path.join(CACHE_DIR, packName, subDir, cacheName);
+  if (!fs.existsSync(archive) && entry.vendored) {
+    // A copy committed to this repo, for a pack whose upstream cannot be
+    // fetched by a script (itch.io serves files through expiring signed
+    // links). Still checked against the pin below like any download.
+    process.stdout.write(`copying ${packName}/${cacheName} from ${entry.vendored}\n`);
+    fs.mkdirSync(path.dirname(archive), { recursive: true });
+    fs.copyFileSync(entry.vendored, archive);
+  }
   if (!fs.existsSync(archive)) {
     process.stdout.write(`downloading ${packName}/${subDir ? `${subDir}/` : ''}${cacheName}\n`);
     const response = await fetch(entry.from);

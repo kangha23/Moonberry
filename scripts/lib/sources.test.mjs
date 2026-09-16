@@ -157,6 +157,24 @@ test('passes a rect, a scale, a flip and a recolour straight through', () => {
   );
 });
 
+test('a vendored copy must be a path inside the repo', () => {
+  const json = (vendored) => ({
+    packs: {
+      p: {
+        title: 'T',
+        page: 'https://example.com',
+        licence: 'CC0',
+        authors: ['a'],
+        files: { 's.png': { from: 'https://example.com/s.png', vendored, sha256: 'a'.repeat(64) } },
+      },
+    },
+    cuts: [],
+  });
+  assert.doesNotThrow(() => validateSources(json('art/vendor/p/s.png')));
+  assert.throws(() => validateSources(json('../outside/s.png')), /vendored/);
+  assert.throws(() => validateSources(json('C:/Users/s.png')), /vendored/);
+});
+
 test('passes a smooth scale through, and refuses one out of range', () => {
   assert.deepEqual(cutFlags({ target: 'item-hoe', grid: 24, cell: [1, 7], smooth: 1.4 }), {
     grid: '24',

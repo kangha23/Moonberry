@@ -875,6 +875,7 @@
       "files": {
         "farm-tools.png": {
           "from": "https://vayasandesu.itch.io/farm-tool-icon-24x24",
+          "vendored": "art/vendor/sandesu-farm-tools/farm-tools.png",
           "sha256": "695d663f672ba38ffc9fa4111c8ddd992bdfe2b94aeff085dc06db0b5a5d070d"
         }
       }

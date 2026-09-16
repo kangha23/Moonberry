@@ -124,6 +124,9 @@ export function validateSources(json) {
     }
     for (const [file, entry] of Object.entries(pack.files ?? {})) {
       if (!entry?.from) throw new Error(`Pack "${name}" file "${file}" has no source url.`);
+      // `vendored` is a repo-relative copy used when the cache is empty; a
+      // path out of the repo is not somewhere this table should point.
+      if (entry.vendored !== undefined) wantSafePath(`Pack "${name}" file "${file}"`, 'vendored', entry.vendored);
       if (!SHA256.test(entry.sha256 ?? '')) {
         throw new Error(
           `Pack "${name}" file "${file}" has no sha256. An unpinned download is not ` +
