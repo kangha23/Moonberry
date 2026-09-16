@@ -53,12 +53,12 @@ import { FishingHud } from './farm/fishing';
 import { GroundView } from './farm/ground';
 import { HerdView } from './farm/herd';
 import { ScreenLayer } from './farm/screen';
+import { MorningSummary } from './farm/summary';
 import { VillagerView } from './farm/villagers';
 import {
   AVATAR_DEPTH_BASE,
   DEPTH,
   PROSE_FONT,
-  WILT_TINT,
   type SceneContext,
 } from './farm/shared';
 
@@ -125,34 +125,6 @@ const SUMMARY_MIN_MS = 700;
  */
 const ACT_REPEAT_MS = 240;
 
-/** One line of the morning summary: a picture, and what it is a picture of. */
-interface SummaryRow {
-  texture: string;
-  text: string;
-  tint?: number;
-}
-
-/**
- * The morning panel.
- *
- * Six rows, and six is the honest limit rather than an arbitrary one: a day
- * that did seven notable things has a seventh worth cutting, and a panel that
- * grows until it runs off the bottom of a short window is worse than one that
- * stops.
- */
-const SUMMARY = {
-  width: 460,
-  /** The tallest it ever gets, which is what the card is first built at. */
-  height: 300,
-  /** Above the first row: the frame, and the greeting set at 26px. */
-  head: 86,
-  /** Below the last: the frame again, and the line telling you to press a key. */
-  foot: 52,
-  rowHeight: 34,
-  icon: 32,
-  maxRows: 6,
-} as const;
-
 /**
  * Renders the world and turns input into intents.
  *
@@ -213,6 +185,8 @@ export default class FarmScene extends Phaser.Scene {
   private promptText!: Phaser.GameObjects.Text;
   private heldText!: Phaser.GameObjects.Text;
   private hotbarCells: HotbarCell[] = [];
+  /** The morning panel, and the tally it reports. */
+  private summary!: MorningSummary;
   /** The float, the line, the bar and the catch card. */
   private fishingHud!: FishingHud;
 
@@ -262,48 +236,11 @@ export default class FarmScene extends Phaser.Scene {
   private waitingBackdrop!: Phaser.GameObjects.Rectangle;
   private waitingText!: Phaser.GameObjects.Text;
 
-  private summaryPanel!: Phaser.GameObjects.Container;
-  private summaryCard!: Phaser.GameObjects.NineSlice;
-  private summaryTitle!: Phaser.GameObjects.Text;
-  private summaryHint!: Phaser.GameObjects.Text;
-  private summaryRows: Array<{ icon: Phaser.GameObjects.Image; text: Phaser.GameObjects.Text }> = [];
-
   private rainDrops: Phaser.GameObjects.Image[] = [];
   private fireflies: Phaser.GameObjects.Image[] = [];
   private clouds: Phaser.GameObjects.Image[] = [];
   private petals: Phaser.GameObjects.Image[] = [];
   private butterflies: Phaser.GameObjects.Image[] = [];
-
-  /** What the farm did today, tallied from events for the morning summary. */
-  private today = { coins: 0, harvested: 0, collected: 0, cleared: 0, fished: 0 };
-  /**
-   * What came up while nobody was looking, held for the morning panel.
-   *
-   * Stashed rather than shown as it arrives, like the withered crops and the
-   * hungry animals: it lands in the same frame as `dayStarted`, and a farm
-   * quietly going back to scrub is news that belongs in the summary rather
-   * than flashing past on the prompt bar.
-   */
-  private grewOvernight: Extract<GameEvent, { kind: 'nodesGrew' }> | null = null;
-  /**
-   * What finished overnight, held until the morning panel can report it.
-   *
-   * The whole point of this spec is that each day ends more capable than it
-   * began, and the morning summary is where a player finds out that it did.
-   */
-  private finishedOvernight: SummaryRow[] = [];
-  /** Set by a `collapsed` event so the next morning can explain the missing gold. */
-  private collapsedFor = 0;
-  /**
-   * How many animals went to bed hungry, for the morning panel.
-   *
-   * Stashed rather than shown as it arrives, like the withered crops: the
-   * event lands in the same frame as `dayStarted`, and this is news that
-   * belongs in the summary rather than flashing past on the prompt bar.
-   */
-  private hungryOvernight = 0;
-  private summaryShownAt = 0;
-  private dismissRequested = false;
 
   private audio!: SoundManager;
 
@@ -347,8 +284,6 @@ export default class FarmScene extends Phaser.Scene {
   private waterTimer = 0;
   private waterFrame = 0;
   private lastWeather = '';
-  /** Last night's losses, held until the morning panel can report them. */
-  private witheredOvernight: Extract<GameEvent, { kind: 'cropsWithered' }> | null = null;
   private unsubscribeEvents: (() => void) | null = null;
   private stopAutosave: (() => void) | null = null;
   private connection: FarmConnection | null = null;
@@ -396,6 +331,7 @@ export default class FarmScene extends Phaser.Scene {
     const context = this.createContext();
     this.groundView = new GroundView(context);
     this.fishingHud = new FishingHud(context, this.screen);
+    this.summary = new MorningSummary(this, this.screen);
     this.areaView = new AreaView(context, this.groundView);
     this.avatarView = new AvatarView(context);
     this.villagerView = new VillagerView(context);
@@ -493,14 +429,14 @@ export default class FarmScene extends Phaser.Scene {
     // so the key that dismisses it does not also swing a tool.
     // Told to the store rather than kept here alone, because Escape's ladder
     // is decided in one place and it has to be able to see this panel.
-    setSummaryOpen(this.summaryPanel.visible);
+    setSummaryOpen(this.summary.summaryPanel.visible);
 
-    if (this.summaryPanel.visible) {
-      if (this.dismissRequested && time - this.summaryShownAt > SUMMARY_MIN_MS) {
-        this.summaryPanel.setVisible(false);
+    if (this.summary.summaryPanel.visible) {
+      if (this.summary.dismissRequested && time - this.summary.summaryShownAt > SUMMARY_MIN_MS) {
+        this.summary.summaryPanel.setVisible(false);
         setSummaryOpen(false);
       }
-      this.dismissRequested = false;
+      this.summary.dismissRequested = false;
       this.releaseAct();
       sendMove(0, 0, delta);
     } else if (farmStore.getState().inventoryOpen || this.localPlayer?.panel) {
@@ -642,14 +578,14 @@ export default class FarmScene extends Phaser.Scene {
       } else if (event.kind === 'cropsWithered') {
         // Stashed rather than shown now: it arrives in the same frame as
         // `dayStarted`, and the morning panel is where it belongs.
-        this.witheredOvernight = event;
+        this.summary.witheredOvernight = event;
       } else if (event.kind === 'dayStarted') {
         this.updateWeatherPresentation();
         // Every plot, not only the ones that changed: the wilt tint depends on
         // the date, so on the twenty-sixth of a season a field that did nothing
         // overnight still has to be repainted grey.
         this.groundView.refreshAllPlots();
-        this.showDaySummary(event.day, event.grown);
+        this.summary.showDaySummary(event.day, event.grown);
       } else if (event.kind === 'fishCaught') {
         // Only your own. Somebody else's sturgeon is their moment, and a card
         // over your screen naming it is a notification rather than a reward.
@@ -658,25 +594,25 @@ export default class FarmScene extends Phaser.Scene {
           // Its own tally, not the coop's: `collected` is drawn with an egg
           // beside it and reads "món từ chuồng", so a trout counted into it
           // would have the morning panel quietly lying about the henhouse.
-          this.today.fished += 1;
+          this.summary.today.fished += 1;
         }
       } else if (event.kind === 'farmReplaced') {
         this.buildArea(this.localPlayer?.area ?? START_AREA);
       } else if (event.kind === 'harvested') {
-        this.today.harvested += 1;
+        this.summary.today.harvested += 1;
       } else if (event.kind === 'sold' || event.kind === 'questRewarded') {
-        this.today.coins += event.coins;
+        this.summary.today.coins += event.coins;
       } else if (event.kind === 'upgradeReady' && event.playerId === localPlayerId) {
         // Stashed rather than shown now: it arrives in the same frame as
         // `dayStarted`, and the morning panel is where it belongs. The picture
         // is the tool itself — the same texture the hotbar will draw for it an
         // hour from now, which is how you know it is the same tool.
-        this.finishedOvernight.push({
+        this.summary.finishedOvernight.push({
           texture: itemDef(event.item).texture,
           text: `${itemDef(event.item).label} đã xong ở lò rèn`,
         });
       } else if (event.kind === 'buildingFinished') {
-        this.finishedOvernight.push({
+        this.summary.finishedOvernight.push({
           texture: `building-${event.building}`,
           text: `${buildingDef(event.building).label} đã dựng xong`,
         });
@@ -687,117 +623,25 @@ export default class FarmScene extends Phaser.Scene {
         // sprite is still there this frame and is the only thing that knows
         // where "there" was.
         this.groundView.burstNode(event.id, event.node);
-        if (event.playerId === localPlayerId) this.today.cleared += 1;
+        if (event.playerId === localPlayerId) this.summary.today.cleared += 1;
       } else if (event.kind === 'nodesGrew') {
-        this.grewOvernight = event;
+        this.summary.grewOvernight = event;
       } else if (event.kind === 'animalPetted') {
         // Shown, not narrated. Only for the player whose hand it was — a heart
         // over somebody else's goat across the field is not your moment.
         if (event.playerId === localPlayerId) this.herdView.popAnimalHeart(event.animalId);
       } else if (event.kind === 'produceCollected') {
-        if (event.playerId === localPlayerId) this.today.collected += 1;
+        if (event.playerId === localPlayerId) this.summary.today.collected += 1;
       } else if (event.kind === 'animalSold') {
-        this.today.coins += event.coins;
+        this.summary.today.coins += event.coins;
       } else if (event.kind === 'animalsHungry') {
-        this.hungryOvernight = event.count;
+        this.summary.hungryOvernight = event.count;
       } else if (event.kind === 'collapsed') {
-        this.collapsedFor = event.coinsLost;
+        this.summary.collapsedFor = event.coinsLost;
       } else if (event.kind === 'exhausted' && event.playerId === localPlayerId) {
         this.cameras.main.shake(200, 0.004);
       }
     }
-  }
-
-  /**
-   * The morning panel: what yesterday came to, and why the wallet is lighter
-   * if it is. A silent loss of money reads as a bug.
-   *
-   * A row is a picture and a short phrase rather than a paragraph. The house
-   * style says feeling is shown rather than told and that the prompt bar is
-   * the fallback channel rather than the main one — and "0 luống đã lớn lên
-   * qua đêm" was a sentence doing a sprout's job.
-   */
-  private showDaySummary(day: number, grown: number) {
-    const rows: SummaryRow[] = [
-      { texture: 'icon-coin', text: `${this.today.coins}g kiếm được hôm qua` },
-      { texture: 'item-basket', text: `${this.today.harvested} nông sản đã thu` },
-      { texture: 'crop-sprout', text: `${grown} luống lớn lên qua đêm` },
-    ];
-
-    // The herd, but only when it did something: a farm with no animals should
-    // not be told every morning that nought eggs were collected.
-    if (this.today.collected > 0) {
-      rows.push({ texture: 'item-egg', text: `${this.today.collected} món từ chuồng` });
-    }
-    // Yesterday evening on the bank, on the same terms as the coop: only when
-    // there was one.
-    if (this.today.fished > 0) {
-      rows.push({ texture: 'item-carp', text: `${this.today.fished} mẻ câu được` });
-    }
-    if (this.hungryOvernight > 0) {
-      rows.push({
-        texture: 'animal-hungry',
-        text: `${this.hungryOvernight} con vật đói qua đêm — kho cỏ cạn rồi`,
-        tint: tint('building.3'),
-      });
-    }
-
-    // What the land did without you. Only when it did something, so a farm
-    // that is entirely cleared is not told every morning that nothing grew.
-    const grew = this.grewOvernight;
-    if (grew && grew.spawned > 0) {
-      rows.push({ texture: 'node-weed', text: `${grew.spawned} thứ mọc lên qua đêm` });
-    }
-    if (grew && grew.cleared > 0) {
-      rows.push({
-        texture: 'node-grass',
-        text: `Mùa mới dọn sạch ${grew.cleared} đám ngoài đồng`,
-        tint: WILT_TINT,
-      });
-    }
-    if (this.today.cleared > 0) {
-      rows.push({ texture: 'item-wood', text: `${this.today.cleared} thứ đã dọn hôm qua` });
-    }
-
-    if (this.collapsedFor > 0) {
-      rows.push({
-        texture: 'icon-energy-bolt',
-        text: `Gục lúc 2 giờ sáng — mất ${this.collapsedFor}g`,
-        tint: tint('building.3'),
-      });
-    }
-
-    // The ratchet, reported. A farm that is better than it was yesterday
-    // should say so on the morning it becomes true.
-    rows.push(...this.finishedOvernight);
-
-    // Named, not counted, and pictured: "6 crops withered" is the line that
-    // reads as a bug, where three greyed-out crop icons read as a season
-    // ending. The tint is the same grey the doomed plants wore in the field.
-    const withered = this.witheredOvernight;
-    if (withered) {
-      const names = withered.crops.map((crop) => itemDef(crop).label.toLowerCase());
-      const list =
-        names.length === 1
-          ? names[0]
-          : `${names.slice(0, -1).join(', ')} và ${names[names.length - 1]}`;
-      rows.push({
-        texture: itemDef(withered.crops[0]).texture,
-        text: `Mùa ${seasonLabel(withered.season)} lấy đi ${withered.count} luống: ${list}`,
-        tint: WILT_TINT,
-      });
-    }
-
-    this.drawSummary(`Chào buổi sáng — Ngày ${day}`, rows.slice(0, SUMMARY.maxRows));
-    this.summaryPanel.setVisible(true);
-    this.summaryShownAt = this.time.now;
-    this.dismissRequested = false;
-    this.today = { coins: 0, harvested: 0, collected: 0, cleared: 0, fished: 0 };
-    this.collapsedFor = 0;
-    this.hungryOvernight = 0;
-    this.witheredOvernight = null;
-    this.grewOvernight = null;
-    this.finishedOvernight = [];
   }
 
   // --- input ----------------------------------------------------------------
@@ -839,7 +683,7 @@ export default class FarmScene extends Phaser.Scene {
     // Any key at all dismisses the morning summary; `update` decides whether
     // it is old enough to be dismissed yet.
     keyboard.on('keydown', () => {
-      this.dismissRequested = true;
+      this.summary.dismissRequested = true;
     });
 
     this.bindPointer();
@@ -850,7 +694,7 @@ export default class FarmScene extends Phaser.Scene {
     this.input.on(
       'wheel',
       (_pointer: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
-        if (farmStore.getState().inventoryOpen || this.summaryPanel.visible) return;
+        if (farmStore.getState().inventoryOpen || this.summary.summaryPanel.visible) return;
         if (dy === 0) return;
         this.cycleSlot(dy > 0 ? 1 : -1);
       },
@@ -944,7 +788,7 @@ export default class FarmScene extends Phaser.Scene {
    */
   private inputSuspended(): boolean {
     return (
-      this.summaryPanel.visible ||
+      this.summary.summaryPanel.visible ||
       farmStore.getState().inventoryOpen ||
       Boolean(this.localPlayer?.panel)
     );
@@ -1431,7 +1275,7 @@ export default class FarmScene extends Phaser.Scene {
     this.waitingBackdrop.setSize(width, height);
     this.waitingPanel.setPosition(width / 2, height / 2);
     this.waitingText.setWordWrapWidth(Math.min(520, width - 120));
-    this.summaryPanel.setPosition(width / 2, height / 2);
+    this.summary.layout(width, height);
   }
 
   /**
@@ -1574,7 +1418,7 @@ export default class FarmScene extends Phaser.Scene {
     );
 
     this.createWaitingPanel();
-    this.createSummaryPanel();
+    this.summary.createSummaryPanel();
     this.fishingHud.createFishingUi();
   }
 
@@ -1825,77 +1669,6 @@ export default class FarmScene extends Phaser.Scene {
       .setDepth(DEPTH.modal)
       .setVisible(false);
     this.screen.add(this.waitingPanel);
-  }
-
-  /**
-   * The morning panel, with pictures.
-   *
-   * It used to be a paragraph: "Ngày 5 bắt đầu. 0 luống đã lớn lên qua đêm."
-   * The house style says feeling is shown rather than narrated and the prompt
-   * bar is the fallback channel, not the main one — and a sentence about how
-   * many beds grew overnight is narration where a row of sprouts would do.
-   *
-   * So the rows are built here and the pictures come from the same item
-   * textures the hotbar and the satchel draw: the turnip the frost took is the
-   * turnip you were carrying.
-   */
-  private createSummaryPanel() {
-    this.summaryCard = this.screen.frame('panel', 0, 0, SUMMARY.width, SUMMARY.height);
-    this.summaryTitle = this.screen.pixelText(0, 0, 26).setOrigin(0.5, 0);
-    this.summaryRows = [];
-    for (let i = 0; i < SUMMARY.maxRows; i += 1) {
-      // Every icon is drawn at the same size whatever its source is, so a
-      // 16px coin and a 32px sprout sit in one column rather than in two.
-      const icon = this.add
-        .image(0, 0, 'icon-coin')
-        .setDisplaySize(SUMMARY.icon, SUMMARY.icon)
-        .setVisible(false);
-      const text = this.screen.pixelText(0, 0, 18).setOrigin(0, 0.5).setVisible(false);
-      this.summaryRows.push({ icon, text });
-    }
-    this.summaryHint = this.screen.pixelText(0, 0, 16, PALETTE['light.7']).setOrigin(0.5, 0);
-    this.summaryHint.setText('Nhấn phím bất kỳ');
-
-    this.summaryPanel = this.add
-      .container(0, 0, [
-        this.summaryCard,
-        this.summaryTitle,
-        ...this.summaryRows.flatMap((row) => [row.icon, row.text]),
-        this.summaryHint,
-      ])
-      .setDepth(DEPTH.modal + 1)
-      .setVisible(false);
-    this.screen.add(this.summaryPanel);
-  }
-
-  /**
-   * Fills the morning panel's rows, and shrinks it to the day it is reporting.
-   *
-   * A fixed-height card with three lines in it and a hand's width of empty
-   * board underneath reads as a panel with something missing from it. The card
-   * is as tall as the morning was eventful.
-   */
-  private drawSummary(title: string, rows: SummaryRow[]) {
-    const height = SUMMARY.head + rows.length * SUMMARY.rowHeight + SUMMARY.foot;
-    const top = -height / 2;
-
-    this.summaryCard.setPosition(-SUMMARY.width / 2, top).setSize(SUMMARY.width, height);
-    this.summaryTitle.setPosition(0, top + 18).setText(title);
-    this.summaryHint.setPosition(0, top + height - 34);
-
-    this.summaryRows.forEach((slot, index) => {
-      const row = rows[index];
-      slot.icon.setVisible(Boolean(row));
-      slot.text.setVisible(Boolean(row));
-      if (!row) return;
-
-      const y = top + SUMMARY.head + index * SUMMARY.rowHeight - SUMMARY.rowHeight / 2;
-      if (this.textures.exists(row.texture)) slot.icon.setTexture(row.texture);
-      slot.icon.setDisplaySize(SUMMARY.icon, SUMMARY.icon);
-      slot.icon.setPosition(-SUMMARY.width / 2 + 44, y);
-      slot.icon.setTint(row.tint ?? 0xffffff);
-      slot.text.setPosition(-SUMMARY.width / 2 + 72, y).setText(row.text);
-    });
   }
 
   private updateAtmosphere(delta: number) {
