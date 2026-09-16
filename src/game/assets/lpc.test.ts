@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LPC_CROPS, LPC_IMAGES, LPC_SHEETS } from './lpc.generated';
+import { LPC_CROPS, LPC_IMAGES, LPC_SHEETS, LPC_URL_BY_KEY } from './lpc.generated';
 import { NPCS } from '../npcs/definitions';
 import { CROP_ORDER } from '../systems/items';
 
@@ -66,6 +66,16 @@ describe('the LPC manifest', () => {
     }
     for (const [sheet, ids] of owners) {
       expect(ids, `${ids.join(' and ')} are both untinted on ${sheet}`).toHaveLength(1);
+    }
+  });
+
+  it('offers the same images as a lookup, for the panels React draws', () => {
+    // The Phaser side asks for a texture by key; the inventory grid is React
+    // and has only the url. Both have to come from the same generated list, or
+    // an item's icon and its field sprite drift apart again.
+    expect(Object.keys(LPC_URL_BY_KEY).sort()).toEqual(LPC_IMAGES.map(([key]) => key).sort());
+    for (const [key, url] of LPC_IMAGES) {
+      expect(LPC_URL_BY_KEY[key]).toBe(url);
     }
   });
 });

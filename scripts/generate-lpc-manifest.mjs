@@ -133,6 +133,18 @@ ${images.map((name) => `  ['${name}', '/assets/lpc/${name}.png'],`).join('\n')}
 ];
 
 /**
+ * The same images, by key.
+ *
+ * \`LPC_IMAGES\` is a list because the loader walks it once at boot.
+ * \`ItemIcon\` in the React panels has the opposite question — "is there a
+ * drawing for this one item, and where is it" — and asking that of a list is
+ * a scan per cell of the inventory grid.
+ */
+export const LPC_URL_BY_KEY: Readonly<Record<string, string>> = {
+${images.map((name) => `  '${name}': '/assets/lpc/${name}.png',`).join('\n')}
+};
+
+/**
  * The walk sheets, read as nine frames across and four directions down, at
  * 64px each. Row order is the LPC convention: up, left, down, right.
  */
