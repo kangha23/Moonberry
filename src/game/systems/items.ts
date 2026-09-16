@@ -477,12 +477,17 @@ const MATERIALS: ReadonlyArray<{ id: ItemId; label: string; price: number; blurb
   { id: 'iron-ore', label: 'Quặng sắt', price: 10, blurb: 'Từ tầng 10 trở xuống. Nặng tay và lạnh.' },
   { id: 'gold-ore', label: 'Quặng vàng', price: 25, blurb: 'Từ tầng 20 trở xuống, lấp lánh trong đá tối.' },
   { id: 'gem', label: 'Ngọc thô', price: 120, blurb: 'Chỉ đáy mỏ mới có. Chưa mài mà đã sáng.' },
+  // Spec 16: what the furnace makes and the anvil wants. Priced a little above
+  // five ore and a lump of coal, so smelting to sell is worth a trip and never
+  // a mint: 25g of copper ore and 50g of coal come out at 90g.
   {
     id: 'copper-bar',
     label: 'Đồng thỏi',
-    price: 120,
-    blurb: 'Nấu ra từ quặng. Chưa có cái mỏ nào để đào, nên hãy còn hiếm.',
+    price: 90,
+    blurb: 'Năm cục quặng đồng và một hòn than, qua một đêm trong lò nấu.',
   },
+  { id: 'iron-bar', label: 'Sắt thỏi', price: 150, blurb: 'Nấu từ quặng sắt. Thứ làm nên mọi đồ thép.' },
+  { id: 'gold-bar', label: 'Vàng thỏi', price: 300, blurb: 'Nấu từ quặng vàng. Nặng tay hơn vẻ ngoài của nó.' },
 ];
 
 function materialRows(): Record<ItemId, ItemDef> {
@@ -1409,18 +1414,28 @@ export function artisanOutputFor(input: ItemId, machine: MachineKind): ItemId | 
  * nothing to swing (spec 13, the same reason the scythe is free). Better
  * swords are a column of `damage`, not a tier.
  */
-const WEAPON_ROWS: Record<ItemId, ItemDef> = {
-  'rusty-sword': {
-    id: 'rusty-sword',
-    label: 'Kiếm gỉ',
-    texture: 'item-rusty-sword',
-    stackSize: 1,
-    tool: 'sword',
-    damage: 10,
-    sellPrice: 0,
-    blurb: 'Cùn, nhưng vẫn đủ để một con sên nghĩ lại.',
-  },
-};
+/**
+ * The swords, one for each band of the mine.
+ *
+ * Not rows in `TOOL_BASES`, because the blacksmith's ladder buys reach and
+ * energy and a sword has neither: it hits a fan in front of you and costs
+ * nothing to swing (spec 13, the same reason the scythe is free). Better
+ * swords are a column of `damage`, not a tier, and they are crafted from bars
+ * rather than forged (spec 16).
+ */
+const WEAPON_ROWS: Record<ItemId, ItemDef> = Object.fromEntries(
+  (
+    [
+      ['rusty-sword', 'Kiếm gỉ', 10, 'Cùn, nhưng vẫn đủ để một con sên nghĩ lại.'],
+      ['copper-sword', 'Kiếm đồng', 20, 'Hai nhát cho một con dơi. Thứ làm tầng mười đi được.'],
+      ['steel-sword', 'Kiếm thép', 35, 'Đủ nặng để một con ma phải tan sau ba nhát.'],
+      ['gold-sword', 'Kiếm vàng', 60, 'Thứ duy nhất đáy mỏ phải nể.'],
+    ] as const
+  ).map(([id, label, damage, blurb]) => [
+    id,
+    { id, label, texture: `item-${id}`, stackSize: 1, tool: 'sword', damage, sellPrice: 0, blurb },
+  ]),
+);
 
 const BASE_ITEMS: Record<ItemId, ItemDef> = {
   ...toolRows(),

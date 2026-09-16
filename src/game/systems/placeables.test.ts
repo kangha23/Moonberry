@@ -346,8 +346,10 @@ describe('every new row has a picture', () => {
     }
   });
 
-  it('draws the one metal spec 13 will dig', () => {
-    expect(iconFor('copper-bar').length).toBeGreaterThan(0);
+  it('draws every bar and every sword', () => {
+    for (const id of ['copper-bar', 'iron-bar', 'gold-bar', 'rusty-sword', 'copper-sword', 'steel-sword', 'gold-sword']) {
+      expect(iconFor(id).length, `${id} has no icon`).toBeGreaterThan(0);
+    }
   });
 });
 

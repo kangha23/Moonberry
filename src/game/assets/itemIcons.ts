@@ -747,12 +747,19 @@ const PLACEABLE_ICONS: Record<ItemId, readonly IconRect[]> = {
 for (const [id, shapes] of Object.entries(PLACEABLE_ICONS)) ITEM_ICONS[id] ??= shapes;
 
 /** The one metal spec 11 names and spec 13 will dig. A stubby ingot. */
-ITEM_ICONS['copper-bar'] ??= [
-  [PALETTE['soil.6'], 2, 6, 12, 5],
-  [PALETTE['light.5'], 3, 6, 10, 2],
-  [PALETTE['soil.4'], 2, 10, 12, 2],
-  [PALETTE['light.7'], 4, 7, 3, 1],
-];
+/** Spec 16's bars: one stubby ingot, in the metal's own colours. */
+function barIcon(body: string, light: string, shade: string, shine: string): readonly IconRect[] {
+  return [
+    [body, 2, 6, 12, 5],
+    [light, 3, 6, 10, 2],
+    [shade, 2, 10, 12, 2],
+    [shine, 4, 7, 3, 1],
+  ];
+}
+
+ITEM_ICONS['copper-bar'] ??= barIcon(PALETTE['soil.6'], PALETTE['light.5'], PALETTE['soil.4'], PALETTE['light.7']);
+ITEM_ICONS['iron-bar'] ??= barIcon(PALETTE['light.2'], PALETTE['light.6'], PALETTE['building.2'], PALETTE['light.7']);
+ITEM_ICONS['gold-bar'] ??= barIcon(PALETTE['light.5'], PALETTE['light.7'], PALETTE['soil.5'], PALETTE['light.7']);
 
 /** Spec 13's ores: one lump of rock, flecked with the metal's colour. */
 function oreIcon(fleck: string, shine: string): readonly IconRect[] {
@@ -782,6 +789,22 @@ ITEM_ICONS['rusty-sword'] ??= [
   [PALETTE['soil.4'], 3, 9, 5, 2],
   [PALETTE['soil.0'], 2, 11, 3, 3],
 ];
+
+/** The same blade, in the metal of the band it was made for. */
+function swordIcon(metal: MetalPalette): readonly IconRect[] {
+  return [
+    [metal.mid, 9, 2, 3, 3],
+    [metal.mid, 7, 4, 3, 3],
+    [metal.mid, 5, 6, 3, 3],
+    [metal.light, 10, 2, 1, 1],
+    [metal.dark, 3, 9, 5, 2],
+    [PALETTE['soil.0'], 2, 11, 3, 3],
+  ];
+}
+
+ITEM_ICONS['copper-sword'] ??= swordIcon(TOOL_METALS.copper);
+ITEM_ICONS['steel-sword'] ??= swordIcon(TOOL_METALS.steel);
+ITEM_ICONS['gold-sword'] ??= swordIcon(TOOL_METALS.gold);
 
 /**
  * A jar of something, coloured by what went into it.

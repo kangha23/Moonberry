@@ -252,6 +252,22 @@ describe('farm seeds and records', () => {
     expect(ITEMS[SWORD]?.tool).toBe('sword');
     expect(ITEMS[SWORD]?.damage).toBeGreaterThan(0);
   });
+
+  it('has a sword for every band, each harder-hitting than the last', () => {
+    const swords = ['rusty-sword', 'copper-sword', 'steel-sword', 'gold-sword'];
+    const damage = swords.map((id) => ITEMS[id]?.damage ?? 0);
+    expect(damage).toEqual([10, 20, 35, 60]);
+    for (const id of swords) {
+      expect(ITEMS[id].tool).toBe('sword');
+      expect(ITEMS[id].sellPrice).toBe(0);
+      expect(ITEMS[id].stackSize).toBe(1);
+    }
+  });
+
+  it('prices the bars above what went into them, and never sweeps them into a sale', () => {
+    expect(['copper-bar', 'iron-bar', 'gold-bar'].map((id) => ITEMS[id]?.sellPrice)).toEqual([90, 150, 300]);
+    for (const id of ['copper-bar', 'iron-bar', 'gold-bar']) expect(ITEMS[id].produce).toBeUndefined();
+  });
 });
 
 describe('combat in the reducer', () => {
