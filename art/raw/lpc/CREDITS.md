@@ -91,15 +91,31 @@ has no mineral and no root vegetable in it: `item-quartz`, `item-snow-yam` and
 `item-winter-root`.
 
 **What the palette does to these.** Quantising them to the 48 colours moves
-every pixel by a mean of 0.022 to 0.064 in OkLab, which is small — except that
-three of the nine lose the colour they are named for. The palette holds no
-saturated yellow at all, so `item-daffodil` and `item-buttercup` come out
-cream; and its one strong purple (`#7f2c99`) is vivid enough that the muted
-purples in `item-purple-mushroom` and `item-wild-grape` land nearer a
-violet-grey instead. This is not a fault of the imported art: the generated
-icons draw from the same 48 colours and are no more purple or yellow than
-these are. It is the palette that cannot say those words yet, and widening it
-is its own piece of work, because re-deriving it recolours every file here.
+every pixel by a mean of 0.022 to 0.064 in OkLab, which is small. Three of the
+nine used to lose the colour they are named for — the palette held no saturated
+yellow at all and only one muted purple, so `item-daffodil` and
+`item-buttercup` came out cream and `item-purple-mushroom` and
+`item-wild-grape` came out a violet-grey.
+
+That is fixed, and the fix is worth recording because the obvious answer was
+the wrong one. The palette did not need to be bigger. It had been derived from
+the art that existed when it was written — grass, soil, people — and that
+corpus never asked for yellow, so clustering never kept any. Re-deriving it
+from the art as it stands now finds yellow immediately, at the same 48. But a
+re-derivation renames every entry: only 7 of 48 names survived, breaking 38 of
+the 45 names the code uses across 935 call sites.
+
+So three entries were swapped by hand instead. `clothDeep.1/2/3` were named by
+no code at all, and became `gold.0`, `gold.1` and `berry.0` — two olive-golds
+taken off the art that needed them, and one berry purple. Nothing in `src/`
+changed. The cost is real but small and was measured: those three were doing
+some work on the two walk sheets, so re-quantising moves the player's mean
+error from 0.0132 to 0.0176, which is below the point where two colours read
+as different when they are not side by side, and the before/after renders of
+both characters are indistinguishable.
+
+It also fixed something nobody was aiming at: the yellow-green highlights on
+`node-tree-4` used to quantise to near-white, and now stay yellow-green.
 
 The scatter props are placed by `scripts/generate-maps.mjs`, not by hand: it
 sprinkles them over any grass tile whose eight neighbours are also grass, which
