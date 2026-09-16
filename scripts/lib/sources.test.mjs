@@ -424,6 +424,66 @@ test('rejects a rect that is not four whole numbers', () => {
   assert.throws(() => validateSources(json), /tree.*"rect"/s);
 });
 
+test('accepts a pack file with a safe "extract" member path', () => {
+  const zipped = {
+    ...pack,
+    files: {
+      'plants.png': {
+        from: 'https://opengameart.org/sites/default/files/lpc-flowers-plants-fungi-wood.zip',
+        sha256: 'a'.repeat(64),
+        extract: 'lpc-flowers-plants-fungi-wood/plants.png',
+      },
+    },
+  };
+  const json = { packs: { 'lpc-plants': zipped }, cuts: [] };
+  assert.equal(validateSources(json), json);
+});
+
+test('rejects an "extract" that is an absolute path', () => {
+  const badExtract = (extract) => ({
+    ...pack,
+    files: { 'plants.png': { from: 'https://example.invalid/pack.zip', sha256: 'a'.repeat(64), extract } },
+  });
+  assert.throws(
+    () => validateSources({ packs: { 'lpc-plants': badExtract('/etc/passwd') }, cuts: [] }),
+    /relative path/,
+  );
+  // A Windows drive letter is just as absolute as a leading slash here, since
+  // this table is edited and this script is run on Windows as much as not.
+  assert.throws(
+    () => validateSources({ packs: { 'lpc-plants': badExtract('C:/Windows/System32/evil.png') }, cuts: [] }),
+    /relative path/,
+  );
+});
+
+test('rejects an "extract" with a ".." segment', () => {
+  const zipped = {
+    ...pack,
+    files: {
+      'plants.png': {
+        from: 'https://example.invalid/pack.zip',
+        sha256: 'a'.repeat(64),
+        extract: '../../../evil.png',
+      },
+    },
+  };
+  assert.throws(() => validateSources({ packs: { 'lpc-plants': zipped }, cuts: [] }), /"\.\."/);
+});
+
+test('rejects an "extract" containing a backslash', () => {
+  const zipped = {
+    ...pack,
+    files: {
+      'plants.png': {
+        from: 'https://example.invalid/pack.zip',
+        sha256: 'a'.repeat(64),
+        extract: 'lpc-flowers-plants-fungi-wood\\plants.png',
+      },
+    },
+  };
+  assert.throws(() => validateSources({ packs: { 'lpc-plants': zipped }, cuts: [] }), /backslash/);
+});
+
 test('rejects a non-whole-number grid, scale, frame or row', () => {
   const cutWith = (field, value) => ({
     packs: { 'lpc-crops': pack },

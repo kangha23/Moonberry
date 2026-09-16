@@ -23,6 +23,7 @@ import path from 'node:path';
 import { OUT_DIR, planImport, readSource } from './import-lpc.mjs';
 import { encodeImage } from './lib/png.mjs';
 import { cutFlags, missingCredits, reconcile, validateSources } from './lib/sources.mjs';
+import { extractZipMember } from './lib/zip.mjs';
 
 const SOURCES_FILE = path.join('art', 'sources.json');
 const CACHE_DIR = path.join('art', 'sources');
@@ -44,30 +45,63 @@ function digest(buffer) {
 }
 
 /**
+ * The file name an archive is cached under, when a pack file's `from` points
+ * at a zip rather than a bare image.
+ *
+ * Taken from the URL rather than the table's own file key: that key (say,
+ * `plants.png` for the flowers pack) names the *extracted* member's own cache
+ * path below, and caching the archive there too would have the extraction
+ * step overwrite the very file it just downloaded to read from.
+ */
+function archiveFileName(url) {
+  return new URL(url).pathname.split('/').pop();
+}
+
+/**
  * One file on disk, downloaded if it is not there yet, under `subDir` when
  * given.
  *
  * The digest is checked every time, not only after a download. A cached file
  * that has been edited by hand is exactly the situation the pin is for.
+ *
+ * When the entry names an `extract` member, `entry.sha256` pins the *archive*
+ * as downloaded — that is the thing upstream can change — not the member
+ * inside it, which is this table's own claim rather than upstream's. So the
+ * archive is cached and digest-checked under its own name exactly as a plain
+ * pack file would be, and the member is then inflated out of it fresh on
+ * every call and written to `fileName`'s path, which is what `readSource`
+ * actually reads. Re-extracting every call rather than caching that output
+ * too, and trusting whatever is already there, means a hand-edited or
+ * stale extraction can't survive a run: there is no second pin on the member
+ * to catch it, since the table's only promise about it is the path inside
+ * the archive.
  */
 async function packFile(packName, fileName, entry, subDir = '') {
-  const target = path.join(CACHE_DIR, packName, subDir, fileName);
-  if (!fs.existsSync(target)) {
-    process.stdout.write(`downloading ${packName}/${subDir ? `${subDir}/` : ''}${fileName}\n`);
+  const cacheName = entry.extract ? archiveFileName(entry.from) : fileName;
+  const archive = path.join(CACHE_DIR, packName, subDir, cacheName);
+  if (!fs.existsSync(archive)) {
+    process.stdout.write(`downloading ${packName}/${subDir ? `${subDir}/` : ''}${cacheName}\n`);
     const response = await fetch(entry.from);
     if (!response.ok) throw new Error(`${entry.from} returned ${response.status}.`);
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.writeFileSync(target, Buffer.from(await response.arrayBuffer()));
+    fs.mkdirSync(path.dirname(archive), { recursive: true });
+    fs.writeFileSync(archive, Buffer.from(await response.arrayBuffer()));
   }
-  const found = digest(fs.readFileSync(target));
+  const archiveBytes = fs.readFileSync(archive);
+  const found = digest(archiveBytes);
   if (found !== entry.sha256) {
     throw new Error(
-      `${target} hashes to ${found}, but the table pins ${entry.sha256}.\n` +
+      `${archive} hashes to ${found}, but the table pins ${entry.sha256}.\n` +
         'Upstream changed the file, or the cache is stale. Delete the file to re-download; ' +
         'if upstream really did change, look at the new file before updating the pin.',
     );
   }
-  return target;
+  if (!entry.extract) return archive;
+
+  const member = path.join(CACHE_DIR, packName, subDir, fileName);
+  process.stdout.write(`extracting ${entry.extract} from ${cacheName}\n`);
+  fs.mkdirSync(path.dirname(member), { recursive: true });
+  fs.writeFileSync(member, extractZipMember(archiveBytes, entry.extract, archive));
+  return member;
 }
 
 /**

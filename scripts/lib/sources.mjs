@@ -37,6 +37,34 @@ function wantWholeNumberArray(target, field, value, length) {
 }
 
 /**
+ * Checks that a path naming a file to be written to disk cannot land outside
+ * the directory it is written into.
+ *
+ * Used for a pack file's `extract`: `art-sync.mjs` inflates the named archive
+ * member and writes it under `art/sources/<pack>/`, so an absolute path (POSIX
+ * or a Windows drive letter — this repo is developed on both) or a ".."
+ * segment in that name would write somewhere else entirely. Slashes are
+ * otherwise fine and expected: an archive member is a path inside the zip
+ * (`lpc-flowers-plants-fungi-wood/plants.png`), not a bare file name, which is
+ * why this is its own check rather than reusing the layer-name one above —
+ * that one forbids any slash at all, because a layer name is not a path.
+ */
+function wantSafePath(context, field, value) {
+  if (typeof value !== 'string' || value === '') {
+    throw new Error(`${context} has an invalid "${field}": expected a non-empty path.`);
+  }
+  if (value.includes('\\')) {
+    throw new Error(`${context} has an invalid "${field}" "${value}": it must not contain a backslash.`);
+  }
+  if (value.startsWith('/') || /^[A-Za-z]:/.test(value)) {
+    throw new Error(`${context} has an invalid "${field}" "${value}": it must be a relative path.`);
+  }
+  if (value.split('/').includes('..')) {
+    throw new Error(`${context} has an invalid "${field}" "${value}": it must not contain a ".." segment.`);
+  }
+}
+
+/**
  * Checks the table over, and hands it back so callers can chain.
  *
  * Every failure names the entry that caused it. A validator that says "invalid
@@ -61,6 +89,12 @@ export function validateSources(json) {
           `Pack "${name}" file "${file}" has no sha256. An unpinned download is not ` +
             'reproducible: upstream can change the file and nobody would know.',
         );
+      }
+      // `extract` names a member inside the downloaded archive; the sha256
+      // above pins the archive itself, since that is the thing upstream can
+      // change, not the member path, which is this table's own claim.
+      if (entry.extract !== undefined) {
+        wantSafePath(`Pack "${name}" file "${file}"`, 'extract', entry.extract);
       }
     }
   }
