@@ -1128,8 +1128,8 @@ export const CROP_ORDER: readonly CropId[] = [
  */
 export type ChestKind = 'chest' | 'big-chest';
 
-/** The four machines. A kind here is a row in `MACHINE_DEFS` over there. */
-export type MachineKind = 'keg' | 'jar' | 'churn' | 'kiln';
+/** The five machines. A kind here is a row in `MACHINE_DEFS` over there. */
+export type MachineKind = 'keg' | 'jar' | 'churn' | 'kiln' | 'furnace';
 
 export type SprinklerKind = 'sprinkler' | 'quality-sprinkler';
 
@@ -1191,6 +1191,11 @@ const PLACEABLE_ROWS: readonly PlaceableRow[] = [
     id: 'kiln',
     label: 'Lò than',
     blurb: 'Mười khúc gỗ thành một hòn than, qua một đêm.',
+  },
+  {
+    id: 'furnace',
+    label: 'Lò nấu',
+    blurb: 'Năm cục quặng và một hòn than, qua một đêm thành một thỏi.',
   },
   {
     id: 'sprinkler',
@@ -1327,10 +1332,10 @@ function isMilk(input: ItemId): boolean {
 }
 
 function artisanProduct(input: ItemId, machine: MachineKind): ArtisanProduct | null {
-  // The kiln is the odd one out and stays that way: it makes coal, which is a
-  // material that already exists, so there is no row here for it to generate.
-  if (machine === 'kiln') return null;
   if (machine === 'churn') return isMilk(input) ? CHURN_PRODUCT : null;
+  // The kiln and the furnace make materials that already exist — coal, bars —
+  // so there is no artisan row for either of them to generate.
+  if (machine !== 'keg' && machine !== 'jar') return null;
   const crop = CROP_ORDER.find((id) => (id as ItemId) === input);
   return crop ? (ARTISAN_PRODUCTS[machine][CROP_CLASS[crop]] ?? null) : null;
 }
@@ -1341,6 +1346,7 @@ const MACHINE_LABELS: Record<MachineKind, string> = {
   jar: 'Lọ ngâm',
   churn: 'Máy vắt',
   kiln: 'Lò than',
+  furnace: 'Lò nấu',
 };
 
 /** Every input any machine might be offered, which is what the rows walk. */

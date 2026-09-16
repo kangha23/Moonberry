@@ -142,6 +142,7 @@ const DEFS: readonly PlaceableDef[] = [
   { kind: 'jar', family: 'machine', solid: true, clearsGround: true },
   { kind: 'churn', family: 'machine', solid: true, clearsGround: true },
   { kind: 'kiln', family: 'machine', solid: true, clearsGround: true },
+  { kind: 'furnace', family: 'machine', solid: true, clearsGround: true },
   // Walkable on purpose. A sprinkler you cannot step over is a sprinkler that
   // cuts a forty-tile field into eight little paddocks you have to walk round.
   { kind: 'sprinkler', family: 'sprinkler', solid: false, clearsGround: true },
@@ -285,13 +286,14 @@ export interface MachineDef {
   /** How many of the input one job eats. */
   intake: number;
   /**
-   * A machine whose output is a plain material rather than an artisan good.
-   *
-   * Only the kiln, and it is worth a field rather than a branch: ten planks
-   * become one lump of coal, and coal is a row that already exists. Everything
-   * else derives its output from its input through `artisanOutputFor`.
+   * A machine whose output is a plain material rather than an artisan good:
+   * which input becomes which output. The kiln has one row, the furnace three
+   * (spec 16). Everything else derives its output from its input through
+   * `artisanOutputFor`.
    */
-  burns?: { input: ItemId; output: ItemId };
+  converts?: Partial<Record<ItemId, ItemId>>;
+  /** Consumed alongside `intake` of the input, or absent for a machine that needs none. */
+  fuel?: { item: ItemId; count: number };
   /** What to tell somebody who offered it the wrong thing. */
   refusal: string;
 }
@@ -323,8 +325,17 @@ export const MACHINE_DEFS: Record<MachineKind, MachineDef> = {
     label: 'Lò than',
     days: 1,
     intake: 10,
-    burns: { input: 'wood', output: 'coal' },
+    converts: { wood: 'coal' },
     refusal: 'Lò than cần đúng 10 khúc gỗ.',
+  },
+  furnace: {
+    kind: 'furnace',
+    label: 'Lò nấu',
+    days: 1,
+    intake: 5,
+    converts: { 'copper-ore': 'copper-bar', 'iron-ore': 'iron-bar', 'gold-ore': 'gold-bar' },
+    fuel: { item: 'coal', count: 1 },
+    refusal: 'Lò nấu cần 5 quặng cùng loại và 1 than.',
   },
 };
 
@@ -339,12 +350,12 @@ export function isMachineKind(value: unknown): value is MachineKind {
 /** What a machine would turn an input into, or null when it will not take it. */
 export function outputFor(kind: MachineKind, input: ItemId): ItemId | null {
   const def = MACHINE_DEFS[kind];
-  if (def.burns) return input === def.burns.input ? def.burns.output : null;
+  if (def.converts) return def.converts[input] ?? null;
   return artisanOutputFor(input, kind);
 }
 
 export type MachineLoad =
-  | { ok: true; job: MachineJob; takes: number }
+  | { ok: true; job: MachineJob; takes: number; fuel: { item: ItemId; count: number } | null }
   | { ok: false; reason: string };
 
 /**
@@ -374,6 +385,7 @@ export function loadMachine(machine: Machine, input: ItemId, day: number): Machi
   return {
     ok: true,
     takes: def.intake,
+    fuel: def.fuel ?? null,
     job: { input, output, readyOnDay: day + def.days },
   };
 }

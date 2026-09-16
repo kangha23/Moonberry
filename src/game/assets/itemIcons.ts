@@ -662,6 +662,15 @@ const PLACEABLE_ICONS: Record<ItemId, readonly IconRect[]> = {
     [PALETTE['light.3'], 6, 10, 4, 3],
     [PALETTE['light.7'], 7, 11, 2, 2],
   ],
+  furnace: [
+    // A tall brick stack with a glowing mouth, taller and hotter than the kiln.
+    [PALETTE['building.2'], 3, 2, 10, 12],
+    [PALETTE['building.0'], 3, 2, 10, 2],
+    [PALETTE['soil.2'], 2, 13, 12, 1],
+    [PALETTE['shadow.3'], 5, 8, 6, 4],
+    [PALETTE['light.5'], 6, 9, 4, 2],
+    [PALETTE['light.7'], 7, 9, 2, 1],
+  ],
   sprinkler: [
     // Four spouts, which is exactly the shape it waters.
     [PALETTE['building.2'], 6, 6, 4, 4],

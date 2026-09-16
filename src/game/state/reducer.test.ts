@@ -2840,6 +2840,40 @@ describe('machines', () => {
     expect(countItem(loaded.players.a.inventory, 'wood')).toBe(0);
   });
 
+  it('eats five ore and one coal in the furnace, and gives a bar the next morning', () => {
+    let farm = withMachine('furnace');
+    farm = give(hold(farm, 'a', 'copper-ore', 5), 'a', 'coal', 1);
+
+    const loaded = applyIntent(farm, { type: 'machine/load', playerId: 'a', machineId: 'p1' }).state;
+    expect((thing(loaded, 'p1') as Machine).job?.output).toBe('copper-bar');
+    expect(countItem(loaded.players.a.inventory, 'copper-ore')).toBe(0);
+    expect(countItem(loaded.players.a.inventory, 'coal')).toBe(0);
+
+    const morning = standBeside(sleepThrough(loaded).state, 'a', spot.x, spot.y);
+    const collected = applyIntent(morning, { type: 'machine/collect', playerId: 'a', machineId: 'p1' });
+    expect(countItem(collected.state.players.a.inventory, 'copper-bar')).toBe(1);
+  });
+
+  it('refuses the furnace without coal, and keeps every ore', () => {
+    let farm = withMachine('furnace');
+    farm = hold(farm, 'a', 'copper-ore', 5);
+
+    const result = applyIntent(farm, { type: 'machine/load', playerId: 'a', machineId: 'p1' });
+    expect((thing(result.state, 'p1') as Machine).job).toBeNull();
+    expect(countItem(result.state.players.a.inventory, 'copper-ore')).toBe(5);
+    expect(result.events).toContainEqual({
+      kind: 'message',
+      playerId: 'a',
+      text: 'Lò nấu cần thêm 1 than làm nhiên liệu.',
+    });
+  });
+
+  it('knows how to build a furnace from the first morning', () => {
+    const farm = give(give(craftingFarm(), 'a', 'stone', 25), 'a', 'copper-ore', 10);
+    const made = applyIntent(farm, { type: 'player/craft', playerId: 'a', recipe: 'furnace', count: 1 });
+    expect(countItem(made.state.players.a.inventory, 'furnace')).toBe(1);
+  });
+
   it('announces itself on the morning it finishes, once', () => {
     const farm = withMachine('keg', {
       input: 'melon',

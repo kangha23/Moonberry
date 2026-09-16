@@ -259,6 +259,29 @@ describe('the machines', () => {
     expect(load.job.readyOnDay).toBe(5);
   });
 
+  it('smelts five ore of a kind into its bar overnight, and asks for a coal to do it', () => {
+    for (const [ore, bar] of [
+      ['copper-ore', 'copper-bar'],
+      ['iron-ore', 'iron-bar'],
+      ['gold-ore', 'gold-bar'],
+    ] as const) {
+      const load = loadMachine(machine('furnace'), ore, 4);
+      expect(load.ok, ore).toBe(true);
+      if (!load.ok) return;
+      expect(load.takes).toBe(5);
+      expect(load.fuel).toEqual({ item: 'coal', count: 1 });
+      expect(load.job).toEqual({ input: ore, output: bar, readyOnDay: 5 });
+    }
+  });
+
+  it('turns down anything that is not a smeltable ore, and burns no fuel in the kiln', () => {
+    expect(loadMachine(machine('furnace'), 'wood', 1).ok).toBe(false);
+    expect(loadMachine(machine('furnace'), 'stone', 1).ok).toBe(false);
+    expect(loadMachine(machine('furnace'), 'gem', 1).ok).toBe(false);
+    const kiln = loadMachine(machine('kiln'), 'wood', 1);
+    expect(kiln.ok && kiln.fuel).toBeNull();
+  });
+
   it('refuses while it is already running, and says when it will be done', () => {
     const busy = machine('keg', { input: 'melon', output: 'wine-melon', readyOnDay: 9 });
     const load = loadMachine(busy, 'melon', 3);

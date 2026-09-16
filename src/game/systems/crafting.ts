@@ -110,6 +110,9 @@ const RECIPES: readonly Recipe[] = [
     yields: 1,
     unlock: { by: 'hearts', npc: 'tobias', hearts: 4 },
   },
+  // Spec 16. Known from the start because copper ore is its own gate: nobody
+  // has ten of it without having been down the mine.
+  { id: 'furnace', needs: { stone: 25, 'copper-ore': 10 }, yields: 1, unlock: { by: 'start' } },
 
   // --- odds and ends --------------------------------------------------------
   //

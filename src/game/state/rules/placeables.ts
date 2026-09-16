@@ -341,14 +341,24 @@ export function applyMachineLoad(state: FarmState, playerId: PlayerId, machineId
   const load = loadMachine(machine, held.item, state.time.day);
   if (!load.ok) return { state, events: [say(playerId, load.reason)] };
 
-  const inventory = removeItem(player.inventory, held.item, load.takes);
+  const label = machineDef(machine.kind).label;
+  const fed = removeItem(player.inventory, held.item, load.takes);
+  if (!fed) {
+    return {
+      state,
+      events: [say(playerId, `${label} cần ${load.takes} ${itemDef(held.item).label.toLowerCase()} một mẻ.`)],
+    };
+  }
+  // Fuel second, out of what is left, so a refusal on either leaves the
+  // satchel exactly as it was: neither removal has been written anywhere yet.
+  const inventory = load.fuel ? removeItem(fed, load.fuel.item, load.fuel.count) : fed;
   if (!inventory) {
     return {
       state,
       events: [
         say(
           playerId,
-          `${machineDef(machine.kind).label} cần ${load.takes} ${itemDef(held.item).label.toLowerCase()} một mẻ.`,
+          `${label} cần thêm ${load.fuel!.count} ${itemDef(load.fuel!.item).label.toLowerCase()} làm nhiên liệu.`,
         ),
       ],
     };
