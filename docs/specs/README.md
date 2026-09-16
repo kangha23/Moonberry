@@ -37,6 +37,7 @@ phần lớn những cái trên, và nó đứng được một mình.
 | # | Spec | Phụ thuộc | Vì sao nó ở đây |
 | --- | --- | --- | --- |
 | 13 | [Mỏ và chiến đấu](13-mine-and-combat.md) | 10, 11 | Nơi kim loại đến từ. Hệ thống duy nhất có rủi ro. |
+| 16 | [Kim loại có chỗ dùng](16-metal-and-the-mine.md) | 13, 10, 11, 06 | Mỏ của 13 đã chạy nhưng đứt ở ba chỗ: quặng không đào được, không ai có kiếm, không có lò nấu. Nối lại, và thợ rèn lấy thỏi. |
 
 ### Về thứ tự
 
