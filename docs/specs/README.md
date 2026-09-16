@@ -28,6 +28,7 @@ cái thứ hai. Mọi thứ còn lại là chiều sâu đặt lên trên hai c�
 | 12 | [Câu cá](12-fishing.md) | 10 | Ba mươi ô nước thôi chỉ là tường chắn, và buổi tối thôi là chỗ trống. |
 | 14 | [Bước vào trong nhà](14-farmhouse-interior.md) | — | Ngôi nhà thôi là mặt tiền, và giấc ngủ có một cái giường. |
 | 15 | [Phố Việt](15-vietnamese-street.md) | 07, 11, 04 | Một khu phố nghe tiếng Việt. Bước đầu của thành phố, không trả giá của nó. |
+| 16 | [Kim loại có chỗ dùng](16-metal-and-the-mine.md) | 13, 10, 11, 06 | Mỏ của 13 đã chạy nhưng đứt ở ba chỗ: quặng không đào được, không ai có kiếm, không có lò nấu. Nối lại, và thợ rèn lấy thỏi. |
 
 ## Phần còn lại
 
@@ -37,7 +38,6 @@ phần lớn những cái trên, và nó đứng được một mình.
 | # | Spec | Phụ thuộc | Vì sao nó ở đây |
 | --- | --- | --- | --- |
 | 13 | [Mỏ và chiến đấu](13-mine-and-combat.md) | 10, 11 | Nơi kim loại đến từ. Hệ thống duy nhất có rủi ro. |
-| 16 | [Kim loại có chỗ dùng](16-metal-and-the-mine.md) | 13, 10, 11, 06 | Mỏ của 13 đã chạy nhưng đứt ở ba chỗ: quặng không đào được, không ai có kiếm, không có lò nấu. Nối lại, và thợ rèn lấy thỏi. |
 
 ### Về thứ tự
 
@@ -98,6 +98,24 @@ mọi thứ đã có: chặt cây lên cấp Hái lượm, đào lên cấp Khai
 cá, và mỗi cấp mở công thức ở spec 11. Làm nó sau cùng nghĩa là phải quay lại sửa
 cả ba chỗ — và sau spec 10 và 12 thì chặt cây, đào đá và kéo cá đều đã tồn tại,
 nên chỗ để móc vào đã sẵn sàng.
+
+### Spec 16 để lại gì
+
+- **Một loại node nữa, không một hệ thống nữa.** `NodeKind` thêm `'ore'`, và độ
+  cứng theo loại quặng sống trong `oreRequires(item)` — comment trên
+  `ResourceNode.requires` mà spec 10 để lại đã đoán trước đúng chỗ này.
+- **`reconcileMonsters` thành `reconcileFloors`**, và giờ lo cả quái lẫn mạch
+  quặng của một tầng mỏ, vì hai vòng đời phải là một: tầng có người thì cả hai
+  cùng sinh, tầng hết người thì cả hai cùng mất.
+- **`MachineDef.burns` thành `converts`/`fuel`.** `converts` chở nhiều dòng
+  vào-ra (`Partial<Record<ItemId, ItemId>>`) thay vì chỉ một, và `fuel` là một
+  nguyên liệu phụ tiêu cùng lúc — lò than có một dòng và không nhiên liệu, lò
+  nấu có ba dòng và than làm nhiên liệu.
+- **`TierDef.bars`, và `upgradeFor().bars`.** Một bậc công cụ giờ đòi thỏi lẫn
+  vàng; `applyUpgradeTool` kiểm cả hai trước khi trừ.
+- **`RecipeUnlock` thêm `{ by: 'depth' }`, và `learnRecipes(player, day,
+  deepestFloor)` học nó.** Độ sâu là của nông trại (`state.deepestFloor`), nên
+  một công thức mở theo độ sâu học cho cả nhóm, không riêng người vừa xuống.
 
 ### Spec 15 để lại gì
 
