@@ -65,6 +65,25 @@ export function validateSources(json) {
     if (!cut.layers && !pack.files?.[cut.file]) {
       throw new Error(`Cut "${target}" names file "${cut.file}", which pack "${cut.pack}" does not list.`);
     }
+
+    if (cut.layers) {
+      const positions = new Map();
+      for (const name of Object.keys(cut.layers)) {
+        const numbered = name.match(/^(\d+)\s/);
+        if (!numbered) {
+          throw new Error(
+            `Cut "${target}" layer "${name}" does not start with a number. The number is the ` +
+              'stacking order: readSource composites a folder in file-name order, so an ' +
+              'unnumbered layer stacks wherever its name happens to sort.',
+          );
+        }
+        const at = numbered[1];
+        if (positions.has(at)) {
+          throw new Error(`Cut "${target}" has two layers at position ${at}: "${positions.get(at)}" and "${name}".`);
+        }
+        positions.set(at, name);
+      }
+    }
   }
 
   return json;

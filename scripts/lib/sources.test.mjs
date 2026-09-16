@@ -215,3 +215,51 @@ test('does not demand credits for a pack no cut uses', () => {
   const packs = { 'lpc-fish': { title: '[LPC] Fish' } };
   assert.deepEqual(missingCredits({ packs, cuts: [], credits: '' }), []);
 });
+
+test('accepts a layered cut whose layer names are numbered', () => {
+  const json = {
+    packs: { 'lpc-generator': { title: 'g', page: 'p', licence: 'l', authors: ['a'], files: {} } },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        walkcycle: true,
+        layers: { '010 body.png': 'https://example.invalid/b.png', '100 dress.png': 'https://example.invalid/d.png' },
+      },
+    ],
+  };
+  assert.equal(validateSources(json), json);
+});
+
+test('rejects a layer name with no number, because the number is the stacking order', () => {
+  const json = {
+    packs: { 'lpc-generator': { title: 'g', page: 'p', licence: 'l', authors: ['a'], files: {} } },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        walkcycle: true,
+        layers: { 'body.png': 'https://example.invalid/b.png' },
+      },
+    ],
+  };
+  assert.throws(() => validateSources(json), /stacking order/);
+});
+
+test('rejects two layers claiming the same position', () => {
+  const json = {
+    packs: { 'lpc-generator': { title: 'g', page: 'p', licence: 'l', authors: ['a'], files: {} } },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        walkcycle: true,
+        layers: {
+          '010 body.png': 'https://example.invalid/b.png',
+          '010 head.png': 'https://example.invalid/h.png',
+        },
+      },
+    ],
+  };
+  assert.throws(() => validateSources(json), /010/);
+});
