@@ -45,6 +45,7 @@ import type { ApplyResult, GameEvent } from '../intents';
 import type { FarmState, PlayerId, PlayerState } from '../types';
 import { blockersFor, onlineMembers, say, surfaceSpot, unchanged, withPlayer } from './common';
 import { collapseCoinLoss } from './day';
+import { learnRecipes } from './placeables';
 
 /** What a map prop at the mouth of the mine says it is. Placed in Tiled by the client slice. */
 export const MINE_ENTRANCE_INTERACT = 'mine';
@@ -62,24 +63,52 @@ function leaveWhereYouAre(player: PlayerState): PlayerState {
   return { ...player, panel: null, openChest: null, fishing: null };
 }
 
+/** What is left at the mouth of the mine for anybody going down unarmed (spec 16). */
+const RUSTY_SWORD: ItemId = 'rusty-sword';
+
 /**
  * Puts one player at the top of a floor. Only them: in a shared world the
  * ladder is not a party decision, and the group splitting up is acceptable.
+ *
+ * Two things ride along since spec 16. A player going down with no sword at
+ * all is handed the rusty one — here rather than in the starting kit, because
+ * a sword with nothing to hit is a seventh icon nobody reads, and because an
+ * old save gets one the same way. And a new record teaches the whole farm
+ * whatever that depth opens, on the spot rather than at dawn.
  */
 function arrive(state: FarmState, playerId: PlayerId, depth: number): ApplyResult {
   const player = state.players[playerId];
   const floor = floorFor(state.mineSeed, depth);
   const area = mineArea(depth);
-  const moved: PlayerState = { ...leaveWhereYouAre(player), area, ...tileCentre(floor.entrance) };
+  let moved: PlayerState = { ...leaveWhereYouAre(player), area, ...tileCentre(floor.entrance) };
   const events: GameEvent[] = [
     { kind: 'areaChanged', playerId, area },
     { kind: 'descended', playerId, depth },
     say(playerId, `Tầng ${depth}.`),
   ];
+
+  const armed = moved.inventory.some((stack) => stack && ITEMS[stack.item]?.tool === 'sword');
+  if (!armed) {
+    const given = addItem(moved.inventory, RUSTY_SWORD, 1);
+    if (given) {
+      moved = { ...moved, inventory: given };
+      events.push(say(playerId, 'Có người để lại một thanh kiếm gỉ ở cửa mỏ.'));
+    } else {
+      events.push(say(playerId, 'Có một thanh kiếm gỉ ở cửa mỏ, mà túi bạn hết chỗ.'));
+    }
+  }
+
   let next = withPlayer(state, moved);
   if (depth > state.deepestFloor) {
     next = { ...next, deepestFloor: depth };
     events.push({ kind: 'newDepthRecord', depth });
+    const players = { ...next.players };
+    for (const [id, member] of Object.entries(players)) {
+      const taught = learnRecipes(member, next.time.day, depth);
+      players[id as PlayerId] = taught.player;
+      events.push(...taught.events);
+    }
+    next = { ...next, players };
   }
   return { state: next, events };
 }

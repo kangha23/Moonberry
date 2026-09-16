@@ -485,10 +485,12 @@ export function applyPlaceableAct(
 export function learnRecipes(
   player: PlayerState,
   day: number,
+  deepestFloor: number,
 ): { player: PlayerState; events: GameEvent[] } {
   const learned = newlyUnlocked(player.knownRecipes, {
     day,
     heartsFor: (npc) => heartsWith(player.relationships, npc),
+    deepestFloor,
   });
   if (learned.length === 0) return { player, events: [] };
 

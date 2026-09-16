@@ -19,6 +19,7 @@ import {
   interactableAt,
   isWalkable,
   mineArea,
+  mineMouth,
   spawnPoints,
   type Point,
 } from '../world/areas';
@@ -564,5 +565,66 @@ describe('the day and the save', () => {
     expect(loaded).not.toBeNull();
     expect(loaded!.nodes.some((node) => node.area === mineArea(7))).toBe(false);
     expect(loaded!.nodes).toHaveLength(state.nodes.length - 1);
+  });
+});
+
+describe('swords (spec 16)', () => {
+  function atTheMouth(state: FarmState, id: PlayerId): FarmState {
+    return patch(state, id, mineMouth()!);
+  }
+
+  it('hands a rusty sword to somebody going down without one', () => {
+    const state = atTheMouth(farmWith('p1'), 'p1');
+    expect(countItem(state.players.p1.inventory, SWORD)).toBe(0);
+
+    const result = applyIntent(state, { type: 'player/descend', playerId: 'p1' });
+
+    expect(result.state.players.p1.area).toBe(mineArea(1));
+    expect(countItem(result.state.players.p1.inventory, SWORD)).toBe(1);
+    expect(result.events).toContainEqual({
+      kind: 'message',
+      playerId: 'p1',
+      text: 'Có người để lại một thanh kiếm gỉ ở cửa mỏ.',
+    });
+  });
+
+  it('hands nothing over to somebody already carrying any sword', () => {
+    let state = atTheMouth(farmWith('p1'), 'p1');
+    state = patch(state, 'p1', { inventory: addItem(state.players.p1.inventory, 'copper-sword')! });
+
+    const result = applyIntent(state, { type: 'player/descend', playerId: 'p1' });
+
+    expect(countItem(result.state.players.p1.inventory, SWORD)).toBe(0);
+    expect(countItem(result.state.players.p1.inventory, 'copper-sword')).toBe(1);
+  });
+
+  it('still lets a full satchel down, and says the sword was left behind', () => {
+    let state = atTheMouth(farmWith('p1'), 'p1');
+    state = patch(state, 'p1', {
+      inventory: state.players.p1.inventory.map((slot) => slot ?? newStack('stone', 99)),
+    });
+
+    const result = applyIntent(state, { type: 'player/descend', playerId: 'p1' });
+
+    expect(result.state.players.p1.area).toBe(mineArea(1));
+    expect(countItem(result.state.players.p1.inventory, SWORD)).toBe(0);
+    expect(result.events).toContainEqual({
+      kind: 'message',
+      playerId: 'p1',
+      text: 'Có một thanh kiếm gỉ ở cửa mỏ, mà túi bạn hết chỗ.',
+    });
+  });
+
+  it('teaches the whole farm the copper sword the moment anybody reaches floor ten', () => {
+    let state = { ...farmWith('p1', 'p2'), deepestFloor: 9 };
+    state = onLadder(state, 'p1', 9);
+    expect(state.players.p2.knownRecipes).not.toContain('copper-sword');
+
+    const result = applyIntent(state, { type: 'player/descend', playerId: 'p1' });
+
+    expect(result.state.deepestFloor).toBe(10);
+    expect(result.state.players.p1.knownRecipes).toContain('copper-sword');
+    expect(result.state.players.p2.knownRecipes).toContain('copper-sword');
+    expect(ofKind(result.events, 'recipeLearned').map((event) => event.playerId).sort()).toEqual(['p1', 'p2']);
   });
 });

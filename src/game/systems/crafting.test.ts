@@ -199,6 +199,32 @@ describe('unlocks', () => {
     if (hearted?.from.by !== 'hearts') return;
     expect(hearted.from.npc).toBeTruthy();
   });
+
+  it('opens a sword when the farm has been deep enough, and not a floor before', () => {
+    const swords: Array<[ItemId, number]> = [
+      ['copper-sword', 10],
+      ['steel-sword', 20],
+      ['gold-sword', 30],
+    ];
+    for (const [id, depth] of swords) {
+      const recipe = recipeFor(id)!;
+      expect(recipe.unlock).toEqual({ by: 'depth', depth });
+      expect(unlockMet(recipe.unlock, { day: 1, heartsFor: () => 0, deepestFloor: depth - 1 })).toBe(false);
+      expect(unlockMet(recipe.unlock, { day: 1, heartsFor: () => 0, deepestFloor: depth })).toBe(true);
+      expect(unlockMet(recipe.unlock, NO_HEARTS)).toBe(false);
+    }
+  });
+
+  it('makes a copper sword out of three bars and five planks', () => {
+    const result = craft(bag({ 'copper-bar': 3, wood: 5 }), ['copper-sword'], 'copper-sword', 1);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    expect(countItem(result.inventory, 'copper-sword')).toBe(1);
+    expect(countItem(result.inventory, 'copper-bar')).toBe(0);
+
+    const short = craft(bag({ 'copper-bar': 2, wood: 5 }), ['copper-sword'], 'copper-sword', 1);
+    expect(short.ok).toBe(false);
+  });
 });
 
 describe('the phố’s three dishes, spec 15', () => {

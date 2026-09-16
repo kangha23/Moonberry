@@ -34,7 +34,12 @@ export type RecipeUnlock =
   | { by: 'start' }
   | { by: 'buy'; cost: number }
   | { by: 'hearts'; npc: NpcId; hearts: number }
-  | { by: 'day'; day: number };
+  | { by: 'day'; day: number }
+  /**
+   * Spec 16: the farm's deepest floor. The farm's rather than the player's,
+   * unlike hearts: "somebody has been down there" is news for the whole group.
+   */
+  | { by: 'depth'; depth: number };
 
 /**
  * The catalogue.
@@ -155,6 +160,16 @@ const RECIPES: readonly Recipe[] = [
   { id: 'banh-chung', needs: { nep: 4, fiber: 2 }, yields: 1, unlock: { by: 'start' } },
   { id: 'xoi-dau', needs: { nep: 3, 'dau-xanh': 2 }, yields: 1, unlock: { by: 'start' } },
   { id: 'che-dau', needs: { 'dau-xanh': 3, strawberry: 2 }, yields: 2, unlock: { by: 'start' } },
+
+  // --- the mine --------------------------------------------------------------
+  //
+  // Spec 16. A sword for each band, opened by reaching the band rather than
+  // bought: the copper one is what makes floors ten to nineteen comfortable,
+  // and it arrives the moment somebody first stands on floor ten. Wood for the
+  // hilt of the first and hardwood for the two that have to take a real hit.
+  { id: 'copper-sword', needs: { 'copper-bar': 3, wood: 5 }, yields: 1, unlock: { by: 'depth', depth: 10 } },
+  { id: 'steel-sword', needs: { 'iron-bar': 3, hardwood: 5 }, yields: 1, unlock: { by: 'depth', depth: 20 } },
+  { id: 'gold-sword', needs: { 'gold-bar': 3, hardwood: 5 }, yields: 1, unlock: { by: 'depth', depth: 30 } },
 ];
 
 /**
@@ -199,6 +214,8 @@ export interface UnlockContext {
   day: number;
   /** Hearts with each villager, for this one player. */
   heartsFor: (npc: NpcId) => number;
+  /** The farm's record depth. Absent reads as never having gone down. */
+  deepestFloor?: number;
 }
 
 /**
@@ -219,6 +236,8 @@ export function unlockMet(unlock: RecipeUnlock, context: UnlockContext): boolean
       return context.heartsFor(unlock.npc) >= unlock.hearts;
     case 'buy':
       return false;
+    case 'depth':
+      return (context.deepestFloor ?? 0) >= unlock.depth;
   }
 }
 

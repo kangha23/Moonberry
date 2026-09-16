@@ -173,7 +173,7 @@ function applyGift(
   // is a keg. Asked here rather than only at dawn on purpose: a recipe that
   // turned up the next morning would leave the player unsure the gift had done
   // anything, and the whole point is that it visibly did.
-  const taught = learnRecipes(next, state.time.day);
+  const taught = learnRecipes(next, state.time.day, state.deepestFloor);
   events.push(...taught.events);
 
   return {

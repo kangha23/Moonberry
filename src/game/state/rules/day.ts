@@ -115,7 +115,7 @@ export function startNewDay(state: FarmState, collapsed = false): ApplyResult {
     };
     // Recipes that ripen on a date arrive here; the ones that ripen on hearts
     // have usually arrived already, at the moment the gift was handed over.
-    const taught = learnRecipes(woken, time.day);
+    const taught = learnRecipes(woken, time.day, state.deepestFloor);
     players[id] = taught.player;
     events.push(...taught.events);
     // The blacksmith worked overnight. Said once, on the morning the work is
