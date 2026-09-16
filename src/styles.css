@@ -391,6 +391,13 @@ p {
   image-rendering: pixelated;
 }
 
+/* A 32px sprite shown at 48 has to stay a 32px sprite. Without this the
+   browser smooths it, and one icon in a grid of crisp ones reads as blurry
+   rather than as larger. */
+img.item-icon {
+  image-rendering: pixelated;
+}
+
 .inventory-slots {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
