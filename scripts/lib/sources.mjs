@@ -203,6 +203,8 @@ export function validateSources(json) {
     if (cut.scale !== undefined) wantWholeNumber(target, 'scale', cut.scale);
     if (cut.frame !== undefined) wantWholeNumber(target, 'frame', cut.frame);
     if (cut.row !== undefined) wantWholeNumber(target, 'row', cut.row);
+    if (cut.box !== undefined) wantWholeNumberArray(target, 'box', cut.box, 2);
+    if (cut.floor !== undefined) wantWholeNumber(target, 'floor', cut.floor);
   }
 
   return json;
@@ -240,6 +242,8 @@ export function cutFlags(cut) {
   if (cut.animals) flags.animals = true;
   if (cut.frame !== undefined) flags.frame = String(cut.frame);
   if (cut.row !== undefined) flags.row = String(cut.row);
+  if (cut.box !== undefined) flags.box = cut.box.join('x');
+  if (cut.floor !== undefined) flags.floor = String(cut.floor);
   return flags;
 }
 

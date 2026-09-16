@@ -29,6 +29,7 @@ import {
   ANIMAL,
   WALK,
   animalcycle,
+  box,
   cut,
   expectationFor,
   parseFlags,
@@ -784,4 +785,112 @@ test('a 16x16 crop pack cell survives the whole trip to a file on disk', () => {
   for (const [x, y] of [[0, 0], [1, 0], [0, 1], [1, 1]]) {
     assert.deepEqual(at(written, x, y), [0xc0, 0xff, 0xee, 255], `${x},${y}`);
   }
+});
+
+// --- --box and --floor -------------------------------------------------------
+
+/** The lowest y with an opaque pixel anywhere in that row, or -1 if none. */
+function lowestInkRow(image) {
+  let lowest = -1;
+  for (let y = 0; y < image.height; y += 1) {
+    for (let x = 0; x < image.width; x += 1) {
+      if (at(image, x, y)[3] > 8) {
+        lowest = y;
+        break;
+      }
+    }
+  }
+  return lowest;
+}
+
+test('--box puts the lowest drawn row exactly on --floor', () => {
+  const source = raster(4, 4);
+  source.set(1, 3, '#ff0000'); // the only ink, on the cut's own bottom row
+  const image = { width: 4, height: 4, pixels: source.pixels };
+  const out = box(image, { width: 10, height: 20, floor: 15, target: 'test' });
+  assert.equal(lowestInkRow(out), 15);
+  assert.deepEqual([out.width, out.height], [10, 20]);
+});
+
+test('--box without --floor sits the content on the box\'s bottom edge', () => {
+  const source = raster(4, 4);
+  source.set(1, 1, '#ff0000'); // ink well clear of the cut's own bottom row
+  const image = { width: 4, height: 4, pixels: source.pixels };
+  const out = box(image, { width: 10, height: 20, target: 'test' });
+  assert.equal(lowestInkRow(out), 19);
+});
+
+test('--box centres on the drawn pixels, not on the cut rectangle', () => {
+  // A 10px-wide cut whose ink is a 2px mark stuck against the left edge, on
+  // the cut's own bottom row (row 3 of 4) so the box's bottom-edge default
+  // does not also move it vertically — this test isolates the horizontal
+  // centring only.
+  const source = raster(10, 4);
+  source.set(1, 3, '#ff0000');
+  source.set(2, 3, '#ff0000');
+  const image = { width: 10, height: 4, pixels: source.pixels };
+  const out = box(image, { width: 20, height: 4, target: 'test' });
+
+  // Centred on the 2px mark in a 20px box lands it at x 9-10. Centred on the
+  // cut's own 10px rectangle instead — the wrong answer this test exists to
+  // catch — would have shifted the whole 10px cut by (20-10)/2 = 5 and left
+  // the mark at x 6-7.
+  assert.deepEqual(at(out, 9, 3), [255, 0, 0, 255]);
+  assert.deepEqual(at(out, 10, 3), [255, 0, 0, 255]);
+  assert.deepEqual(at(out, 6, 3), [0, 0, 0, 0]);
+  assert.deepEqual(at(out, 7, 3), [0, 0, 0, 0]);
+});
+
+test('a cut that already fills its box comes out unchanged', () => {
+  const source = raster(4, 4);
+  // Ink touching every edge, top row and bottom row both full width: there is
+  // no padding left for --box to add, so this should be a pure pass-through.
+  for (let x = 0; x < 4; x += 1) {
+    source.set(x, 0, '#ff0000');
+    source.set(x, 3, '#00ff00');
+  }
+  const image = { width: 4, height: 4, pixels: source.pixels };
+  const out = box(image, { width: 4, height: 4, target: 'test' });
+  assert.deepEqual([...out.pixels], [...image.pixels]);
+});
+
+test('--box refuses a cut too big to fit, naming the target and both sizes', () => {
+  const image = { width: 40, height: 50, pixels: new Uint8Array(40 * 50 * 4) };
+  assert.throws(() => box(image, { width: 30, height: 50, target: 'weed-1' }), /weed-1/);
+  assert.throws(() => box(image, { width: 30, height: 50, target: 'weed-1' }), /40x50/);
+  assert.throws(() => box(image, { width: 30, height: 50, target: 'weed-1' }), /30x50/);
+});
+
+test('a fully transparent cut does not crash --box, and still gets the empty-cut warning', () => {
+  const image = { width: 4, height: 4, pixels: new Uint8Array(4 * 4 * 4) };
+  const out = box(image, { width: 10, height: 10, floor: 8, target: 'test' });
+  assert.deepEqual([out.width, out.height], [10, 10]);
+  assert.ok(out.pixels.every((byte) => byte === 0));
+
+  const plan = planImport(image, 'tree', { box: '10x10', floor: '8' });
+  assert.match(plan.warnings[0], /every pixel of this cut is transparent/);
+});
+
+test('--floor needs --box', () => {
+  const source = { width: 4, height: 4, pixels: new Uint8Array(4 * 4 * 4) };
+  assert.throws(() => planImport(source, 'tree', { floor: '74' }), /--floor needs --box/);
+});
+
+test('--box applies after --scale, so its WxH is the size actually written', () => {
+  // A 16x16 cut doubled by --scale 2 to 32x32, then boxed into 64x64. If
+  // --box ran before --scale instead, the 64x64 canvas would itself get
+  // doubled to 128x128 — the wrong order this test would catch.
+  const sheet = raster(16, 16);
+  sheet.set(0, 15, '#ff0000');
+  const plan = planImport({ width: 16, height: 16, pixels: sheet.pixels }, 'tree', {
+    scale: '2',
+    box: '64x64',
+    floor: '63',
+  });
+  assert.deepEqual([plan.image.width, plan.image.height], [64, 64]);
+});
+
+test('a too-large --box is refused end to end through planImport', () => {
+  const source = { width: 40, height: 50, pixels: new Uint8Array(40 * 50 * 4) };
+  assert.throws(() => planImport(source, 'tree', { box: '30x50' }), /tree/);
 });

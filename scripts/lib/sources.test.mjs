@@ -172,6 +172,16 @@ test('never emits --force, because a cut that is the wrong size is a cut to fix'
   assert.equal('force' in cutFlags({ target: 'tile-path', force: true, grid: 32, cell: [0, 0] }), false);
 });
 
+test('turns a box and a floor into the flags --box and --floor already understand', () => {
+  assert.deepEqual(cutFlags({ target: 'weed-1', box: [64, 80], floor: 74 }), {
+    box: '64x80',
+    floor: '74',
+  });
+  // A box with no floor is legal on its own — the content just sits on the
+  // box's own bottom edge.
+  assert.deepEqual(cutFlags({ target: 'weed-1', box: [64, 80] }), { box: '64x80' });
+});
+
 test('produces flags planImport accepts, end to end', () => {
   // A 64x64 source read as a grid of 32px cells: cell 1,1 is its bottom-right
   // quarter, which is exactly the shape a world tile wants.
@@ -495,4 +505,26 @@ test('rejects a non-whole-number grid, scale, frame or row', () => {
   assert.throws(() => validateSources(cutWith('scale', '2')), /"scale"/);
   assert.throws(() => validateSources(cutWith('frame', 12.25)), /"frame"/);
   assert.throws(() => validateSources(cutWith('row', 1.1)), /"row"/);
+});
+
+test('rejects a box that is not two whole numbers', () => {
+  const json = {
+    packs: { 'lpc-crops': pack },
+    cuts: [{ target: 'weed-1', pack: 'lpc-crops', file: 'crops.png', box: [64] }],
+  };
+  assert.throws(() => validateSources(json), /weed-1.*"box"/s);
+
+  const notWhole = {
+    packs: { 'lpc-crops': pack },
+    cuts: [{ target: 'weed-1', pack: 'lpc-crops', file: 'crops.png', box: [64, 80.5] }],
+  };
+  assert.throws(() => validateSources(notWhole), /"box"/);
+});
+
+test('rejects a non-whole-number floor', () => {
+  const json = {
+    packs: { 'lpc-crops': pack },
+    cuts: [{ target: 'weed-1', pack: 'lpc-crops', file: 'crops.png', box: [64, 80], floor: 74.5 }],
+  };
+  assert.throws(() => validateSources(json), /weed-1.*"floor"/s);
 });

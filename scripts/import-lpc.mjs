@@ -135,6 +135,37 @@ export function walkcycle(source, startRow = WALK.defaultRow) {
 }
 
 /**
+ * The smallest box holding every drawn pixel of a `width` x `height` region,
+ * in coordinates local to that region's own corner — not the image's.
+ *
+ * Local coordinates are the point: `rowInkBounds` below calls this once per
+ * frame of a row and merges the results, which only lines the frames up if
+ * "3px from the left" means the same thing in every one of them. Returns
+ * `null` for a region with nothing drawn in it, rather than throwing, because
+ * the two callers disagree on what that should mean — one row of an animal
+ * sheet with no ink is that row's problem, but one fully transparent cut is
+ * `planImport`'s warning to give, not an exception this far down to pre-empt.
+ */
+function inkBounds(image, originX, originY, width, height) {
+  let left = width;
+  let top = height;
+  let right = -1;
+  let bottom = -1;
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const at = ((originY + y) * image.width + originX + x) * 4 + 3;
+      if (image.pixels[at] <= 8) continue;
+      if (x < left) left = x;
+      if (x > right) right = x;
+      if (y < top) top = y;
+      if (y > bottom) bottom = y;
+    }
+  }
+  if (right < 0) return null;
+  return { left, top, width: right - left + 1, height: bottom - top + 1 };
+}
+
+/**
  * The smallest box holding every drawn pixel of one row of frames.
  *
  * One box per row rather than one per frame. Per frame would trim each pose to
@@ -148,21 +179,28 @@ export function rowInkBounds(source, { frame, cols, row }) {
   let right = -1;
   let bottom = -1;
   for (let col = 0; col < cols; col += 1) {
-    const originX = col * frame;
-    const originY = row * frame;
-    for (let y = 0; y < frame; y += 1) {
-      for (let x = 0; x < frame; x += 1) {
-        const at = ((originY + y) * source.width + originX + x) * 4 + 3;
-        if (source.pixels[at] <= 8) continue;
-        if (x < left) left = x;
-        if (x > right) right = x;
-        if (y < top) top = y;
-        if (y > bottom) bottom = y;
-      }
-    }
+    const box = inkBounds(source, col * frame, row * frame, frame, frame);
+    if (!box) continue;
+    if (box.left < left) left = box.left;
+    if (box.top < top) top = box.top;
+    if (box.left + box.width - 1 > right) right = box.left + box.width - 1;
+    if (box.top + box.height - 1 > bottom) bottom = box.top + box.height - 1;
   }
   if (right < 0) throw new Error(`Row ${row} of this cut is empty; check --frame and --row.`);
   return { left, top, width: right - left + 1, height: bottom - top + 1 };
+}
+
+/**
+ * The smallest box holding every drawn pixel of one whole image.
+ *
+ * `rowInkBounds` measures the same thing per row of a multi-frame sheet,
+ * because an animal sheet has several rows that each need their own box. A
+ * single cut is already just the one region, so there are no rows to take a
+ * box per and no merging to do — `inkBounds` over the whole image is the
+ * entire answer.
+ */
+function imageInkBounds(image) {
+  return inkBounds(image, 0, 0, image.width, image.height);
 }
 
 /**
@@ -290,6 +328,74 @@ export function parseRecolour(value) {
   return map;
 }
 
+/** `WxH`, as the two whole numbers `--box` wants. */
+export function parseBox(value) {
+  const match = /^(\d+)x(\d+)$/.exec(String(value));
+  if (!match) throw new Error(`--box wants WxH like "64x80", got "${value}".`);
+  const width = Number(match[1]);
+  const height = Number(match[2]);
+  if (width < 1 || height < 1) {
+    throw new Error(`--box wants a width and height of at least 1, got "${value}".`);
+  }
+  return { width, height };
+}
+
+/**
+ * Pads a cut into a `width` x `height` canvas, centred on its own drawn
+ * pixels, with the lowest of them resting on `floor` — or on the canvas's own
+ * bottom edge, when no floor is given.
+ *
+ * Centred on the ink and not on the cut's own rectangle, because the two are
+ * routinely not the same box: a 32px source grid holding a 20px sapling has
+ * eight empty pixels down each side of it, and centring on the 32px cell
+ * would carry that pack's own padding straight into the box the game measures
+ * a node's shadow and its click target against. Measuring the ink instead
+ * means a sprite drawn off-centre inside its source cell still lands centred
+ * in the box, whichever cell it happened to be cut from.
+ *
+ * A cut with nothing drawn in it has no ink to centre or drop to a floor.
+ * `planImport` already warns about a fully transparent cut once this
+ * returns, so this hands back a blank canvas rather than raising the same
+ * problem a second time under a different message.
+ */
+export function box(image, { width, height, floor, target }) {
+  if (image.width > width || image.height > height) {
+    throw new Error(
+      `${target}: --box ${width}x${height} is smaller than the ${image.width}x${image.height} cut it ` +
+        'would have to hold.',
+    );
+  }
+
+  const out = { width, height, pixels: new Uint8Array(width * height * 4) };
+  const ink = imageInkBounds(image);
+  if (!ink) return out;
+
+  const targetBottom = floor === undefined ? height - 1 : floor;
+  const offsetX = Math.floor((width - ink.width) / 2) - ink.left;
+  const offsetY = targetBottom - ink.top - ink.height + 1;
+
+  // Bounds-checked the way `sliceRect` reads past a source's own edge: a
+  // `--floor` far enough outside the box would otherwise push the copy
+  // past the canvas and crash on an out-of-range index, for pixels that
+  // are already known transparent (anything outside `ink`, by definition
+  // of `ink`) or that the caller asked to place outside the box on purpose.
+  for (let y = 0; y < image.height; y += 1) {
+    const toY = y + offsetY;
+    if (toY < 0 || toY >= height) continue;
+    for (let x = 0; x < image.width; x += 1) {
+      const toX = x + offsetX;
+      if (toX < 0 || toX >= width) continue;
+      const from = (y * image.width + x) * 4;
+      const to = (toY * width + toX) * 4;
+      out.pixels[to] = image.pixels[from];
+      out.pixels[to + 1] = image.pixels[from + 1];
+      out.pixels[to + 2] = image.pixels[from + 2];
+      out.pixels[to + 3] = image.pixels[from + 3];
+    }
+  }
+  return out;
+}
+
 /** The region of the source the flags select, before any scaling. */
 export function cut(source, flags) {
   if (flags.walkcycle) {
@@ -362,7 +468,28 @@ export function planImport(source, target, flags = {}) {
 
   if (flags.recolour !== undefined) region = recolour(region, parseRecolour(flags.recolour));
 
-  const image = upscale(region, scaleFor(region, expected, flags));
+  let image = upscale(region, scaleFor(region, expected, flags));
+
+  if (flags.floor !== undefined && flags.box === undefined) {
+    throw new Error('--floor needs --box: there is no box for it to place a floor inside.');
+  }
+  if (flags.box !== undefined) {
+    // After --scale, not before: --box's WxH is stated in the size the game
+    // reads a node's texture as (64x80), and padding the raw cut to that
+    // before scaling would then have --scale multiply the padding too,
+    // landing on some size that is not 64x80 at all. Scaling first means
+    // --box always works in the one size that matters, the one being written.
+    const { width, height } = parseBox(flags.box);
+    let floor;
+    if (flags.floor !== undefined) {
+      [floor] = numbers(flags.floor, 1, 'floor');
+      if (!Number.isInteger(floor) || floor < 0) {
+        throw new Error(`--floor wants a whole number of pixels, at least 0, got "${flags.floor}".`);
+      }
+    }
+    image = box(image, { width, height, floor, target });
+  }
+
   const warnings = [];
 
   if (expected?.size) {
@@ -481,6 +608,14 @@ Options:
   --recolour A:B,C:D
                    swap colours, as six-digit hex pairs. Anything not listed is
                    left as it is. Applied after the cut and before any scaling.
+  --box WxH        pad the cut into a WxH canvas, horizontally centred on its
+                   own drawn pixels rather than on the cut's own rectangle.
+                   Applied last, after --scale, since W and H are the size the
+                   game reads. Without --floor the content sits on the box's
+                   bottom edge; a cut bigger than the box is an error.
+  --floor N        put the lowest drawn row inside the box at y=N instead of
+                   the bottom edge — the line every node on this farm stands
+                   on. Needs --box.
   --force          write even when the result is not the size the game wants.
   --dry-run        report what it would write, and write nothing.
 
@@ -501,6 +636,10 @@ Examples:
 
   # A tile from an LPC atlas that is already at 32px.
   node scripts/import-lpc.mjs downloads/terrain.png tile-path --grid 32 --cell 5,2
+
+  # A 24x28 weed from a CC0 crop pack, padded into this farm's 64x80 node
+  # texture and stood on the floor line every tree, stump and rock shares.
+  node scripts/import-lpc.mjs downloads/weeds.png weed-1 --rect 40,12,24,28 --box 64x80 --floor 74
 
 The art in this folder is not MIT. Whatever you import, add it to
 ${path.join(OUT_DIR, 'CREDITS.md')} with its author and its licence.`);
