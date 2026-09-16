@@ -5,6 +5,7 @@ import { CROP_PALETTES, ICON_SIZE, foragePalette, iconFor } from './itemIcons';
 import { PLACEABLE_KINDS } from '../systems/items';
 import { FORAGE_DEFS } from '../systems/items';
 import { TREE_STAGES } from '../systems/resources';
+import { MINED_ITEMS } from '../systems/mine';
 import { MILESTONE, SIGNBOARD, SIGNPOST } from '../ui/hudLayout';
 
 const TILE = 32;
@@ -1194,6 +1195,36 @@ function drawRock(ctx: CanvasRenderingContext2D, big: boolean) {
   }
 }
 
+/** What flecks each vein, as a body colour and a glint. Plain stone has none. */
+const ORE_FLECKS: Record<string, readonly [string, string] | null> = {
+  stone: null,
+  coal: [PALETTE['shadow.3'], PALETTE['building.0']],
+  'copper-ore': [PALETTE['soil.6'], PALETTE['light.5']],
+  'iron-ore': [PALETTE['foliage.4'], PALETTE['light.7']],
+  'gold-ore': [PALETTE['light.5'], PALETTE['light.7']],
+  gem: [PALETTE['water.3'], PALETTE['light.7']],
+};
+
+/**
+ * A vein: the small rock, with the metal showing through it.
+ *
+ * Borrowed from the rock rather than drawn again, so a vein reads as a rock
+ * that is worth more than a rock — which is all a player needs to know from
+ * across a mine floor.
+ */
+function drawOre(ctx: CanvasRenderingContext2D, item: string) {
+  drawRock(ctx, false);
+  const fleck = ORE_FLECKS[item];
+  if (!fleck) return;
+  const [body, shine] = fleck;
+  const centreX = NODE.width / 2;
+  const bottom = NODE.height - 6;
+  rect(ctx, body, Math.round(centreX - 6), bottom - 11, 4, 3);
+  rect(ctx, body, Math.round(centreX + 2), bottom - 8, 3, 3);
+  rect(ctx, body, Math.round(centreX - 2), bottom - 5, 3, 2);
+  rect(ctx, shine, Math.round(centreX - 6), bottom - 11, 1, 1);
+}
+
 /**
  * Brambles: low, tangled, and the thing between you and a field.
  *
@@ -1283,6 +1314,9 @@ function createResourceTextures(scene: Phaser.Scene) {
     withTexture(scene, `node-forage-${forage.id}`, NODE.width, NODE.height, (ctx) =>
       drawForage(ctx, forage.id),
     );
+  }
+  for (const item of MINED_ITEMS) {
+    withTexture(scene, `node-ore-${item}`, NODE.width, NODE.height, (ctx) => drawOre(ctx, item));
   }
 
   // The chip that flies off a node that was struck. One drawing, tinted per

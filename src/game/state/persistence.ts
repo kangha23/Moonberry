@@ -360,7 +360,7 @@ function parseNode(value: unknown): ResourceNode | null {
   // The same, for what a piece of forage is. An id this build has never heard
   // of would be picked up and then priced at nothing.
   let item: ItemId | null = null;
-  if (value.kind === 'forage') {
+  if (value.kind === 'forage' || value.kind === 'ore') {
     if (!isItemId(value.item)) return null;
     item = value.item;
   } else if (value.item !== null && value.item !== undefined) {
@@ -382,6 +382,9 @@ function parseNodes(value: unknown): ResourceNode[] | null {
   const seen = new Set<string>();
   const tiles = new Set<string>();
   for (const raw of value) {
+    // A vein of ore is a mine floor's, rebuilt from the seed when somebody next
+    // stands there (spec 16) — and a save never has anybody standing there.
+    if (isObject(raw) && typeof raw.area === 'string' && isMineArea(raw.area)) continue;
     const node = parseNode(raw);
     if (!node || seen.has(node.id)) return null;
     // Two nodes on one tile is a state nothing can produce and nothing can

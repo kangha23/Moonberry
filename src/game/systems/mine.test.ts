@@ -24,6 +24,7 @@ import {
 } from '../world/areas';
 import { addItem, countItem, newStack } from './inventory';
 import { ITEMS } from './items';
+import { createNode, oreRequires } from './resources';
 import {
   ELEVATOR_EVERY,
   MAX_DEPTH,
@@ -476,5 +477,15 @@ describe('the day and the save', () => {
     expect(loaded!.deepestFloor).toBe(7);
     expect(loaded!.mineSeed).toBe(state.mineSeed);
     expect(loaded!.monsters).toEqual([]);
+  });
+
+  it('never saves a vein of ore, which is rebuilt from the seed on the next visit', () => {
+    let state = farmWith('p1');
+    const ore = createNode('mine:7:ore:0', 'ore', mineArea(7), 3, 3, { item: 'iron-ore', requires: oreRequires('iron-ore') });
+    state = { ...state, nodes: [...state.nodes, ore] };
+    const loaded = decodeSave(encodeSave(state));
+    expect(loaded).not.toBeNull();
+    expect(loaded!.nodes.some((node) => node.area === mineArea(7))).toBe(false);
+    expect(loaded!.nodes).toHaveLength(state.nodes.length - 1);
   });
 });

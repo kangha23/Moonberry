@@ -72,7 +72,7 @@ chỗ này: một loại node, độ cứng lưu theo từng node.
 
   Câu từ chối của `checkTool` nói tên bậc cần: "Quặng sắt cần cuốc chim đồng."
 - Sản lượng: 1–3 món đúng loại `item`, tất định theo hạt, id node và ngày
-  qua `yieldOf(node, day, mineSeed)` như mọi node khác. Ngọc luôn ra đúng 1.
+  qua `yieldOf(node, day, seed)` như mọi node khác (seed là `spawnSeed` mà `applyNodeAct` đã truyền). Ngọc luôn ra đúng 1.
 
 ### Vòng đời: như quái
 

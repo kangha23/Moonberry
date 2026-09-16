@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BUILDING_AREA, BUILDING_DEFS, type Building } from './buildings';
 import { createPlot, tillPlot, type PlotState } from './farming';
 import { countItem, createInventory, emptyInventory, newStack, type Inventory } from './inventory';
-import { FORAGE_BY_SEASON, ITEMS } from './items';
+import { FORAGE_BY_SEASON, ITEMS, type ItemId } from './items';
 import type { Placeable } from './placeables';
 import {
   FORAGE_IDS,
@@ -17,10 +17,12 @@ import {
   nextNodeId,
   nodeAt,
   nodesOn,
+  oreRequires,
   seedNodes,
   solidNodeRects,
   startNodeDay,
   workNodes,
+  yieldOf,
   type NodeKind,
   type ResourceNode,
 } from './resources';
@@ -30,6 +32,7 @@ import {
   TILE_SIZE,
   areaMap,
   isWalkable,
+  mineArea,
   plotKey,
   plotTiles,
   type AreaId,
@@ -504,5 +507,54 @@ describe('the tables themselves', () => {
 
   it('holds nothing in an empty satchel it cannot put somewhere', () => {
     expect(workNodes([], 'axe', emptyInventory(), 0, 0, 1, SEED).changed).toEqual([]);
+  });
+});
+
+describe('ore veins', () => {
+  const FLOOR = mineArea(12);
+
+  function vein(item: ItemId, id = 'mine:12:ore:0'): ResourceNode {
+    return createNode(id, 'ore', FLOOR, 3, 3, { item, requires: oreRequires(item) });
+  }
+
+  it('wants a better pick for the deeper metals', () => {
+    expect(oreRequires('copper-ore')).toBe('basic');
+    expect(oreRequires('coal')).toBe('basic');
+    expect(oreRequires('gem')).toBe('basic');
+    expect(oreRequires('iron-ore')).toBe('copper');
+    expect(oreRequires('gold-ore')).toBe('steel');
+
+    expect(checkTool(vein('iron-ore'), 'pickaxe')).toMatchObject({ ok: false, tooWeak: 'copper' });
+    expect(checkTool(vein('iron-ore'), 'copper-pickaxe')).toEqual({ ok: true });
+    expect(checkTool(vein('gold-ore'), 'copper-pickaxe')).toMatchObject({ ok: false, tooWeak: 'steel' });
+    expect(checkTool(vein('copper-ore'), 'axe')).toMatchObject({ ok: false, tooWeak: null });
+  });
+
+  it('names the ore, not the vein, when it refuses', () => {
+    const check = checkTool(vein('iron-ore'), 'pickaxe');
+    expect(check.ok).toBe(false);
+    if (check.ok) return;
+    expect(check.reason.startsWith('Quặng sắt')).toBe(true);
+  });
+
+  it('gives one to three of its ore, and exactly one gem', () => {
+    for (let day = 1; day <= 30; day += 1) {
+      const drops = yieldOf(vein('copper-ore', `mine:12:ore:${day}`), day, SEED).drops;
+      expect(drops).toHaveLength(1);
+      expect(drops[0].item).toBe('copper-ore');
+      expect(drops[0].count).toBeGreaterThanOrEqual(1);
+      expect(drops[0].count).toBeLessThanOrEqual(3);
+      expect(yieldOf(vein('gem'), day, SEED).drops).toEqual([{ item: 'gem', count: 1 }]);
+    }
+  });
+
+  it('is three swings of a pick at three energy each, and does not block the tunnel', () => {
+    expect(NODE_DEFS.ore).toMatchObject({ tool: 'pickaxe', health: 3, energy: 3, solid: false });
+    expect(vein('coal').health).toBe(3);
+  });
+
+  it('is gone by the morning, because nobody sleeps in the mine', () => {
+    const after = startNodeDay([vein('coal')], world(), 'Spring', 2, SEED);
+    expect(after.nodes.filter((node) => node.area === FLOOR)).toEqual([]);
   });
 });

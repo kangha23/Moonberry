@@ -20,6 +20,7 @@ import {
   AREA_IDS,
   TILE_SIZE,
   areaMap,
+  isMineArea,
   plotKey,
   tileAt,
   type AreaId,
@@ -49,7 +50,13 @@ export type NodeKind =
   /** Grass. Hay into the silo, and nothing into the satchel. */
   | 'grass'
   /** Something worth picking up, which is different in each season. */
-  | 'forage';
+  | 'forage'
+  /**
+   * A vein in a mine floor (spec 16). One kind for every ore: which ore is
+   * `item`, and how hard it is is `requires`, exactly as the doc on
+   * `ResourceNode.requires` always meant.
+   */
+  | 'ore';
 
 export interface ResourceNode {
   id: string;
@@ -70,7 +77,7 @@ export interface ResourceNode {
   requires: ToolTier;
   /** For a tree: 0-4, how grown it is. Null for anything that does not grow. */
   stage: number | null;
-  /** For `forage`: which item it is. Null for everything else. */
+  /** For `forage` and `ore`: which item it is. Null for everything else. */
   item: ItemId | null;
 }
 
@@ -180,6 +187,18 @@ export const NODE_DEFS: Record<NodeKind, NodeDef> = {
     solid: false,
     blurb: 'Nhặt lên là được. Không cần nông cụ nào cả.',
   },
+  ore: {
+    kind: 'ore',
+    label: 'Mạch quặng',
+    tool: 'pickaxe',
+    health: 3,
+    requires: 'basic',
+    energy: 3,
+    // Not solid. Mine tunnels are two tiles wide and nothing in the floor
+    // generator promises a vein never sits across the only way to the ladder.
+    solid: false,
+    blurb: 'Đá trong mỏ, có khi lẫn kim loại. Loại sâu hơn cần cuốc chim tốt hơn.',
+  },
 };
 
 export function nodeDef(kind: NodeKind): NodeDef {
@@ -188,6 +207,18 @@ export function nodeDef(kind: NodeKind): NodeDef {
 
 export function isNodeKind(value: unknown): value is NodeKind {
   return typeof value === 'string' && Object.hasOwn(NODE_DEFS, value);
+}
+
+/**
+ * How good a pick an ore wants.
+ *
+ * The ladder that makes the mine a ladder: copper from the shallow floors buys
+ * the copper pick that opens iron, and the steel pick that iron buys opens gold.
+ */
+const ORE_REQUIRES: Partial<Record<ItemId, ToolTier>> = { 'iron-ore': 'copper', 'gold-ore': 'steel' };
+
+export function oreRequires(item: ItemId): ToolTier {
+  return ORE_REQUIRES[item] ?? 'basic';
 }
 
 /** How grown a tree has to be before it is worth chopping. */
@@ -401,6 +432,11 @@ export function yieldOf(node: ResourceNode, day: number, seed: number): NodeYiel
       return { drops: [], hay: 1 };
     case 'forage':
       return node.item ? { drops: [{ item: node.item, count: 1 }], hay: 0 } : NOTHING;
+    case 'ore': {
+      if (!node.item) return NOTHING;
+      const count = node.item === 'gem' ? 1 : between(1, 3, draw, 'ore');
+      return { drops: [{ item: node.item, count }], hay: 0 };
+    }
   }
 }
 
@@ -428,6 +464,9 @@ export type NodeCheck =
  */
 export function checkTool(node: ResourceNode, held: ItemId | null): NodeCheck {
   const def = NODE_DEFS[node.kind];
+  // A vein says what it is, so the refusal sends a player to the right anvil:
+  // "quặng sắt", not "mạch quặng".
+  const label = node.kind === 'ore' && node.item ? itemDef(node.item).label : def.label;
   if (def.tool === null) return { ok: true };
 
   const item = held ? ITEMS[held] : undefined;
@@ -435,14 +474,14 @@ export function checkTool(node: ResourceNode, held: ItemId | null): NodeCheck {
     return {
       ok: false,
       tooWeak: null,
-      reason: `${def.label} cần ${toolName(def.tool)}. Thứ trong tay bạn không làm gì được nó.`,
+      reason: `${label} cần ${toolName(def.tool)}. Thứ trong tay bạn không làm gì được nó.`,
     };
   }
   if (!tierAtLeast(item.tier ?? 'basic', node.requires)) {
     return {
       ok: false,
       tooWeak: node.requires,
-      reason: `${def.label} cứng hơn ${item.label.toLowerCase()} của bạn. Cần ít nhất ${TIER_NAMES[node.requires]}.`,
+      reason: `${label} cứng hơn ${item.label.toLowerCase()} của bạn. Cần ít nhất ${TIER_NAMES[node.requires]}.`,
     };
   }
   return { ok: true };
@@ -722,7 +761,7 @@ export function createNode(
   area: AreaId,
   x: number,
   y: number,
-  extra: { stage?: number | null; item?: ItemId | null } = {},
+  extra: { stage?: number | null; item?: ItemId | null; requires?: ToolTier } = {},
 ): ResourceNode {
   const stage = extra.stage ?? (kind === 'tree' ? TREE_MATURE_STAGE : null);
   return {
@@ -732,7 +771,7 @@ export function createNode(
     x,
     y,
     health: healthOf(kind, stage),
-    requires: NODE_DEFS[kind].requires,
+    requires: extra.requires ?? NODE_DEFS[kind].requires,
     stage,
     item: extra.item ?? null,
   };
@@ -928,7 +967,9 @@ export function startNodeDay(
   seed: number,
 ): NodeDayResult {
   const turning = dayOfSeason(day) === 1;
-  let kept: ResourceNode[] = [...nodes];
+  // A mine floor's veins belong to whoever is standing on it, and nobody is
+  // standing in the mine at dawn. The floor rebuilds them on the next visit.
+  let kept: ResourceNode[] = nodes.filter((node) => !isMineArea(node.area));
   let cleared = 0;
 
   // A season takes its forage with it: an autumn mushroom standing in the snow

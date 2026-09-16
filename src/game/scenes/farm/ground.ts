@@ -44,6 +44,7 @@ import {
 function nodeTexture(node: ResourceNode): string {
   if (node.kind === 'tree') return `node-tree-${node.stage ?? 0}`;
   if (node.kind === 'forage') return `node-forage-${node.item}`;
+  if (node.kind === 'ore') return `node-ore-${node.item}`;
   return `node-${node.kind}`;
 }
 
@@ -164,6 +165,7 @@ const CHIP_TINTS: Record<NodeKind, number> = {
   weed: tint('leaf.2'),
   grass: tint('light.0'),
   forage: tint('light.7'),
+  ore: tint('light.6'),
 };
 
 /** The beds, the nodes and the placeables on the built area. */
