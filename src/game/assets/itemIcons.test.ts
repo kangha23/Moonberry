@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { CROP_ORDER, FORAGE_DEFS, seedIdFor } from '../systems/items';
-import { CROP_PALETTES, ITEM_ICONS, foragePalette } from './itemIcons';
+import { CROP_ORDER, FORAGE_DEFS, ITEMS, seedIdFor, type ItemId } from '../systems/items';
+import { CROP_PALETTES, ITEM_ICONS, iconFor, foragePalette } from './itemIcons';
+import { LPC_URL_BY_KEY } from './lpc.generated';
 import { PALETTE } from './palette.generated';
 
 /**
@@ -57,6 +58,16 @@ describe('produce icon flatness', () => {
       const palette = foragePalette(forage.id);
       if (!palette) continue;
       expect(palette.light, forage.id).not.toBe(palette.body);
+    }
+  });
+});
+
+describe('every item has something to draw', () => {
+  it('resolves to a PNG or to rectangles, never to nothing', () => {
+    for (const id of Object.keys(ITEMS) as ItemId[]) {
+      const key = ITEMS[id].texture;
+      const drawn = Boolean(LPC_URL_BY_KEY[key]) || iconFor(id).length > 0;
+      expect(drawn, `${id} (texture "${key}") would render blank`).toBe(true);
     }
   });
 });
