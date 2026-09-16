@@ -367,7 +367,7 @@ thành "không có bản lưu" thay vì ném lỗi vào vòng lặp vẽ.
 5. ~~**Dữ liệu bền và mã mời** — thế giới lưu trong cơ sở dữ liệu sống sót qua khởi động lại.~~ Xong.
 6. ~~**Năng lượng và giấc ngủ** — một ngày có giá và kết thúc khi người chơi quyết định.~~ Xong.
 
-Mười lăm spec đã vào hết. Một ngày là một ngân sách, nông trại có một cái bánh cóc,
+Mười sáu spec đã vào hết. Một ngày là một ngân sách, nông trại có một cái bánh cóc,
 và trong làng có người: năng lượng và ánh sáng ban ngày cạn dần, tiền mua công cụ
 và công trình khiến ngày sau rẻ hơn ngày trước, và có một lý do để đi bộ sang làng
 không phải là quầy chợ. [`docs/specs/`](docs/specs/) ghi lại mỗi spec đặt ra làm
@@ -382,6 +382,7 @@ gì:
 | 05 | ~~[Một HUD, và con chuột](docs/specs/05-hud-and-mouse.md)~~ | Xong. Một HUD, trong canvas; chuột nhắm và server phán tầm với |
 | 06 | ~~[Công cụ và công trình](docs/specs/06-tools-and-buildings.md)~~ | Xong. Thợ rèn nâng công cụ qua nhiều ngày; công trình mọc lên trên nông trại |
 | 07 | ~~[NPC đáng ghé thăm](docs/specs/07-npc-relationships.md)~~ | Xong. Sáu người làng có lịch trình, quà, trái tim và điều để nói |
+| 08 | ~~[Khung game và ngôn ngữ thị giác](docs/specs/08-frame-and-look.md)~~ | Xong. Toàn màn hình, một font, viền gỗ, autotiling — game thôi trông như một trang web |
 | 09 | ~~[Vật nuôi](docs/specs/09-animals.md)~~ | Xong. Gà, vịt, bò và dê; độ quý mến quyết định hạng sản phẩm |
 | 10 | ~~[Thu thập tài nguyên](docs/specs/10-resources-and-tools.md)~~ | Xong. Rìu, cuốc chim, liềm; cây, đá và đồ hái theo mùa — gỗ và đá tồn tại |
 | 11 | ~~[Chế tác](docs/specs/11-crafting.md)~~ | Xong. Rương, ống tưới, và máy biến nông sản thành đồ thủ công |
@@ -393,15 +394,7 @@ gì:
 
 ### Còn lại gì
 
-Spec 08 nói về thứ người chơi nhìn thấy, và đứng được một mình:
-
-| # | Spec | Nó đổi cái gì |
-| --- | --- | --- |
-| 08 | [Khung game và ngôn ngữ thị giác](docs/specs/08-frame-and-look.md) | Toàn màn hình, một font, viền gỗ, autotiling — game thôi trông như một trang web |
-
-**08 đi trước**, vì nó đụng vào `FarmScene.createUi` và cả bốn bảng React, còn mỗi
-spec sau đó lại thêm một mảnh HUD nữa — làm nó sau nghĩa là viết những mảnh đó hai
-lần. Nó cũng là một trong hai spec không đổi `FarmState`.
+Không còn spec nào đánh số cả — cả mười sáu đã xong.
 
 [`docs/specs/README.md`](docs/specs/README.md) bàn kỹ hơn về thứ tự — đáng đọc
 trước khi bắt đầu, vì thứ tự đánh số không phải thứ tự chặt chẽ nhất — và liệt

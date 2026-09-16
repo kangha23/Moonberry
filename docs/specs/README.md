@@ -26,18 +26,14 @@ cái thứ hai. Mọi thứ còn lại là chiều sâu đặt lên trên hai c�
 | 10 | [Thu thập tài nguyên](10-resources-and-tools.md) | 06 | Gỗ và đá bắt đầu tồn tại, và nông trại bắt đầu ở trạng thái đáng khai phá. |
 | 11 | [Chế tác](11-crafting.md) | 10, tốt hơn sau 09 | Cho cái kho một cái ruột, và cho nông trại bậc thang thứ hai. |
 | 12 | [Câu cá](12-fishing.md) | 10 | Ba mươi ô nước thôi chỉ là tường chắn, và buổi tối thôi là chỗ trống. |
+| 13 | [Mỏ và chiến đấu](13-mine-and-combat.md) | 10, 11 | Nơi kim loại đến từ. Hệ thống duy nhất có rủi ro. |
 | 14 | [Bước vào trong nhà](14-farmhouse-interior.md) | — | Ngôi nhà thôi là mặt tiền, và giấc ngủ có một cái giường. |
 | 15 | [Phố Việt](15-vietnamese-street.md) | 07, 11, 04 | Một khu phố nghe tiếng Việt. Bước đầu của thành phố, không trả giá của nó. |
 | 16 | [Kim loại có chỗ dùng](16-metal-and-the-mine.md) | 13, 10, 11, 06 | Mỏ của 13 đã chạy nhưng đứt ở ba chỗ: quặng không đào được, không ai có kiếm, không có lò nấu. Nối lại, và thợ rèn lấy thỏi. |
 
 ## Phần còn lại
 
-Spec 13 lấp trụ cột cuối cùng mà thể loại có và game này chưa có. Nó lớn hơn
-phần lớn những cái trên, và nó đứng được một mình.
-
-| # | Spec | Phụ thuộc | Vì sao nó ở đây |
-| --- | --- | --- | --- |
-| 13 | [Mỏ và chiến đấu](13-mine-and-combat.md) | 10, 11 | Nơi kim loại đến từ. Hệ thống duy nhất có rủi ro. |
+Không còn spec nào đang chờ — mọi spec đã đánh số đều đã xong.
 
 ### Về thứ tự
 
