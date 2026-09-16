@@ -130,6 +130,10 @@ function onLadder(state: FarmState, id: PlayerId, depth: number): FarmState {
   return inMine(state, id, depth, generateFloor(state.mineSeed, depth).ladder!);
 }
 
+function veinsOn(state: FarmState, depth: number) {
+  return state.nodes.filter((node) => node.area === mineArea(depth));
+}
+
 function slime(depth: number, at: Point, fields: Partial<Monster> = {}): Monster {
   return {
     id: 't-slime',
@@ -443,6 +447,76 @@ describe('ladders, elevators and floors', () => {
     const ridden = applyIntent(state, { type: 'player/useElevator', playerId: 'p1', depth: 10 });
     expect(ridden.state.players.p1.area).toBe(mineArea(10));
   });
+
+  it('arriving on a floor lays out its veins, each as hard as its ore', () => {
+    const state = onLadder(farmWith('p1'), 'p1', 1);
+    const result = applyIntent(state, { type: 'player/descend', playerId: 'p1' });
+    const floor = generateFloor(state.mineSeed, 2);
+
+    const veins = veinsOn(result.state, 2);
+    expect(veins).toHaveLength(floor.ores.length);
+    floor.ores.forEach((ore, i) => {
+      expect(veins).toContainEqual(
+        expect.objectContaining({
+          id: `mine:2:ore:${i}`,
+          kind: 'ore',
+          x: ore.x,
+          y: ore.y,
+          item: ore.ore,
+          requires: oreRequires(ore.ore),
+        }),
+      );
+    });
+  });
+
+  it('forgets the veins when the last player leaves, and a second player keeps them', () => {
+    let state = onLadder(onLadder(farmWith('p1', 'p2'), 'p1', 1), 'p2', 1);
+    state = applyIntent(state, { type: 'player/descend', playerId: 'p1' }).state;
+    state = applyIntent(state, { type: 'player/descend', playerId: 'p2' }).state;
+    const veins = veinsOn(state, 2);
+    expect(veins.length).toBeGreaterThan(0);
+
+    const oneLeft = applyIntent(state, { type: 'player/exitMine', playerId: 'p1' }).state;
+    expect(veinsOn(oneLeft, 2)).toEqual(veins);
+
+    const bothLeft = applyIntent(oneLeft, { type: 'player/exitMine', playerId: 'p2' }).state;
+    expect(veinsOn(bothLeft, 2)).toEqual([]);
+
+    const back = applyIntent(onLadder(bothLeft, 'p1', 1), { type: 'player/descend', playerId: 'p1' }).state;
+    expect(veinsOn(back, 2)).toEqual(veins);
+  });
+
+  it('leaves the surface nodes alone whatever happens below', () => {
+    const state = onLadder(farmWith('p1'), 'p1', 1);
+    const surface = state.nodes;
+    const down = applyIntent(state, { type: 'player/descend', playerId: 'p1' }).state;
+    expect(down.nodes.filter((node) => !node.area.startsWith('mine:'))).toEqual(surface);
+  });
+
+  it('a pick in hand works a vein; a weak one is told which pick it needs', () => {
+    let state = inMine(farmWith('p1'), 'p1', 12);
+    const at = generateFloor(state.mineSeed, 12).entrance;
+    const iron = createNode('t-iron', 'ore', mineArea(12), at.x, at.y, { item: 'iron-ore', requires: 'copper' });
+    state = { ...state, nodes: [...state.nodes, iron] };
+    expect(state.players.p1.inventory[4]?.item).toBe('pickaxe');
+    state = patch(state, 'p1', { selectedSlot: 4 });
+
+    const weak = applyIntent(state, { type: 'player/act', playerId: 'p1', target: at });
+    expect(ofKind(weak.events, 'toolTooWeak')).toEqual([
+      { kind: 'toolTooWeak', playerId: 'p1', node: 'ore', requires: 'copper' },
+    ]);
+    expect(veinsOn(weak.state, 12)).toEqual([iron]);
+
+    const inventory = [...state.players.p1.inventory];
+    inventory[4] = newStack('copper-pickaxe');
+    let strong = patch(state, 'p1', { inventory });
+    for (let swing = 0; swing < 3; swing += 1) {
+      strong = applyIntent(strong, { type: 'player/act', playerId: 'p1', target: at }).state;
+    }
+    expect(veinsOn(strong, 12)).toEqual([]);
+    expect(countItem(strong.players.p1.inventory, 'iron-ore')).toBeGreaterThanOrEqual(1);
+    expect(strong.players.p1.energy).toBeLessThan(state.players.p1.energy);
+  });
 });
 
 describe('the day and the save', () => {
@@ -451,6 +525,8 @@ describe('the day and the save', () => {
     state = inMine(state, 'p1', 3);
     state = patch(state, 'p1', { health: 40, energy: 10, invulnerableUntil: 999 });
     state = withMonsters(state, [slime(3, state.players.p1)]);
+    const vein = createNode('mine:3:ore:0', 'ore', mineArea(3), 4, 4, { item: 'coal' });
+    state = { ...state, nodes: [...state.nodes, vein] };
 
     const next = startNewDay(state).state;
     expect(next.players.p1).toMatchObject({
@@ -463,6 +539,7 @@ describe('the day and the save', () => {
     expect(next.mineSeed).toBe(mineSeedFor(state.worldSeed, state.time.day + 1));
     expect(next.mineSeed).not.toBe(state.mineSeed);
     expect(next.monsters).toEqual([]);
+    expect(veinsOn(next, 3)).toEqual([]);
   });
 
   it('loads a player saved on mine:7 back onto a farm spawn', () => {

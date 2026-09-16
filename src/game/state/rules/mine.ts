@@ -9,6 +9,7 @@
  */
 import { addItem, countItem, removeItem, slotAt } from '../../systems/inventory';
 import { ITEMS, type ItemId } from '../../systems/items';
+import { createNode, oreRequires } from '../../systems/resources';
 import {
   ELEVATOR_EVERY,
   FAINT_ORE_LOSS_SHARE,
@@ -351,32 +352,34 @@ function occupiedFloors(state: FarmState): Set<number> {
 }
 
 /**
- * Wakes the monsters of a floor that has just gained its first player, and
- * forgets those of a floor that has just lost its last.
+ * Wakes a floor that has just gained its first player, and forgets one that
+ * has just lost its last: its monsters, and since spec 16 its veins of ore.
  *
  * Run after every intent, comparing the farm before it with the farm after,
  * which is why no "live floors" list has to be stored: the transition is the
- * only thing that decides. A floor woken twice in one day is woken from the
- * same seed, so it comes back exactly as it was first found — ore and all,
- * which is why the elevator only goes to floors already opened.
+ * list. A floor woken twice in a day is rebuilt from the same seed, so it
+ * comes back exactly as it was first found — ore and all, which is why the
+ * elevator only goes to floors already opened. Monsters and veins share this
+ * one pass because they share one lifetime: a floor with fresh monsters and
+ * yesterday's ore is a floor no seed ever made.
  */
-export function reconcileMonsters(before: FarmState, result: ApplyResult): ApplyResult {
+export function reconcileFloors(before: FarmState, result: ApplyResult): ApplyResult {
   const after = result.state;
   if (after === before) return result;
 
   const was = occupiedFloors(before);
   const is = occupiedFloors(after);
   const woken = [...is].filter((depth) => !was.has(depth)).sort((a, b) => a - b);
-  const stale = after.monsters.some((monster) => {
-    const depth = mineDepth(monster.area);
-    return depth === null || !is.has(depth) || woken.includes(depth);
-  });
-  if (!stale && woken.length === 0) return result;
+  const keep = (area: string) => {
+    const depth = mineDepth(area);
+    return depth === null || (is.has(depth) && !woken.includes(depth));
+  };
+  const staleMonsters = after.monsters.some((monster) => mineDepth(monster.area) === null || !keep(monster.area));
+  const staleNodes = after.nodes.some((node) => !keep(node.area));
+  if (!staleMonsters && !staleNodes && woken.length === 0) return result;
 
-  const monsters = after.monsters.filter((monster) => {
-    const depth = mineDepth(monster.area);
-    return depth !== null && is.has(depth) && !woken.includes(depth);
-  });
+  const monsters = after.monsters.filter((monster) => mineDepth(monster.area) !== null && keep(monster.area));
+  const nodes = after.nodes.filter((node) => keep(node.area));
   for (const depth of woken) {
     const floor = floorFor(after.mineSeed, depth);
     for (const spawn of floor.monsters) {
@@ -390,6 +393,14 @@ export function reconcileMonsters(before: FarmState, result: ApplyResult): Apply
         invulnerableUntil: 0,
       });
     }
+    floor.ores.forEach((ore, index) => {
+      nodes.push(
+        createNode(`mine:${depth}:ore:${index}`, 'ore', mineArea(depth), ore.x, ore.y, {
+          item: ore.ore,
+          requires: oreRequires(ore.ore),
+        }),
+      );
+    });
   }
-  return { state: { ...after, monsters }, events: result.events };
+  return { state: { ...after, monsters, nodes }, events: result.events };
 }

@@ -66,7 +66,7 @@ import {
   applyDescend,
   applyExitMine,
   applyUseElevator,
-  reconcileMonsters,
+  reconcileFloors,
 } from './rules/mine';
 
 // The renderer and the tests read the clock through this file, as they always have.
@@ -168,13 +168,14 @@ function createPlayer(id: PlayerId, name: string, spawn: Point): PlayerState {
  *
  * This function is what will later move to the server unchanged.
  *
- * Every intent passes through `reconcileMonsters` on the way out, because
+ * Every intent passes through `reconcileFloors` on the way out, because
  * almost any of them can move somebody on to or off a mine floor — a step, a
- * ladder, a faint, a disconnect, the morning — and a floor's monsters wake and
- * sleep with its first and last player rather than with any one intent.
+ * ladder, a faint, a disconnect, the morning — and a floor's monsters and
+ * veins wake and sleep with its first and last player rather than with any
+ * one intent.
  */
 export function applyIntent(state: FarmState, intent: Intent): ApplyResult {
-  return reconcileMonsters(state, dispatch(state, intent));
+  return reconcileFloors(state, dispatch(state, intent));
 }
 
 function dispatch(state: FarmState, intent: Intent): ApplyResult {
