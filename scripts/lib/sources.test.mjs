@@ -216,15 +216,38 @@ test('does not demand credits for a pack no cut uses', () => {
   assert.deepEqual(missingCredits({ packs, cuts: [], credits: '' }), []);
 });
 
-test('accepts a layered cut whose layer names are numbered', () => {
+test('does not accept a similarly-named pack as credit for this one', () => {
+  // `[LPC] Fish` must not be "credited" by a heading for `[LPC] Fishing Rod` —
+  // about eight similarly-named LPC packs are coming.
+  const packs = { 'lpc-fish': { title: '[LPC] Fish' } };
+  const cuts = [{ target: 'item-carp', pack: 'lpc-fish' }];
+  const credits = '## [LPC] Fishing Rod (CC-BY-SA 3.0+)\n\nApplies to: item-rod.\n';
+  assert.deepEqual(missingCredits({ packs, cuts, credits }), ['lpc-fish']);
+});
+
+test('does not accept the title mentioned in prose, only in a heading', () => {
+  // A sentence can mention a pack's name while explicitly saying the art did
+  // NOT come from it; a substring match would call that a credit.
+  const packs = { 'lpc-fish': { title: '[LPC] Fish' } };
+  const cuts = [{ target: 'item-carp', pack: 'lpc-fish' }];
+  const credits = 'This sprite was not taken from [LPC] Fish, despite the resemblance.\n';
+  assert.deepEqual(missingCredits({ packs, cuts, credits }), ['lpc-fish']);
+});
+
+const generatorPack = { title: 'g', page: 'p', licence: 'l', authors: ['a'], files: {} };
+
+test('accepts a layered cut whose layer names are numbered and pinned', () => {
   const json = {
-    packs: { 'lpc-generator': { title: 'g', page: 'p', licence: 'l', authors: ['a'], files: {} } },
+    packs: { 'lpc-generator': generatorPack },
     cuts: [
       {
         target: 'maeve-sheet',
         pack: 'lpc-generator',
         walkcycle: true,
-        layers: { '010 body.png': 'https://example.invalid/b.png', '100 dress.png': 'https://example.invalid/d.png' },
+        layers: {
+          '010 body.png': { from: 'https://example.invalid/b.png', sha256: 'a'.repeat(64) },
+          '100 dress.png': { from: 'https://example.invalid/d.png', sha256: 'b'.repeat(64) },
+        },
       },
     ],
   };
@@ -233,13 +256,13 @@ test('accepts a layered cut whose layer names are numbered', () => {
 
 test('rejects a layer name with no number, because the number is the stacking order', () => {
   const json = {
-    packs: { 'lpc-generator': { title: 'g', page: 'p', licence: 'l', authors: ['a'], files: {} } },
+    packs: { 'lpc-generator': generatorPack },
     cuts: [
       {
         target: 'maeve-sheet',
         pack: 'lpc-generator',
         walkcycle: true,
-        layers: { 'body.png': 'https://example.invalid/b.png' },
+        layers: { 'body.png': { from: 'https://example.invalid/b.png', sha256: 'a'.repeat(64) } },
       },
     ],
   };
@@ -248,18 +271,105 @@ test('rejects a layer name with no number, because the number is the stacking or
 
 test('rejects two layers claiming the same position', () => {
   const json = {
-    packs: { 'lpc-generator': { title: 'g', page: 'p', licence: 'l', authors: ['a'], files: {} } },
+    packs: { 'lpc-generator': generatorPack },
     cuts: [
       {
         target: 'maeve-sheet',
         pack: 'lpc-generator',
         walkcycle: true,
         layers: {
-          '010 body.png': 'https://example.invalid/b.png',
-          '010 head.png': 'https://example.invalid/h.png',
+          '010 body.png': { from: 'https://example.invalid/b.png', sha256: 'a'.repeat(64) },
+          '010 head.png': { from: 'https://example.invalid/h.png', sha256: 'b'.repeat(64) },
         },
       },
     ],
   };
   assert.throws(() => validateSources(json), /010/);
+});
+
+test('rejects a layer with no sha256, the same guarantee a pack file gets', () => {
+  const json = {
+    packs: { 'lpc-generator': generatorPack },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        walkcycle: true,
+        layers: { '010 body.png': { from: 'https://example.invalid/b.png' } },
+      },
+    ],
+  };
+  assert.throws(() => validateSources(json), /sha256/);
+});
+
+test('rejects a layer with no source url', () => {
+  const json = {
+    packs: { 'lpc-generator': generatorPack },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        walkcycle: true,
+        layers: { '010 body.png': { sha256: 'a'.repeat(64) } },
+      },
+    ],
+  };
+  assert.throws(() => validateSources(json), /source url/);
+});
+
+test('rejects a cut naming both a file and layers, which silently resolves to layers', () => {
+  const json = {
+    packs: { 'lpc-generator': { ...generatorPack, files: { 'flat.png': { from: 'https://example.invalid/f.png', sha256: 'a'.repeat(64) } } } },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        file: 'flat.png',
+        walkcycle: true,
+        layers: { '010 body.png': { from: 'https://example.invalid/b.png', sha256: 'b'.repeat(64) } },
+      },
+    ],
+  };
+  assert.throws(() => validateSources(json), /both "file" and "layers"/);
+});
+
+test('rejects a cell that is not a pair of whole numbers', () => {
+  const json = {
+    packs: { 'lpc-crops': pack },
+    cuts: [{ target: 'crop-tomato', pack: 'lpc-crops', file: 'crops.png', grid: 32, cell: 3 }],
+  };
+  assert.throws(() => validateSources(json), /crop-tomato.*"cell"/s);
+
+  const wrongLength = {
+    packs: { 'lpc-crops': pack },
+    cuts: [{ target: 'crop-tomato', pack: 'lpc-crops', file: 'crops.png', grid: 32, cell: [1, 2, 3] }],
+  };
+  assert.throws(() => validateSources(wrongLength), /"cell"/);
+
+  const notWhole = {
+    packs: { 'lpc-crops': pack },
+    cuts: [{ target: 'crop-tomato', pack: 'lpc-crops', file: 'crops.png', grid: 32, cell: [1.5, 2] }],
+  };
+  assert.throws(() => validateSources(notWhole), /"cell"/);
+});
+
+test('rejects a rect that is not four whole numbers', () => {
+  const json = {
+    packs: { 'lpc-crops': pack },
+    cuts: [{ target: 'tree', pack: 'lpc-crops', file: 'crops.png', rect: [0, 0, 48] }],
+  };
+  assert.throws(() => validateSources(json), /tree.*"rect"/s);
+});
+
+test('rejects a non-whole-number grid, scale, frame or row', () => {
+  const cutWith = (field, value) => ({
+    packs: { 'lpc-crops': pack },
+    cuts: [
+      { target: 'crop-tomato', pack: 'lpc-crops', file: 'crops.png', cell: [0, 0], grid: 32, [field]: value },
+    ],
+  });
+  assert.throws(() => validateSources(cutWith('grid', 32.5)), /"grid"/);
+  assert.throws(() => validateSources(cutWith('scale', '2')), /"scale"/);
+  assert.throws(() => validateSources(cutWith('frame', 12.25)), /"frame"/);
+  assert.throws(() => validateSources(cutWith('row', 1.1)), /"row"/);
 });

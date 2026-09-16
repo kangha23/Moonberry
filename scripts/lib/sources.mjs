@@ -15,6 +15,28 @@
 const SHA256 = /^[0-9a-f]{64}$/;
 
 /**
+ * Geometry field checks, so a mistyped `"cell": 3` dies here naming the row
+ * that is wrong, rather than three files away inside `cutFlags`' `cut.cell.join(',')`
+ * as a `TypeError` naming nothing. A mistyped number is the most likely
+ * mistake across 182 hand-written rows, and it is exactly the kind of error
+ * this module's own docstring says "invalid sources.json" fails to help with.
+ */
+function wantWholeNumber(target, field, value) {
+  if (!Number.isInteger(value)) {
+    throw new Error(`Cut "${target}" has a non-whole-number "${field}": ${JSON.stringify(value)}.`);
+  }
+}
+
+function wantWholeNumberArray(target, field, value, length) {
+  if (!Array.isArray(value) || value.length !== length || !value.every(Number.isInteger)) {
+    throw new Error(
+      `Cut "${target}" has an invalid "${field}": expected an array of ${length} whole numbers, got ` +
+        `${JSON.stringify(value)}.`,
+    );
+  }
+}
+
+/**
  * Checks the table over, and hands it back so callers can chain.
  *
  * Every failure names the entry that caused it. A validator that says "invalid
@@ -62,13 +84,20 @@ export function validateSources(json) {
 
     const pack = packs[cut.pack];
     if (!pack) throw new Error(`Cut "${target}" names pack "${cut.pack}", which is not declared.`);
+
+    if (cut.file && cut.layers) {
+      throw new Error(
+        `Cut "${target}" names both "file" and "layers"; a cut is one flat file or a layered stack, ` +
+          'never both, and writing both silently resolves to "layers" while the "file" is ignored.',
+      );
+    }
     if (!cut.layers && !pack.files?.[cut.file]) {
       throw new Error(`Cut "${target}" names file "${cut.file}", which pack "${cut.pack}" does not list.`);
     }
 
     if (cut.layers) {
       const positions = new Map();
-      for (const name of Object.keys(cut.layers)) {
+      for (const [name, entry] of Object.entries(cut.layers)) {
         const numbered = name.match(/^(\d+)\s/);
         if (!numbered) {
           throw new Error(
@@ -82,8 +111,27 @@ export function validateSources(json) {
           throw new Error(`Cut "${target}" has two layers at position ${at}: "${positions.get(at)}" and "${name}".`);
         }
         positions.set(at, name);
+
+        // Each layer is its own download, and the same pin the pack files get:
+        // six villager sheets at ten to twenty layers each is sixty to a
+        // hundred and twenty fetches per sync, and without a digest not one of
+        // them is verified — `--verify` on a layered cut would be meaningless.
+        if (!entry?.from) throw new Error(`Cut "${target}" layer "${name}" has no source url.`);
+        if (!SHA256.test(entry.sha256 ?? '')) {
+          throw new Error(
+            `Cut "${target}" layer "${name}" has no sha256. An unpinned download is not ` +
+              'reproducible: upstream can change the file and nobody would know.',
+          );
+        }
       }
     }
+
+    if (cut.cell !== undefined) wantWholeNumberArray(target, 'cell', cut.cell, 2);
+    if (cut.rect !== undefined) wantWholeNumberArray(target, 'rect', cut.rect, 4);
+    if (cut.grid !== undefined) wantWholeNumber(target, 'grid', cut.grid);
+    if (cut.scale !== undefined) wantWholeNumber(target, 'scale', cut.scale);
+    if (cut.frame !== undefined) wantWholeNumber(target, 'frame', cut.frame);
+    if (cut.row !== undefined) wantWholeNumber(target, 'row', cut.row);
   }
 
   return json;
@@ -146,17 +194,44 @@ export function reconcile({ rawFiles, cuts, notImported = {} }) {
 /**
  * Packs that art is taken from but that the credits do not mention.
  *
- * Matched on the pack's title appearing in the file, because that is what a
- * reader looks for — a heading with the pack's name on it. Only packs a cut
- * actually uses are required: declaring a pack and not using it yet is a
- * legitimate half-finished state, and shipping its art without credit is not.
+ * Matched against markdown heading lines only, not any occurrence of the
+ * title anywhere in the file. A bare substring match lets `[LPC] Fish` be
+ * "credited" by a file that only mentions `[LPC] Fishing Rod` in passing, or
+ * by a sentence saying the art was *not* taken from that pack — and with
+ * around eight similarly-named LPC packs in the table, that is not a
+ * hypothetical. A heading is what a reader actually looks for when checking
+ * whether a pack is credited, so it is what this checks for too.
+ *
+ * Only packs a cut actually uses are required: declaring a pack and not using
+ * it yet is a legitimate half-finished state, and shipping its art without
+ * credit is not.
  */
+/** A literal string as a regex, so `[LPC] Fish` searches for those characters and not a class. */
+function escapeRegExp(text) {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+/**
+ * Whether a heading credits this exact title, not a longer one that happens
+ * to start with it.
+ *
+ * `[LPC] Fish` is a literal prefix of `[LPC] Fishing Rod` — the two packs this
+ * fix was written to tell apart — so `heading.includes(title)` alone still
+ * matches the wrong one. Requiring that the character right after the title
+ * is not a letter rejects that: `[LPC] Fishing Rod` fails because `h` follows
+ * immediately, while `[LPC] Fish (CC-BY-SA 3.0)` passes because a space does.
+ */
+function creditsTitle(heading, title) {
+  return new RegExp(`${escapeRegExp(title)}(?![A-Za-z])`).test(heading);
+}
+
 export function missingCredits({ packs, cuts, credits }) {
   const used = new Set(cuts.map((cut) => cut.pack));
+  const headings = credits.split('\n').filter((line) => /^#{1,6}\s/.test(line));
   return [...used]
     .filter((name) => {
       const title = packs[name]?.title;
-      return !title || !credits.includes(title);
+      return !title || !headings.some((line) => creditsTitle(line, title));
     })
     .sort();
 }

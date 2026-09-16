@@ -19,7 +19,6 @@
  */
 import crypto from 'node:crypto';
 import fs from 'node:fs';
-import os from 'node:os';
 import path from 'node:path';
 import { OUT_DIR, planImport, readSource } from './import-lpc.mjs';
 import { encodeImage } from './lib/png.mjs';
@@ -27,7 +26,13 @@ import { cutFlags, missingCredits, reconcile, validateSources } from './lib/sour
 
 const SOURCES_FILE = path.join('art', 'sources.json');
 const CACHE_DIR = path.join('art', 'sources');
-const CREDITS_FILE = path.join('public', 'assets', 'lpc', 'CREDITS.md');
+// The hand-written file, not `public/assets/lpc/CREDITS.md`. That copy is
+// *generated* by `apply-palette.mjs` from this one plus a modification
+// notice, so crediting a new pack here and running `--check` before
+// `palette:apply` would fail naming a file nobody is meant to edit — and
+// editing the generated copy directly would build green today and vanish
+// silently the next time someone runs `palette:apply`.
+const CREDITS_FILE = path.join('art', 'raw', 'lpc', 'CREDITS.md');
 
 function readSources() {
   if (!fs.existsSync(SOURCES_FILE)) throw new Error(`No ${SOURCES_FILE}.`);
@@ -39,15 +44,16 @@ function digest(buffer) {
 }
 
 /**
- * One pack file on disk, downloaded if it is not there yet.
+ * One file on disk, downloaded if it is not there yet, under `subDir` when
+ * given.
  *
  * The digest is checked every time, not only after a download. A cached file
  * that has been edited by hand is exactly the situation the pin is for.
  */
-async function packFile(packName, fileName, entry) {
-  const target = path.join(CACHE_DIR, packName, fileName);
+async function packFile(packName, fileName, entry, subDir = '') {
+  const target = path.join(CACHE_DIR, packName, subDir, fileName);
   if (!fs.existsSync(target)) {
-    process.stdout.write(`downloading ${packName}/${fileName}\n`);
+    process.stdout.write(`downloading ${packName}/${subDir ? `${subDir}/` : ''}${fileName}\n`);
     const response = await fetch(entry.from);
     if (!response.ok) throw new Error(`${entry.from} returned ${response.status}.`);
     fs.mkdirSync(path.dirname(target), { recursive: true });
@@ -64,13 +70,30 @@ async function packFile(packName, fileName, entry) {
   return target;
 }
 
-/** A layered cut: each url written under its declared name, stacked by name. */
+/**
+ * A layered cut's folder: every layer cached and digest-verified exactly the
+ * way `packFile` treats a plain pack file, under `art/sources/<pack>/<target>/`.
+ *
+ * This used to fetch every layer fresh on every run, unpinned, into a
+ * `mkdtempSync` folder nothing ever removed — meaningless for `--verify`, and
+ * expensive for the six villager sheets `layers` was invented for (ten to
+ * twenty layers each). Caching under the pack directory removes the need for
+ * a temp directory at all: the cache directory *is* the folder `readSource`
+ * wants, and it survives between runs the same way a pack file's cache does.
+ *
+ * Stale entries are swept first — a layer dropped from the table (a hairstyle
+ * changed, say) must not stay in the folder and get composited anyway, which
+ * a bare cache-and-verify loop would silently allow.
+ */
 async function layerFolder(cut) {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), `lpc-${cut.target}-`));
-  for (const [name, url] of Object.entries(cut.layers)) {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error(`${url} returned ${response.status}.`);
-    fs.writeFileSync(path.join(dir, name), Buffer.from(await response.arrayBuffer()));
+  const dir = path.join(CACHE_DIR, cut.pack, cut.target);
+  fs.mkdirSync(dir, { recursive: true });
+  const wanted = new Set(Object.keys(cut.layers));
+  for (const existing of fs.readdirSync(dir)) {
+    if (!wanted.has(existing)) fs.rmSync(path.join(dir, existing));
+  }
+  for (const [name, entry] of Object.entries(cut.layers)) {
+    await packFile(cut.pack, name, entry, cut.target);
   }
   return dir;
 }

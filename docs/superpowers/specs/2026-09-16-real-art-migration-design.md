@@ -105,7 +105,10 @@ The manifest has two sections — the packs, and the cuts:
   "cuts": [
     { "target": "item-carp", "pack": "lpc-fish", "file": "fish.png", "grid": 32, "cell": [0, 0] },
     { "target": "maeve-sheet", "pack": "lpc-generator", "walkcycle": true,
-      "layers": { "010 body.png": "https://.../body.png", "100 dress.png": "https://.../dress.png" } }
+      "layers": {
+        "010 body.png": { "from": "https://.../body.png", "sha256": "1a2b..." },
+        "100 dress.png": { "from": "https://.../dress.png", "sha256": "3c4d..." }
+      } }
   ]
 }
 ```
@@ -123,9 +126,11 @@ and already refuses a cut that lands entirely off the edge of its source. It is
 covered by `scripts/lib/png.test.mjs`. `art:sync` is a loop over a table that
 calls it.
 
-A `layers` cut writes each URL into a temporary folder under its declared file
-name and hands the folder to `readSource()`, which composites PNGs in file-name
-order. The numeric prefixes are that order, which is why the names carry them.
+A `layers` cut downloads, caches and sha256-verifies each layer exactly the way
+a plain pack file is — under `art/sources/<pack>/<target>/` rather than
+`art/sources/<pack>/` — and hands that folder to `readSource()`, which
+composites the PNGs in file-name order. The numeric prefixes are that order,
+which is why the names carry them.
 
 The command ends by running the existing `palette:apply` and `lpc:manifest`
 steps, so one invocation takes a table entry all the way to a texture key the
