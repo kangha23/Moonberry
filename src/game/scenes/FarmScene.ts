@@ -1081,28 +1081,6 @@ export default class FarmScene extends Phaser.Scene {
     this.atmosphere.updateWeatherPresentation();
   }
 
-  /**
-   * The rectangle the held tool would work, drawn under the cursor.
-   *
-   * Only for a tool that covers more than one tile: a basic hoe has always
-   * shown exactly one cursor and does not need a second outline round it.
-   */
-  private updateSweepGhost(target: Point) {
-    const player = this.localPlayer;
-    const held = player ? hotbarSlots(player)[player.selectedSlot] : null;
-    const size = held ? areaOfEffectOf(held.item) : { width: 1, height: 1 };
-    if (!player || (size.width === 1 && size.height === 1) || farmStore.getState().buildKind) {
-      this.sweepGhost.setVisible(false);
-      return;
-    }
-    this.sweepGhost.setVisible(true);
-    this.sweepGhost.setPosition(
-      (target.x - Math.floor((size.width - 1) / 2)) * TILE_SIZE,
-      (target.y - Math.floor((size.height - 1) / 2)) * TILE_SIZE,
-    );
-    this.sweepGhost.setSize(size.width * TILE_SIZE, size.height * TILE_SIZE);
-  }
-
   // --- screen-space effects --------------------------------------------------
   //
   // Weather, overlays, and the HUD are pinned to the camera rather than to the
@@ -1149,6 +1127,8 @@ export default class FarmScene extends Phaser.Scene {
     this.fishingHud.layout(width, height);
     this.summary.layout(width, height);
   }
+
+  // --- cursors --------------------------------------------------------------
 
   /**
    * Draws where an action would land.
@@ -1219,5 +1199,27 @@ export default class FarmScene extends Phaser.Scene {
     // Only the tier refusal goes red. Holding a hoe in front of a tree is not
     // a wall, it is the wrong slot, and the prompt bar says so in words.
     return !check.ok && check.tooWeak !== null;
+  }
+
+  /**
+   * The rectangle the held tool would work, drawn under the cursor.
+   *
+   * Only for a tool that covers more than one tile: a basic hoe has always
+   * shown exactly one cursor and does not need a second outline round it.
+   */
+  private updateSweepGhost(target: Point) {
+    const player = this.localPlayer;
+    const held = player ? hotbarSlots(player)[player.selectedSlot] : null;
+    const size = held ? areaOfEffectOf(held.item) : { width: 1, height: 1 };
+    if (!player || (size.width === 1 && size.height === 1) || farmStore.getState().buildKind) {
+      this.sweepGhost.setVisible(false);
+      return;
+    }
+    this.sweepGhost.setVisible(true);
+    this.sweepGhost.setPosition(
+      (target.x - Math.floor((size.width - 1) / 2)) * TILE_SIZE,
+      (target.y - Math.floor((size.height - 1) / 2)) * TILE_SIZE,
+    );
+    this.sweepGhost.setSize(size.width * TILE_SIZE, size.height * TILE_SIZE);
   }
 }
