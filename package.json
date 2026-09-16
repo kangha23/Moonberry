@@ -11,7 +11,7 @@
     "preview": "vite preview --host 0.0.0.0",
     "lint": "eslint .",
     "test": "vitest run && npm run test:scripts",
-    "test:scripts": "node --test \"scripts/**/*.test.mjs\"",
+    "test:scripts": "node --test \"scripts/**/*.test.mjs\" && node scripts/art-sync.mjs --check",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install chromium",
