@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { ICON_SIZE, iconFor } from '../game/assets/itemIcons';
 import { LPC_URL_BY_KEY } from '../game/assets/lpc.generated';
 import { ITEMS, type ItemId } from '../game/systems/items';
@@ -11,11 +12,28 @@ import { ITEMS, type ItemId } from '../game/systems/items';
  * loaded image, and this because the key is in the manifest — which is what
  * closes the old gap where a field sprite and a satchel icon agreed on colour
  * but not on shape.
+ *
+ * Phaser gets the generated drawing as a fallback for free: `withTexture`
+ * only draws when nothing has loaded. React does not, on its own — an `<img>`
+ * whose src 404s renders a broken-image glyph and never reaches the SVG
+ * branch below it. `onError` is what makes a blocked CDN or a half-cloned
+ * checkout a plainer farm here too, rather than a grid of broken images.
  */
 export default function ItemIcon({ item, size = 32 }: { item: ItemId; size?: number }) {
+  const [failedUrl, setFailedUrl] = useState<string | null>(null);
   const url = LPC_URL_BY_KEY[ITEMS[item].texture];
-  if (url) {
-    return <img className="item-icon" src={url} width={size} height={size} alt="" aria-hidden="true" />;
+  if (url && url !== failedUrl) {
+    return (
+      <img
+        className="item-icon"
+        src={url}
+        width={size}
+        height={size}
+        alt=""
+        aria-hidden="true"
+        onError={() => setFailedUrl(url)}
+      />
+    );
   }
 
   const shapes = iconFor(item);

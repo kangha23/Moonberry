@@ -139,10 +139,12 @@ ${images.map((name) => `  ['${name}', '/assets/lpc/${name}.png'],`).join('\n')}
  * \`ItemIcon\` in the React panels has the opposite question — "is there a
  * drawing for this one item, and where is it" — and asking that of a list is
  * a scan per cell of the inventory grid.
+ *
+ * Built from \`LPC_IMAGES\` rather than written out a second time: every
+ * import used to add one line to each list, by hand, and the two could
+ * disagree. \`Object.fromEntries\` of the same pairs cannot.
  */
-export const LPC_URL_BY_KEY: Readonly<Record<string, string>> = {
-${images.map((name) => `  '${name}': '/assets/lpc/${name}.png',`).join('\n')}
-};
+export const LPC_URL_BY_KEY: Readonly<Record<string, string>> = Object.fromEntries(LPC_IMAGES);
 
 /**
  * The walk sheets, read as nine frames across and four directions down, at

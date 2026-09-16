@@ -69,56 +69,12 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
  * `ItemIcon` in the React panels has the opposite question — "is there a
  * drawing for this one item, and where is it" — and asking that of a list is
  * a scan per cell of the inventory grid.
+ *
+ * Built from `LPC_IMAGES` rather than written out a second time: every
+ * import used to add one line to each list, by hand, and the two could
+ * disagree. `Object.fromEntries` of the same pairs cannot.
  */
-export const LPC_URL_BY_KEY: Readonly<Record<string, string>> = {
-  'bush': '/assets/lpc/bush.png',
-  'crop-cranberry': '/assets/lpc/crop-cranberry.png',
-  'crop-frostcap': '/assets/lpc/crop-frostcap.png',
-  'crop-melon': '/assets/lpc/crop-melon.png',
-  'crop-pumpkin': '/assets/lpc/crop-pumpkin.png',
-  'crop-rhubarb': '/assets/lpc/crop-rhubarb.png',
-  'crop-sprout': '/assets/lpc/crop-sprout.png',
-  'crop-strawberry': '/assets/lpc/crop-strawberry.png',
-  'crop-sunflower': '/assets/lpc/crop-sunflower.png',
-  'crop-tomato': '/assets/lpc/crop-tomato.png',
-  'crop-turnip': '/assets/lpc/crop-turnip.png',
-  'crop-winterberry': '/assets/lpc/crop-winterberry.png',
-  'farmhouse': '/assets/lpc/farmhouse.png',
-  'flowers-gold': '/assets/lpc/flowers-gold.png',
-  'flowers-red': '/assets/lpc/flowers-red.png',
-  'flowers-white': '/assets/lpc/flowers-white.png',
-  'grass-tuft': '/assets/lpc/grass-tuft.png',
-  'log': '/assets/lpc/log.png',
-  'plot-tilled': '/assets/lpc/plot-tilled.png',
-  'plot-tilled-2': '/assets/lpc/plot-tilled-2.png',
-  'plot-tilled-3': '/assets/lpc/plot-tilled-3.png',
-  'plot-watered': '/assets/lpc/plot-watered.png',
-  'plot-watered-2': '/assets/lpc/plot-watered-2.png',
-  'plot-watered-3': '/assets/lpc/plot-watered-3.png',
-  'plot-wild': '/assets/lpc/plot-wild.png',
-  'plot-wild-2': '/assets/lpc/plot-wild-2.png',
-  'plot-wild-3': '/assets/lpc/plot-wild-3.png',
-  'stump': '/assets/lpc/stump.png',
-  'stump-flowers': '/assets/lpc/stump-flowers.png',
-  'tile-grass': '/assets/lpc/tile-grass.png',
-  'tile-grass-1x': '/assets/lpc/tile-grass-1x.png',
-  'tile-grass-1xy': '/assets/lpc/tile-grass-1xy.png',
-  'tile-grass-1y': '/assets/lpc/tile-grass-1y.png',
-  'tile-grass-2': '/assets/lpc/tile-grass-2.png',
-  'tile-grass-2x': '/assets/lpc/tile-grass-2x.png',
-  'tile-grass-2xy': '/assets/lpc/tile-grass-2xy.png',
-  'tile-grass-2y': '/assets/lpc/tile-grass-2y.png',
-  'tile-grass-3': '/assets/lpc/tile-grass-3.png',
-  'tile-grass-3x': '/assets/lpc/tile-grass-3x.png',
-  'tile-grass-3xy': '/assets/lpc/tile-grass-3xy.png',
-  'tile-grass-3y': '/assets/lpc/tile-grass-3y.png',
-  'tile-path': '/assets/lpc/tile-path.png',
-  'tile-water': '/assets/lpc/tile-water.png',
-  'tile-water-2': '/assets/lpc/tile-water-2.png',
-  'tile-water-3': '/assets/lpc/tile-water-3.png',
-  'tree': '/assets/lpc/tree.png',
-  'tuft-tall': '/assets/lpc/tuft-tall.png',
-};
+export const LPC_URL_BY_KEY: Readonly<Record<string, string>> = Object.fromEntries(LPC_IMAGES);
 
 /**
  * The walk sheets, read as nine frames across and four directions down, at

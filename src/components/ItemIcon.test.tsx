@@ -1,4 +1,4 @@
-import { render } from '@testing-library/react';
+import { fireEvent, render } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 /**
@@ -35,5 +35,17 @@ describe('ItemIcon', () => {
     expect(png?.getAttribute('width')).toBe('48');
     const svg = render(<ItemIcon item="wood" size={48} />).container.querySelector('svg');
     expect(svg?.getAttribute('width')).toBe('48');
+  });
+
+  it('falls back to the generated rectangles when the manifest PNG fails to load', () => {
+    // The fallback Phaser gets for free from `withTexture`: a blocked CDN or a
+    // half-cloned checkout should read as a plainer farm, not a grid of
+    // broken-image glyphs.
+    const { container } = render(<ItemIcon item="turnip" size={32} />);
+    const img = container.querySelector('img');
+    expect(img).not.toBeNull();
+    fireEvent.error(img as HTMLImageElement);
+    expect(container.querySelector('img')).toBeNull();
+    expect(container.querySelector('svg')).not.toBeNull();
   });
 });
