@@ -30,7 +30,7 @@ import {
   startAutosave,
   toggleInventory,
 } from '../state/store';
-import type { FarmState, PlayerId, PlayerState } from '../state/types';
+import type { FarmState, PlayerState } from '../state/types';
 import {
   BUILDING_AREA,
   buildingBounds,
@@ -74,9 +74,9 @@ import {
   worldToTile,
   type AreaId,
   type AreaMap,
-  type Direction,
   type Point,
 } from '../world/areas';
+import { AvatarView } from './farm/avatars';
 import { HerdView } from './farm/herd';
 import { ScreenLayer } from './farm/screen';
 import { VillagerView } from './farm/villagers';
@@ -85,9 +85,7 @@ import {
   DEPTH,
   GROUND_ITEM_DEPTH,
   PROSE_FONT,
-  WALK_FRAMES,
   WILT_TINT,
-  standFrame,
   type SceneContext,
 } from './farm/shared';
 
@@ -264,13 +262,6 @@ const SUMMARY = {
   maxRows: 6,
 } as const;
 
-interface Avatar {
-  sprite: Phaser.GameObjects.Sprite;
-  shadow: Phaser.GameObjects.Image;
-  lastX: number;
-  lastY: number;
-}
-
 /**
  * One thing standing on the ground.
  *
@@ -330,7 +321,8 @@ export default class FarmScene extends Phaser.Scene {
   private drawnBuildings: FarmState['buildings'] | null = null;
   private sparkles = new Map<string, Phaser.GameObjects.Image>();
   private waterSprites: Phaser.GameObjects.Image[] = [];
-  private avatars = new Map<PlayerId, Avatar>();
+  /** The players standing on the built area, drawn. */
+  private avatarView!: AvatarView;
   /** The people standing on the built area, drawn. */
   private villagerView!: VillagerView;
   /** The animals out of doors, drawn. */
@@ -606,10 +598,11 @@ export default class FarmScene extends Phaser.Scene {
   create() {
     this.screen = new ScreenLayer(this);
     const context = this.createContext();
+    this.avatarView = new AvatarView(context);
     this.villagerView = new VillagerView(context);
     this.herdView = new HerdView(context);
     createPixelArtTextures(this);
-    this.createWalkAnimations();
+    this.avatarView.createWalkAnimations();
     this.villagerView.createVillagerAnimations();
     this.herdView.createAnimalAnimations();
     this.screen.create();
@@ -755,7 +748,7 @@ export default class FarmScene extends Phaser.Scene {
     this.syncPlaceables();
     this.villagerView.syncNpcs(delta);
     this.herdView.syncAnimals(delta);
-    this.syncAvatars();
+    this.avatarView.syncAvatars();
     this.updateCursor();
     this.updateBuildGhost();
     this.updateFishing(time);
@@ -1224,7 +1217,7 @@ export default class FarmScene extends Phaser.Scene {
       if (step) this.audio.play(step);
     }
 
-    const avatar = this.avatars.get(player.id);
+    const avatar = this.avatarView.avatarFor(player.id);
     if (avatar && !this.anims.exists(`player-walk-${player.facing}`)) {
       avatar.sprite.setAngle(Math.sin(time / 130) * 1.5);
     }
@@ -1511,7 +1504,7 @@ export default class FarmScene extends Phaser.Scene {
     this.placeableSprites.clear();
     this.drawnPlaceables = null;
     this.waterSprites = [];
-    this.avatars.clear();
+    this.avatarView.forgetArea();
     this.villagerView.forgetArea();
     this.houseGlow = null;
     this.hearthGlow = null;
@@ -1805,94 +1798,6 @@ export default class FarmScene extends Phaser.Scene {
         this.areaLayer?.add(tuft);
         placed += 1;
       }
-    }
-  }
-
-  private createWalkAnimations() {
-    if (!this.textures.exists('player-sheet')) return;
-    (['up', 'left', 'down', 'right'] as Direction[]).forEach((dir) => {
-      const key = `player-walk-${dir}`;
-      if (this.anims.exists(key)) return;
-      this.anims.create({
-        key,
-        frames: this.anims.generateFrameNumbers('player-sheet', {
-          start: standFrame(dir),
-          end: standFrame(dir) + WALK_FRAMES - 1,
-        }),
-        frameRate: 10,
-        repeat: -1,
-      });
-    });
-  }
-
-  // --- avatars --------------------------------------------------------------
-
-  private createAvatar(player: PlayerState): Avatar {
-    const hasSheet = this.textures.exists('player-sheet');
-    const shadow = this.add.image(player.x, player.y + 16, 'shadow');
-    const sprite = this.add
-      .sprite(player.x, player.y, hasSheet ? 'player-sheet' : 'player', hasSheet ? standFrame('down') : undefined)
-      .setScale(hasSheet ? 0.62 : 1.2);
-    // Remote players are tinted so they read as somebody else at a glance.
-    // Was the source literal `bfd8ff`, a pale blue this palette has no match for at all (every
-    // blue it owns is dark and saturated - `water.0-3`). Between the two
-    // near-tied mechanical candidates, `light.6` (#acbfb0, d=0.1177) sits 84°
-    // from the original hue and keeps the original's near-white lightness;
-    // `light.7` (#f8dbbd, d=0.1154) is nominally closer but 174° away in hue
-    // *and* a warm cream, which would read as "everyone else's UI colour"
-    // rather than "a different player". `setTint` multiplies onto the sprite,
-    // so a dark blue (water.0-3, d>=0.26) would visibly darken the sprite
-    // rather than lightly recolour it - the wrong trade for a legibility tint.
-    if (player.id !== farmStore.getState().localPlayerId) sprite.setTint(tint('light.6'));
-    this.areaLayer?.addMultiple([shadow, sprite]);
-    return { sprite, shadow, lastX: player.x, lastY: player.y };
-  }
-
-  /**
-   * Draws the players standing on the built area, adding and removing avatars
-   * as people arrive, leave, or walk through a doorway to somewhere else.
-   */
-  private syncAvatars() {
-    const { farm, localPlayerId } = farmStore.getState();
-    // Members who are logged out keep their place in the world but are not
-    // standing in it, so they are not drawn.
-    const here = Object.values(farm.players).filter(
-      (player) => player.online && player.area === this.builtArea,
-    );
-    const present = new Set(here.map((player) => player.id));
-
-    for (const player of here) {
-      let avatar = this.avatars.get(player.id);
-      if (!avatar) {
-        avatar = this.createAvatar(player);
-        this.avatars.set(player.id, avatar);
-        if (player.id === localPlayerId) this.cameras.main.startFollow(avatar.sprite, true, 0.12, 0.12);
-      }
-
-      const moved = Math.abs(player.x - avatar.lastX) > 0.01 || Math.abs(player.y - avatar.lastY) > 0.01;
-      avatar.sprite.setPosition(player.x, player.y);
-      avatar.sprite.setDepth(Math.floor(player.y / TILE_SIZE) + AVATAR_DEPTH_BASE);
-      avatar.shadow.setPosition(player.x, player.y + 16);
-      avatar.shadow.setDepth(avatar.sprite.depth - 1);
-
-      const walkKey = `player-walk-${player.facing}`;
-      if (this.anims.exists(walkKey)) {
-        if (moved) avatar.sprite.anims.play(walkKey, true);
-        else {
-          avatar.sprite.anims.stop();
-          avatar.sprite.setFrame(standFrame(player.facing));
-        }
-      }
-
-      avatar.lastX = player.x;
-      avatar.lastY = player.y;
-    }
-
-    for (const [id, avatar] of this.avatars) {
-      if (present.has(id)) continue;
-      avatar.sprite.destroy();
-      avatar.shadow.destroy();
-      this.avatars.delete(id);
     }
   }
 
