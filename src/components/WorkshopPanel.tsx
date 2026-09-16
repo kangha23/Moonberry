@@ -183,6 +183,7 @@ function ToolsTab({
         {offers.map((offer) => {
           const into = ITEMS[offer.into];
           const tooDear = offer.cost > coins;
+          const shortOfBars = offer.bars !== null && offer.bars.has < offer.bars.needs;
           return (
             <li key={offer.item} className="shop-row">
               <ItemIcon item={offer.into} size={32} />
@@ -195,12 +196,19 @@ function ToolsTab({
                   Thợ rèn giữ nó {UPGRADE_DAYS} ngày.
                 </small>
               </div>
-              <span className="shop-price">{offer.cost}g</span>
+              <span className="shop-price">
+                {offer.bars && (
+                  <span className={shortOfBars ? 'shop-warning' : undefined}>
+                    {offer.bars.needs} {offer.bars.label.toLowerCase()} ·{' '}
+                  </span>
+                )}
+                {offer.cost}g
+              </span>
               <div className="shop-buttons">
                 <button
                   type="button"
                   className="ghost-button"
-                  disabled={tooDear}
+                  disabled={tooDear || shortOfBars}
                   onClick={() => sendAction({ type: 'upgradeTool', item: offer.item })}
                 >
                   Giao cho thợ rèn

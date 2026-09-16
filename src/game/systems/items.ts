@@ -92,6 +92,8 @@ export interface ItemDef {
   /** What the blacksmith turns this into, and what he charges for the work. */
   upgradesTo?: ItemId;
   upgradeCost?: number;
+  /** The bars the blacksmith also wants for that work (spec 16). */
+  upgradeBars?: { item: ItemId; count: number };
   /** What planting it grows, if anything. */
   plants?: CropId;
   /**
@@ -239,6 +241,12 @@ interface TierDef {
   areaOfEffect: { width: number; height: number };
   energyFactor: number;
   cost: number;
+  /**
+   * The bars reaching this tier costs, on top of `cost` (spec 16). Three
+   * rather than Stardew's five because tools are per player: six implements
+   * a rung is eighteen bars each, and five would make a co-op of four grind.
+   */
+  bars: { item: ItemId; count: number } | null;
   /** Pours, for the tier's watering can. */
   charges: number;
   /**
@@ -253,10 +261,10 @@ interface TierDef {
 }
 
 const TIERS: Record<ToolTier, TierDef> = {
-  basic: { label: '', areaOfEffect: { width: 1, height: 1 }, energyFactor: 1, cost: 0, charges: WATERING_CAN_CHARGES, barWidth: 0.2 },
-  copper: { label: 'Đồng', areaOfEffect: { width: 1, height: 3 }, energyFactor: 0.9, cost: 500, charges: 36, barWidth: 0.26 },
-  steel: { label: 'Thép', areaOfEffect: { width: 3, height: 3 }, energyFactor: 0.8, cost: 1800, charges: 72, barWidth: 0.32 },
-  gold: { label: 'Vàng', areaOfEffect: { width: 3, height: 5 }, energyFactor: 0.7, cost: 5000, charges: 120, barWidth: 0.4 },
+  basic: { label: '', areaOfEffect: { width: 1, height: 1 }, energyFactor: 1, cost: 0, bars: null, charges: WATERING_CAN_CHARGES, barWidth: 0.2 },
+  copper: { label: 'Đồng', areaOfEffect: { width: 1, height: 3 }, energyFactor: 0.9, cost: 250, bars: { item: 'copper-bar', count: 3 }, charges: 36, barWidth: 0.26 },
+  steel: { label: 'Thép', areaOfEffect: { width: 3, height: 3 }, energyFactor: 0.8, cost: 1000, bars: { item: 'iron-bar', count: 3 }, charges: 72, barWidth: 0.32 },
+  gold: { label: 'Vàng', areaOfEffect: { width: 3, height: 5 }, energyFactor: 0.7, cost: 2500, bars: { item: 'gold-bar', count: 3 }, charges: 120, barWidth: 0.4 },
 };
 
 /**
@@ -420,6 +428,8 @@ function toolRows(): Record<ItemId, ItemDef> {
       if (next && base.forged !== false) {
         def.upgradesTo = toolIdFor(base.id, next);
         def.upgradeCost = TIERS[next].cost;
+        const bars = TIERS[next].bars;
+        if (bars) def.upgradeBars = bars;
       }
       rows[id] = def;
     });
@@ -1873,10 +1883,12 @@ export const BASIC_BAR_WIDTH = 0.2;
  * What the blacksmith would make of this item, or null for one he will not
  * take: anything that is not a tool, and a tool already at the top.
  */
-export function upgradeFor(id: ItemId): { item: ItemId; cost: number } | null {
+export function upgradeFor(
+  id: ItemId,
+): { item: ItemId; cost: number; bars: { item: ItemId; count: number } | null } | null {
   const def = ITEMS[id];
   if (!def?.upgradesTo || def.upgradeCost === undefined) return null;
-  return { item: def.upgradesTo, cost: def.upgradeCost };
+  return { item: def.upgradesTo, cost: def.upgradeCost, bars: def.upgradeBars ?? null };
 }
 
 /**

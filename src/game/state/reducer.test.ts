@@ -29,7 +29,7 @@ import {
 } from '../systems/placeables';
 import { POINTS_PER_HEART, REACTION_POINTS } from '../npcs/relationships';
 import { entryPosition, scheduleEntryAt, type NpcActor } from '../npcs/schedule';
-import { ITEMS, WATERING_CAN_CHARGES, type CropId, type ItemId } from '../systems/items';
+import { ITEMS, WATERING_CAN_CHARGES, upgradeFor, type CropId, type ItemId } from '../systems/items';
 import { QUEST_REWARD_COINS } from '../systems/quest';
 import { DAY_END, DAY_START, SEASON_DAYS, createTimeState, seasonForDay } from '../systems/time';
 import {
@@ -1259,10 +1259,16 @@ function funded(state: FarmState, coins: number): FarmState {
   return { ...state, coins };
 }
 
+/** The three bars a copper upgrade asks for, in the player's satchel. */
+function withCopperBars(state: FarmState, id: PlayerId, count = 3): FarmState {
+  return give(state, id, 'copper-bar', count);
+}
+
 describe('the blacksmith', () => {
   it('takes the tool and the money, and gives nothing back on the day it was handed over', () => {
     let state = funded(join(createFarmState(), 'a'), 1000);
     state = standAtForge(state, 'a');
+    state = withCopperBars(state, 'a');
     const cost = ITEMS.hoe.upgradeCost!;
 
     const ordered = applyIntent(state, { type: 'player/upgradeTool', playerId: 'a', item: 'hoe' });
@@ -1271,6 +1277,7 @@ describe('the blacksmith', () => {
     // days, and you choose to do it in the week before you need it.
     expect(countItem(ordered.state.players.a.inventory, 'hoe')).toBe(0);
     expect(ordered.state.coins).toBe(1000 - cost);
+    expect(countItem(ordered.state.players.a.inventory, 'copper-bar')).toBe(0);
     expect(ordered.state.players.a.pendingUpgrade).toEqual({
       item: 'copper-hoe',
       readyOnDay: state.time.day + UPGRADE_DAYS,
@@ -1297,6 +1304,7 @@ describe('the blacksmith', () => {
   it('hands the better tool over on the right morning, and says so overnight', () => {
     let state = funded(join(createFarmState(), 'a'), 1000);
     state = standAtForge(state, 'a');
+    state = withCopperBars(state, 'a');
     state = applyIntent(state, { type: 'player/upgradeTool', playerId: 'a', item: 'hoe' }).state;
 
     let woken: GameEvent[] = [];
@@ -1326,6 +1334,7 @@ describe('the blacksmith', () => {
   it('refuses a second job while the anvil is busy', () => {
     let state = funded(join(createFarmState(), 'a'), 10_000);
     state = standAtForge(state, 'a');
+    state = withCopperBars(state, 'a', 6);
     state = applyIntent(state, { type: 'player/upgradeTool', playerId: 'a', item: 'hoe' }).state;
 
     const second = applyIntent(state, { type: 'player/upgradeTool', playerId: 'a', item: 'basket' });
@@ -1350,12 +1359,14 @@ describe('the blacksmith', () => {
     const cost = ITEMS.hoe.upgradeCost!;
     let state = funded(join(createFarmState(), 'a'), cost - 1);
     state = standAtForge(state, 'a');
+    state = withCopperBars(state, 'a');
 
     const result = applyIntent(state, { type: 'player/upgradeTool', playerId: 'a', item: 'hoe' });
 
     expect(result.state.players.a.pendingUpgrade).toBeNull();
     expect(countItem(result.state.players.a.inventory, 'hoe')).toBe(1);
     expect(result.state.coins).toBe(cost - 1);
+    expect(countItem(result.state.players.a.inventory, 'copper-bar')).toBe(3);
   });
 
   it('will not take a tool that is already the best one he makes', () => {
@@ -1367,6 +1378,30 @@ describe('the blacksmith', () => {
 
     expect(result.state.players.a.pendingUpgrade).toBeNull();
     expect(result.state.coins).toBe(100_000);
+  });
+
+  it('refuses the work without the bars, and keeps the tool, the bars and the money', () => {
+    let state = funded(join(createFarmState(), 'a'), 10_000);
+    state = withCopperBars(standAtForge(state, 'a'), 'a', 1);
+
+    const result = applyIntent(state, { type: 'player/upgradeTool', playerId: 'a', item: 'hoe' });
+
+    expect(result.state.players.a.pendingUpgrade).toBeNull();
+    expect(countItem(result.state.players.a.inventory, 'hoe')).toBe(1);
+    expect(countItem(result.state.players.a.inventory, 'copper-bar')).toBe(1);
+    expect(result.state.coins).toBe(10_000);
+    expect(result.events).toContainEqual({
+      kind: 'message',
+      playerId: 'a',
+      text: 'Cuốc đồng cần 3 đồng thỏi, bạn mới có 1.',
+    });
+  });
+
+  it('asks for the bar of the rung being reached, and less gold than before', () => {
+    expect(upgradeFor('hoe')).toEqual({ item: 'copper-hoe', cost: 250, bars: { item: 'copper-bar', count: 3 } });
+    expect(upgradeFor('copper-hoe')).toEqual({ item: 'steel-hoe', cost: 1000, bars: { item: 'iron-bar', count: 3 } });
+    expect(upgradeFor('steel-hoe')).toEqual({ item: 'gold-hoe', cost: 2500, bars: { item: 'gold-bar', count: 3 } });
+    expect(upgradeFor('fishing-rod')?.bars).toEqual({ item: 'copper-bar', count: 3 });
   });
 });
 

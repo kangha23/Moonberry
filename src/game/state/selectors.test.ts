@@ -12,11 +12,12 @@ import {
   openPanel,
   stillAwake,
   stockFor,
+  upgradeOffers,
   waitingOnLabel,
 } from './selectors';
 import { applyIntent, createFarmState } from './reducer';
 import { generateFloor } from '../systems/mine';
-import { newStack } from '../systems/inventory';
+import { addItem, newStack } from '../systems/inventory';
 import { TILE_SIZE, mineArea, type Point } from '../world/areas';
 import { elevatorTile } from '../world/mineMap';
 import type { FarmStoreState } from './store';
@@ -331,5 +332,18 @@ describe('the mine, as the HUD and the action key read it', () => {
     const farm = farmWith('a');
     expect(elevatorStops({ ...farm, deepestFloor: 4 })).toEqual([]);
     expect(elevatorStops({ ...farm, deepestFloor: 17 })).toEqual([5, 10, 15]);
+  });
+});
+
+describe('upgrade offers', () => {
+  it('says how many bars each offer needs and how many the satchel holds', () => {
+    let farm = farmWith('a');
+    const inventory = addItem(farm.players.a.inventory, 'copper-bar', 2)!;
+    farm = { ...farm, players: { ...farm.players, a: { ...farm.players.a, inventory } } };
+
+    const hoe = upgradeOffers(farm.players.a).find((offer) => offer.item === 'hoe');
+
+    expect(hoe?.cost).toBe(250);
+    expect(hoe?.bars).toEqual({ item: 'copper-bar', label: 'Đồng thỏi', needs: 3, has: 2 });
   });
 });

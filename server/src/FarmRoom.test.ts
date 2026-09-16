@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { MSG, decodeFrame, encodeFrame, type ClientCommand } from '../../src/game/net/protocol';
 import { MAX_PLAYERS, type FarmState } from '../../src/game/state/types';
-import { countItem } from '../../src/game/systems/inventory';
+import { addItem, countItem } from '../../src/game/systems/inventory';
 import { ITEMS } from '../../src/game/systems/items';
 import { checkPlacement } from '../../src/game/systems/buildings';
 import { decodeSave, encodeSave } from '../../src/game/state/persistence';
@@ -553,6 +553,7 @@ describe('the forge and the carpenter through the server', () => {
     room.join(alice);
     standAtForge('alice');
     room.state.coins = 5000;
+    room.state.players.alice.inventory = addItem(room.state.players.alice.inventory, 'copper-bar', 3)!;
     const cost = ITEMS.hoe.upgradeCost!;
 
     command(room, 'alice', { type: 'upgradeTool', item: 'hoe' });
@@ -568,6 +569,7 @@ describe('the forge and the carpenter through the server', () => {
     seeded.join(new FakeConnection('alice'));
     Object.assign(seeded.state.players.alice, propSpot('blacksmith'));
     seeded.state.coins = 5000;
+    seeded.state.players.alice.inventory = addItem(seeded.state.players.alice.inventory, 'copper-bar', 3)!;
     command(seeded, 'alice', { type: 'upgradeTool', item: 'hoe' });
     seeded.tick(16);
     const pending = seeded.state.players.alice.pendingUpgrade;

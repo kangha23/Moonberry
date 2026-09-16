@@ -14,7 +14,7 @@ import {
   type Building,
   type BuildingKind,
 } from '../../systems/buildings';
-import { addItem, removeItem } from '../../systems/inventory';
+import { addItem, countItem, removeItem } from '../../systems/inventory';
 import { ITEMS, itemDef, upgradeFor, type ItemId } from '../../systems/items';
 import { placeableById } from '../../systems/placeables';
 import { isStaffed } from '../../npcs/schedule';
@@ -180,6 +180,24 @@ export function applyUpgradeTool(state: FarmState, playerId: PlayerId, item: Ite
   if (!inventory) {
     return { state, events: [say(playerId, `Bạn không mang theo ${itemDef(item).label.toLowerCase()}.`)] };
   }
+
+  // Bars before gold, and out of what is left once the tool is off the
+  // satchel: both are refusals, and neither removal is written until the end.
+  const barred = upgrade.bars ? removeItem(inventory, upgrade.bars.item, upgrade.bars.count) : inventory;
+  if (!barred) {
+    const bars = upgrade.bars!;
+    const have = countItem(player.inventory, bars.item);
+    return {
+      state,
+      events: [
+        say(
+          playerId,
+          `${itemDef(upgrade.item).label} cần ${bars.count} ${itemDef(bars.item).label.toLowerCase()}, bạn mới có ${have}.`,
+        ),
+      ],
+    };
+  }
+
   if (upgrade.cost > state.coins) {
     return {
       state,
@@ -190,7 +208,7 @@ export function applyUpgradeTool(state: FarmState, playerId: PlayerId, item: Ite
   }
 
   const readyOnDay = state.time.day + UPGRADE_DAYS;
-  const next: PlayerState = { ...player, inventory, pendingUpgrade: { item: upgrade.item, readyOnDay } };
+  const next: PlayerState = { ...player, inventory: barred, pendingUpgrade: { item: upgrade.item, readyOnDay } };
   return {
     state: { ...withPlayer(state, next), coins: state.coins - upgrade.cost },
     events: [

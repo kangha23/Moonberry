@@ -18,7 +18,14 @@ import {
   isComplete,
   type Building,
 } from '../systems/buildings';
-import { HOTBAR_SIZE, countProduce, slotAt, type Inventory, type ItemStack } from '../systems/inventory';
+import {
+  HOTBAR_SIZE,
+  countItem,
+  countProduce,
+  slotAt,
+  type Inventory,
+  type ItemStack,
+} from '../systems/inventory';
 import { ITEMS, upgradeFor, type ItemDef, type ItemId } from '../systems/items';
 import {
   ALL_RECIPES,
@@ -634,6 +641,8 @@ export interface UpgradeOffer {
   into: ItemId;
   intoLabel: string;
   cost: number;
+  /** What the anvil also wants, and how much of it this satchel holds. */
+  bars: { item: ItemId; label: string; needs: number; has: number } | null;
 }
 
 /**
@@ -661,6 +670,14 @@ export function upgradeOffers(player: PlayerState | null): UpgradeOffer[] {
       into: upgrade.item,
       intoLabel: ITEMS[upgrade.item].label,
       cost: upgrade.cost,
+      bars: upgrade.bars
+        ? {
+            item: upgrade.bars.item,
+            label: ITEMS[upgrade.bars.item].label,
+            needs: upgrade.bars.count,
+            has: countItem(player.inventory, upgrade.bars.item),
+          }
+        : null,
     });
   }
 
