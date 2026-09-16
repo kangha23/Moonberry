@@ -45,7 +45,7 @@ import {
 } from '../world/areas';
 import { nodeAt, nodeDef, type NodeKind, type ResourceNode } from '../systems/resources';
 import { CAST_ENERGY } from '../systems/fishing';
-import { applyIntent, createFarmState } from './reducer';
+import { CLOCK_STEP_MINUTES, CLOCK_STEP_MS, applyIntent, createFarmState } from './reducer';
 import type { ApplyResult, GameEvent } from './intents';
 import {
   COLLAPSE_COIN_CAP,
@@ -176,8 +176,8 @@ function standAtBed(state: FarmState, id: PlayerId): FarmState {
 function runClock(state: FarmState, minutes: number): { state: FarmState; events: GameEvent[] } {
   let next = state;
   const events: GameEvent[] = [];
-  for (let i = 0; i < minutes / 10; i += 1) {
-    const result = applyIntent(next, { type: 'world/tick', deltaMs: 1200 });
+  for (let i = 0; i < minutes / CLOCK_STEP_MINUTES; i += 1) {
+    const result = applyIntent(next, { type: 'world/tick', deltaMs: CLOCK_STEP_MS });
     next = result.state;
     events.push(...result.events);
   }
@@ -394,9 +394,16 @@ describe('shared clock', () => {
 
   it('advances the clock for everyone at once', () => {
     const state = join(createFarmState(), 'a', 'b');
-    const after = applyIntent(state, { type: 'world/tick', deltaMs: 1200 }).state;
+    const after = applyIntent(state, { type: 'world/tick', deltaMs: CLOCK_STEP_MS }).state;
 
-    expect(after.time.totalMinutes).toBe(state.time.totalMinutes + 10);
+    expect(after.time.totalMinutes).toBe(state.time.totalMinutes + CLOCK_STEP_MINUTES);
+  });
+
+  it('makes a day from 6am to 2am last about as long as a Stardew day', () => {
+    const realMinutes = ((20 * 60) / CLOCK_STEP_MINUTES) * CLOCK_STEP_MS / 60_000;
+
+    expect(realMinutes).toBeGreaterThanOrEqual(10);
+    expect(realMinutes).toBeLessThanOrEqual(15);
   });
 
   it('rolls the day over and refills every player watering can', () => {

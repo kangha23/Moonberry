@@ -497,17 +497,23 @@ export function startAnimalDay(
 export const OUT_FROM_HOUR = 8;
 export const IN_AT_HOUR = 18;
 
-/** How long an animal keeps ambling toward the same spot before choosing another. */
-export const WANDER_PERIOD_MINUTES = 30;
+/**
+ * How long an animal keeps ambling toward the same spot before choosing another.
+ *
+ * Five clock steps, or six real seconds: long enough to arrive and stand there
+ * grazing for a moment, short enough that a field of them never looks frozen.
+ */
+export const WANDER_PERIOD_MINUTES = 10;
 
 /** How far from its own door an animal will get, in tiles. */
 export const WANDER_RADIUS_TILES = 4;
 
 /**
  * World pixels per in-game minute. Half a villager's pace: they are grazing,
- * and an animal that crosses the field in a minute reads as a dog.
+ * and an animal that crosses the field in a minute reads as a dog. Sixty
+ * pixels a two-minute clock step, which is what `view/tickChase.ts` expects.
  */
-export const ANIMAL_SPEED_PER_MINUTE = 6;
+export const ANIMAL_SPEED_PER_MINUTE = 30;
 
 /**
  * The patch of ground an animal calls its own: the row of tiles below its

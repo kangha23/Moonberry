@@ -28,9 +28,10 @@ export interface NpcActor {
  * somebody up, because a villager you can never reach is a schedule that reads
  * as a taunt. Positions only move on a clock step, which is every 1.2 real
  * seconds — the renderer smooths between them rather than the state carrying a
- * position per frame.
+ * position per frame. A step is two in-game minutes, so this is 120 world
+ * pixels a step, or a hundred a real second.
  */
-export const NPC_SPEED_PER_MINUTE = 12;
+export const NPC_SPEED_PER_MINUTE = 60;
 
 /** The middle of a tile, which is where a schedule entry actually puts somebody. */
 export function entryPosition(entry: ScheduleEntry): { area: AreaId; x: number; y: number } {

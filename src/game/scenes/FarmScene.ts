@@ -16,7 +16,7 @@ import { SoundManager } from '../audio/SoundManager';
 import { FOOTSTEP_INTERVAL_MS, footstepFor, musicFor } from '../audio/soundtrack';
 import { connectToFarm, type FarmConnection } from '../net/client';
 import type { GameEvent } from '../state/intents';
-import { energyRatio, hotbarSlots, promptFor, waitingOnLabel } from '../state/selectors';
+import { energyRatio, formatClock, hotbarSlots, promptFor, waitingOnLabel } from '../state/selectors';
 import {
   dispatch,
   farmStore,
@@ -3233,7 +3233,7 @@ export default class FarmScene extends Phaser.Scene {
     this.clockHand.setAngle(-DIAL_SWEEP + through * DIAL_SWEEP * 2);
 
     this.clockDay.setText(`Ngày ${time.day}`);
-    this.clockTime.setText(this.formatClock());
+    this.clockTime.setText(formatClock(this.farm.time.totalMinutes));
     this.seasonText.setText(seasonLabel(season));
     this.coinText.setText(`${coins}g`);
 
@@ -3268,14 +3268,6 @@ export default class FarmScene extends Phaser.Scene {
     );
     this.energyFill.setVisible(player.energy > 0);
     this.energyText.setText(`${player.energy}/${player.maxEnergy}`);
-  }
-
-  private formatClock() {
-    const { time } = this.farm;
-    const minutes = time.minute.toString().padStart(2, '0');
-    const suffix = time.hour >= 12 ? 'CH' : 'SA';
-    const displayHours = time.hour % 12 === 0 ? 12 : time.hour % 12;
-    return `${displayHours}:${minutes} ${suffix}`;
   }
 
   // --- the herd ---------------------------------------------------------------

@@ -45,6 +45,12 @@ describe('the clock past midnight', () => {
     expect(formatClock(24 * 60)).toBe('12:00 SA');
     expect(formatClock(23 * 60 + 40)).toBe('11:40 CH');
   });
+
+  it('moves the face in tens while the clock underneath moves in twos', () => {
+    expect(formatClock(6 * 60 + 2)).toBe('6:00 SA');
+    expect(formatClock(6 * 60 + 18)).toBe('6:10 SA');
+    expect(formatClock(13 * 60 + 58)).toBe('1:50 CH');
+  });
 });
 
 describe('the sleep vote, as the player sees it', () => {

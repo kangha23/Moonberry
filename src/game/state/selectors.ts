@@ -443,9 +443,14 @@ export function onlineCount(farm: FarmState): number {
   return Object.values(farm.players).filter((player) => player.online).length;
 }
 
+/**
+ * The clock face, which moves in tens even though the clock underneath does not.
+ * A face ticking 6:02, 6:04, 6:06 is a stopwatch, and nobody plans a farm day
+ * to the two minutes.
+ */
 export function formatClock(totalMinutes: number): string {
   const hours = Math.floor(totalMinutes / 60) % 24;
-  const minutes = (totalMinutes % 60).toString().padStart(2, '0');
+  const minutes = (Math.floor((totalMinutes % 60) / 10) * 10).toString().padStart(2, '0');
   const suffix = hours >= 12 ? 'CH' : 'SA';
   const displayHours = hours % 12 === 0 ? 12 : hours % 12;
   return `${displayHours}:${minutes} ${suffix}`;

@@ -109,15 +109,15 @@ describe('spawning the village', () => {
 describe('walking a villager toward where they should be', () => {
   it('moves them the distance their speed allows, and no further', () => {
     const npcs = spawnNpcs('Summer', 'Sunny', at(7));
-    // Ten in-game minutes later, and now at an hour whose post is elsewhere.
-    const walked = advanceNpcs(npcs, 'Summer', 'Sunny', at(12), 10);
+    // One clock step later, and now at an hour whose post is elsewhere.
+    const walked = advanceNpcs(npcs, 'Summer', 'Sunny', at(12), 2);
 
     const before = npcs.find((actor) => actor.id === 'maeve')!;
     const after = walked.find((actor) => actor.id === 'maeve')!;
     const moved = Math.hypot(after.x - before.x, after.y - before.y);
 
     expect(moved).toBeGreaterThan(0);
-    expect(moved).toBeCloseTo(NPC_SPEED_PER_MINUTE * 10, 6);
+    expect(moved).toBeCloseTo(NPC_SPEED_PER_MINUTE * 2, 6);
   });
 
   it('arrives rather than overshooting, and then stops dead', () => {

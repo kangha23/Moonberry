@@ -173,8 +173,20 @@ import {
  * finishes early and stutters.
  */
 export const CLOCK_STEP_MS = 1200;
-/** In-game minutes added per clock step. */
-const CLOCK_STEP_MINUTES = 10;
+/**
+ * In-game minutes added per clock step, and therefore how long a day lasts.
+ *
+ * Two minutes every 1.2 seconds is ten minutes every six, which puts 6am to 2am
+ * at twelve real minutes — Stardew's own day is fourteen. It was ten minutes a
+ * step once, and that made a whole day two and a half minutes long: not enough
+ * to walk to the village, talk to two people and walk back, let alone farm.
+ *
+ * The beat stays at `CLOCK_STEP_MS` and only the minutes shrink, because the
+ * beat is what the renderer interpolates the herd and the villagers across.
+ * Their speeds are per in-game minute, so they were raised by the same factor
+ * of five and still cover exactly the pixels per beat they always did.
+ */
+export const CLOCK_STEP_MINUTES = 2;
 
 /** Guards against a long stall replaying hundreds of clock steps at once. */
 const MAX_TICK_MS = 5000;
