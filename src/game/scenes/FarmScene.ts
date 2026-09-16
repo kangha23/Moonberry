@@ -81,6 +81,17 @@ import {
   type Direction,
   type Point,
 } from '../world/areas';
+import { ScreenLayer } from './farm/screen';
+import {
+  AVATAR_DEPTH_BASE,
+  DEPTH,
+  GROUND_ITEM_DEPTH,
+  PROSE_FONT,
+  WALK_FRAMES,
+  WALK_ROW,
+  WILT_TINT,
+  standFrame,
+} from './farm/shared';
 
 type KeyMap = Record<string, Phaser.Input.Keyboard.Key>;
 
@@ -177,32 +188,6 @@ const ANIMAL_SCALE: Record<AnimalKind, number> = {
 /** An animal walk sheet: four frames a row, four rows, same order as the people. */
 const ANIMAL_WALK_FRAMES = 4;
 
-/** LPC walkcycle rows: 0 = up, 1 = left, 2 = down, 3 = right. */
-const WALK_ROW: Record<Direction, number> = { up: 0, left: 1, down: 2, right: 3 };
-
-/**
- * A row is nine frames wide, and eight of them are the walk.
- *
- * The two numbers are different because the sheets that ship here carry eight
- * poses in a row the loader reads as nine — the ninth column is empty. An
- * animation built from `+ 1` to `+ 8`, which is what an LPC export with a
- * separate standing frame wants, therefore ran off the end of the art and
- * spent a tenth of every second drawing the blank: a square of nothing over
- * the player, once per stride, for as long as they were moving. Nobody
- * notices a missing frame; everybody notices the flicker.
- *
- * So `STRIDE` is how far apart two rows are in the sheet, and `WALK_FRAMES`
- * is how many of each row is a person walking. The first frame doubles as the
- * standing pose, which is what it has always been used for.
- */
-const WALK_STRIDE = 9;
-const WALK_FRAMES = 8;
-
-/** The frame a sprite facing this way stands on. */
-function standFrame(facing: Direction): number {
-  return WALK_ROW[facing] * WALK_STRIDE;
-}
-
 /** The same, on an animal sheet, where a row is four frames rather than nine. */
 function animalStandFrame(facing: Direction): number {
   return WALK_ROW[facing] * ANIMAL_WALK_FRAMES;
@@ -210,32 +195,6 @@ function animalStandFrame(facing: Direction): number {
 
 /** Player id used while playing offline. Online, the server's session id wins. */
 const OFFLINE_PLAYER_ID = 'local';
-
-/**
- * Depth bands. World objects sort by tile row below `weather`; everything at or
- * above it is screen-space and pinned to the camera.
- */
-const DEPTH = {
-  weather: 1000,
-  overlay: 1100,
-  hud: 1200,
-  modal: 1300,
-};
-
-/**
- * What a walker adds to its tile row to get its depth.
- *
- * Avatars sort above every Tiled prop by sitting in a band of their own, and
- * anything that has to occlude a player — a building — has to be in the same
- * band or the comparison is between two different scales.
- */
-const AVATAR_DEPTH_BASE = 40;
-
-/**
- * Where a thing that is walked over sits: above the tilled-plot fringe at 0.5
- * and below everything that stands on the ground. Paths and sprinklers.
- */
-const GROUND_ITEM_DEPTH = 0.75;
 
 /**
  * How many tiles the dawn spray draws before it gives up.
@@ -246,24 +205,6 @@ const GROUND_ITEM_DEPTH = 0.75;
  * only be arithmetic.
  */
 const MAX_SPRAY_TILES = 60;
-
-/**
- * The two faces, and which is for what.
- *
- * VT323 for anything short: the clock, the coins, the energy, a cell number, a
- * panel heading. It is one of exactly two pixel faces on Google Fonts that
- * carry the Vietnamese tone marks, and the readable one of the two at HUD
- * sizes. It is monospaced, so numbers in the HUD line up in a column, and it
- * has no bold at all — emphasis here is a colour, never a weight.
- *
- * Nunito for anything that is a sentence: a line of dialogue, a description,
- * the prompt bar. A terminal face set in paragraphs is a chore to read.
- */
-const PIXEL_FONT = 'VT323, "Courier New", monospace';
-const PROSE_FONT = 'Nunito, system-ui, sans-serif';
-
-/** Below 16px VT323 loses its tone marks into the letters above them. */
-const PIXEL_MIN_SIZE = 16;
 
 /** One drawn cell. Everything in it is reused frame to frame, never recreated. */
 interface HotbarCell {
@@ -290,9 +231,6 @@ const ENERGY_SPENT = 1 / 10;
 const EXHAUSTED_TINT_ALPHA = 0.34;
 
 /** Long enough that a key still held from last night cannot eat the summary. */
-/** What a doomed crop is tinted. Drained of colour rather than made lurid. */
-const WILT_TINT = tint('light.2');
-
 const SUMMARY_MIN_MS = 700;
 
 /**
@@ -303,20 +241,6 @@ const SUMMARY_MIN_MS = 700;
  * is better, and the keyboard must not be the slower way to do it.
  */
 const ACT_REPEAT_MS = 240;
-
-/**
- * The nine-slice frames, and how deep each one's border runs.
- *
- * The same three files the stylesheet uses. That is the point of them being
- * files: a panel edge drawn once in CSS and once in canvas drifts, and the two
- * halves of this interface arguing with each other is what this whole pass is
- * about.
- */
-const FRAMES = {
-  panel: { key: 'frame-wood', slice: 12 },
-  slot: { key: 'frame-slot', slice: 4 },
-  plate: { key: 'frame-plate', slice: 6 },
-} as const;
 
 /** One line of the morning summary: a picture, and what it is a picture of. */
 interface SummaryRow {
@@ -543,11 +467,11 @@ export default class FarmScene extends Phaser.Scene {
   /**
    * Everything drawn in screen space, in one container.
    *
-   * See `createScreenLayer`: the container carries the transform that undoes
+   * See `ScreenLayer`: the container carries the transform that undoes
    * the camera's zoom, so every child below is positioned in plain screen
    * pixels with the origin at the top-left of the canvas.
    */
-  private screen!: Phaser.GameObjects.Container;
+  private screen!: ScreenLayer;
   /** Where each piece of the HUD goes, recomputed on every resize. */
   private hud: HudLayout = hudLayout(GAME_WIDTH, GAME_HEIGHT);
   /** The same layout as hit-test rectangles, so a click on the HUD is not a hoe. */
@@ -757,11 +681,12 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   create() {
+    this.screen = new ScreenLayer(this);
     createPixelArtTextures(this);
     this.createWalkAnimations();
     this.createVillagerAnimations();
     this.createAnimalAnimations();
-    this.createScreenLayer();
+    this.screen.create();
     this.createWeatherSprites();
     this.createAmbient();
     this.createUi();
@@ -806,7 +731,7 @@ export default class FarmScene extends Phaser.Scene {
       .setOrigin(0.5, 0)
       .setDepth(DEPTH.hud + 2)
       .setVisible(false);
-    this.toScreen(this.buildHint);
+    this.screen.add(this.buildHint);
 
     // The canvas is the window now, so the HUD has to be told how big the
     // window is — and told again every time it changes, full screen included.
@@ -2023,40 +1948,6 @@ export default class FarmScene extends Phaser.Scene {
   // world, so they cover the viewport instead of one corner of a large map.
 
   /**
-   * The screen layer, and why the HUD lives inside one container.
-   *
-   * The camera zooms the world, and a zoom scales everything it draws —
-   * including objects pinned to it with `setScrollFactor(0)`. Left alone, a
-   * 13px label would be 26px on a screen big enough for zoom 2, and a HUD laid
-   * out in screen pixels would spread out from the middle of the viewport.
-   *
-   * So everything screen-space goes in one container which is scaled by 1/zoom
-   * and placed so that the two transforms cancel exactly. Its children are then
-   * in plain screen pixels with the origin at the top-left of the canvas, which
-   * is the coordinate system `pointer.x` already speaks.
-   */
-  private createScreenLayer() {
-    this.screen = this.add.container(0, 0).setScrollFactor(0).setDepth(DEPTH.weather - 1);
-  }
-
-  /**
-   * Adds objects to the screen layer, in screen pixels.
-   *
-   * Each one is pinned to the camera on the way in, even though the container
-   * already is and overrides them when it draws. Input is why: Phaser's hit
-   * test reads the scroll factor off the object itself rather than off the
-   * container holding it, so a hotbar cell left at the default would be
-   * hit-tested in world coordinates while it is drawn in screen ones — and
-   * every click on it would fall through onto the farm behind.
-   */
-  private toScreen(...objects: Phaser.GameObjects.GameObject[]) {
-    for (const object of objects) {
-      (object as Partial<Phaser.GameObjects.Components.ScrollFactor>).setScrollFactor?.(0);
-    }
-    this.screen.add(objects);
-  }
-
-  /**
    * Re-points the camera and the HUD at a canvas of this size.
    *
    * Called on every resize, and a full-screen toggle is a resize — the browser
@@ -2073,8 +1964,8 @@ export default class FarmScene extends Phaser.Scene {
     // The cancelling transform. `screen = origin + zoom * (position - origin)`
     // for anything pinned to the camera, so placing the container here and
     // scaling it by 1/zoom puts its local (0, 0) exactly on the top-left pixel.
-    this.screen.setScale(1 / zoom);
-    this.screen.setPosition((width / 2) * (1 - 1 / zoom), (height / 2) * (1 - 1 / zoom));
+    this.screen.container.setScale(1 / zoom);
+    this.screen.container.setPosition((width / 2) * (1 - 1 / zoom), (height / 2) * (1 - 1 / zoom));
 
     this.hud = hudLayout(width, height);
     this.hudZones = hudZones(this.hud).map(
@@ -2160,7 +2051,6 @@ export default class FarmScene extends Phaser.Scene {
     this.waitingText.setWordWrapWidth(Math.min(520, width - 120));
     this.summaryPanel.setPosition(width / 2, height / 2);
   }
-
 
   /**
    * Everything a cast looks like, redrawn each frame.
@@ -2396,13 +2286,13 @@ export default class FarmScene extends Phaser.Scene {
   private createWeatherSprites() {
     for (let i = 0; i < 58; i += 1) {
       const drop = this.add.image(0, 0, 'rain-drop').setDepth(DEPTH.weather).setAlpha(0);
-      this.toScreen(drop);
+      this.screen.add(drop);
       this.rainDrops.push(drop);
     }
 
     for (let i = 0; i < 20; i += 1) {
       const firefly = this.add.image(0, 0, 'firefly').setDepth(DEPTH.weather + 1).setAlpha(0);
-      this.toScreen(firefly);
+      this.screen.add(firefly);
       this.fireflies.push(firefly);
     }
   }
@@ -2414,7 +2304,7 @@ export default class FarmScene extends Phaser.Scene {
         .setDepth(DEPTH.weather - 2)
         .setAlpha(0.8)
         .setScale(1 + (i % 3) * 0.4);
-      this.toScreen(cloud);
+      this.screen.add(cloud);
       this.clouds.push(cloud);
     }
     for (let i = 0; i < 14; i += 1) {
@@ -2424,50 +2314,20 @@ export default class FarmScene extends Phaser.Scene {
         .setAlpha(i % 3 === 0 ? 0.85 : 0);
       petal.setData('seed', i * 1.7);
       petal.setData('isPetal', i % 3 === 0);
-      this.toScreen(petal);
+      this.screen.add(petal);
       this.petals.push(petal);
     }
     for (let i = 0; i < 3; i += 1) {
       const butterfly = this.add.image(0, 0, 'butterfly').setDepth(DEPTH.weather + 3).setScale(1.2);
-      this.toScreen(butterfly);
+      this.screen.add(butterfly);
       this.butterflies.push(butterfly);
     }
   }
 
-  /**
-   * A framed box, in the same wood as the panels in the DOM.
-   *
-   * Always this, never `this.add.rectangle` with a stroke on it. The point of
-   * the frames being files is that a box in the canvas and a box in React are
-   * the same picture; a rounded rectangle drawn here would be the old argument
-   * starting again in a new place.
-   */
-  private frame(
-    kind: keyof typeof FRAMES,
-    x: number,
-    y: number,
-    width: number,
-    height: number,
-  ): Phaser.GameObjects.NineSlice {
-    const { key, slice } = FRAMES[kind];
-    return this.add
-      .nineslice(x, y, key, undefined, width, height, slice, slice, slice, slice)
-      .setOrigin(0, 0);
-  }
-
-  /** Short text: the clock, a count, a label. Never below 16px. */
-  private pixelText(x: number, y: number, size = PIXEL_MIN_SIZE, colour = PALETTE['light.7']) {
-    return this.add.text(x, y, '', {
-      fontFamily: PIXEL_FONT,
-      fontSize: `${Math.max(PIXEL_MIN_SIZE, size)}px`,
-      color: colour,
-    });
-  }
-
   private createUi() {
     // The bottom bar: what is in hand, and what the game last said.
-    this.promptFrame = this.frame('plate', 0, 0, 100, HUD.promptHeight);
-    this.heldText = this.pixelText(0, 0, 18);
+    this.promptFrame = this.screen.frame('plate', 0, 0, 100, HUD.promptHeight);
+    this.heldText = this.screen.pixelText(0, 0, 18);
     // What is in hand is also the button that opens the bag, so the mouse has
     // a way in and the label naming the key is the thing you click.
     this.heldText.setInteractive({ useHandCursor: true }).on('pointerdown', () => {
@@ -2480,7 +2340,7 @@ export default class FarmScene extends Phaser.Scene {
       fontSize: '13px',
       color: PALETTE['light.7'],
     });
-    this.toScreen(this.promptFrame, this.heldText, this.promptText);
+    this.screen.add(this.promptFrame, this.heldText, this.promptText);
 
     this.createClock();
     this.createAreaPlate();
@@ -2494,7 +2354,7 @@ export default class FarmScene extends Phaser.Scene {
     this.sunsetOverlay = this.add.rectangle(0, 0, 1, 1, tint('light.4'), 0).setDepth(DEPTH.overlay - 1);
     this.vignetteTop = this.add.rectangle(0, 0, 1, 16, 0x000000, 0.22).setDepth(DEPTH.overlay + 1);
     this.vignetteBottom = this.add.rectangle(0, 0, 1, 16, 0x000000, 0.25).setDepth(DEPTH.overlay + 1);
-    this.toScreen(
+    this.screen.add(
       this.dayNightOverlay,
       this.exhaustionOverlay,
       this.sunsetOverlay,
@@ -2579,17 +2439,17 @@ export default class FarmScene extends Phaser.Scene {
       ])
       .setDepth(DEPTH.hud + 2)
       .setVisible(false);
-    this.toScreen(this.fishBar);
+    this.screen.add(this.fishBar);
 
     // And the card, which is what a catch is for.
-    this.catchFrame = this.frame('panel', 0, 0, 260, 64);
+    this.catchFrame = this.screen.frame('panel', 0, 0, 260, 64);
     this.catchIcon = this.add.image(0, 0, 'icon-coin').setDisplaySize(32, 32);
-    this.catchText = this.pixelText(0, 0, 20).setOrigin(0, 0.5);
+    this.catchText = this.screen.pixelText(0, 0, 20).setOrigin(0, 0.5);
     this.catchCard = this.add
       .container(0, 0, [this.catchFrame, this.catchIcon, this.catchText])
       .setDepth(DEPTH.hud + 3)
       .setVisible(false);
-    this.toScreen(this.catchCard);
+    this.screen.add(this.catchCard);
   }
 
   /**
@@ -2610,17 +2470,17 @@ export default class FarmScene extends Phaser.Scene {
     this.clockFace = this.add.image(dial.x, dial.y, 'clock-face');
     // Pivoted at its foot, so one angle turns it about the dial's centre.
     this.clockHand = this.add.image(dial.x, dial.y, 'clock-hand').setOrigin(0.5, 1);
-    this.clockDay = this.pixelText(70, 8, 18, PALETTE['light.7']);
-    this.clockTime = this.pixelText(70, 28, 28);
+    this.clockDay = this.screen.pixelText(70, 8, 18, PALETTE['light.7']);
+    this.clockTime = this.screen.pixelText(70, 28, 28);
     this.seasonIcon = this.add.image(78, 70, 'icon-season-spring');
-    this.seasonText = this.pixelText(90, 60, 16, PALETTE['light.7']);
+    this.seasonText = this.screen.pixelText(90, 60, 16, PALETTE['light.7']);
     this.weatherIcon = this.add.image(width - 22, 20, 'icon-weather-sunny');
     this.coinIcon = this.add.image(148, 70, 'icon-coin');
-    this.coinText = this.pixelText(158, 60, 18, PALETTE['light.7']);
+    this.coinText = this.screen.pixelText(158, 60, 18, PALETTE['light.7']);
 
     this.clockPanel = this.add
       .container(0, 0, [
-        this.frame('plate', 0, 0, width, height),
+        this.screen.frame('plate', 0, 0, width, height),
         this.clockFace,
         this.clockHand,
         this.clockDay,
@@ -2632,16 +2492,16 @@ export default class FarmScene extends Phaser.Scene {
         this.coinText,
       ])
       .setDepth(DEPTH.hud + 1);
-    this.toScreen(this.clockPanel);
+    this.screen.add(this.clockPanel);
   }
 
   /** Where you are and what the sky is doing, top left. */
   private createAreaPlate() {
-    this.areaFrame = this.frame('plate', 0, 0, 180, 46);
-    this.areaText = this.pixelText(12, 9, 16);
+    this.areaFrame = this.screen.frame('plate', 0, 0, 180, 46);
+    this.areaText = this.screen.pixelText(12, 9, 16);
     this.areaText.setLineSpacing(2);
     this.areaPanel = this.add.container(0, 0, [this.areaFrame, this.areaText]).setDepth(DEPTH.hud + 1);
-    this.toScreen(this.areaPanel);
+    this.screen.add(this.areaPanel);
   }
 
   /**
@@ -2696,7 +2556,7 @@ export default class FarmScene extends Phaser.Scene {
    */
   private createHotbar() {
     for (let i = 0; i < HOTBAR_SIZE; i += 1) {
-      const frame = this.frame('slot', 0, 0, HUD.cell, HUD.cell).setDepth(DEPTH.hud);
+      const frame = this.screen.frame('slot', 0, 0, HUD.cell, HUD.cell).setDepth(DEPTH.hud);
 
       const icon = this.add
         .image(0, 0, 'item-hoe')
@@ -2712,13 +2572,13 @@ export default class FarmScene extends Phaser.Scene {
       // heavier one, but they are over a whole farm rather than over 36px of
       // wood. The key number needs none of this: it sits in the corner on bare
       // frame, and outlining it only made it shout over the item it labels.
-      const count = this.pixelText(0, 0, 16).setOrigin(1, 1).setDepth(DEPTH.hud + 2);
+      const count = this.screen.pixelText(0, 0, 16).setOrigin(1, 1).setDepth(DEPTH.hud + 2);
       count.setStroke(PALETTE['outline.2'], 2);
 
       // Only the first nine have a key, so only those are labelled.
       const key =
         i < 9
-          ? this.pixelText(0, 0, 16, PALETTE['light.7']).setAlpha(0.7).setDepth(DEPTH.hud + 2)
+          ? this.screen.pixelText(0, 0, 16, PALETTE['light.7']).setAlpha(0.7).setDepth(DEPTH.hud + 2)
           : null;
       key?.setText(String(i + 1));
 
@@ -2739,8 +2599,8 @@ export default class FarmScene extends Phaser.Scene {
         sendAction({ type: 'selectSlot', slot: i });
       });
 
-      this.toScreen(frame, icon, count);
-      if (key) this.toScreen(key);
+      this.screen.add(frame, icon, count);
+      if (key) this.screen.add(key);
       this.hotbarCells.push({ frame, icon, count, key });
     }
   }
@@ -2756,7 +2616,7 @@ export default class FarmScene extends Phaser.Scene {
     const { width, height, bar } = HUD.quest;
     const inset = 12;
 
-    this.questLabel = this.pixelText(inset, 9, 16);
+    this.questLabel = this.screen.pixelText(inset, 9, 16);
     this.questLabel.setLineSpacing(2);
     const track = this.add
       .rectangle(inset, height - inset - bar / 2, width - inset * 2, bar, tint('outline.0'), 0.85)
@@ -2766,9 +2626,9 @@ export default class FarmScene extends Phaser.Scene {
       .setOrigin(0, 0.5);
 
     this.questTracker = this.add
-      .container(0, 0, [this.frame('plate', 0, 0, width, height), this.questLabel, track, this.questFill])
+      .container(0, 0, [this.screen.frame('plate', 0, 0, width, height), this.questLabel, track, this.questFill])
       .setDepth(DEPTH.hud + 1);
-    this.toScreen(this.questTracker);
+    this.screen.add(this.questTracker);
   }
 
   private refreshQuestTracker() {
@@ -2800,12 +2660,12 @@ export default class FarmScene extends Phaser.Scene {
   private createEnergyTube() {
     const { width, height } = HUD.energy;
 
-    this.energyFrame = this.frame('plate', 0, 0, width, height);
+    this.energyFrame = this.screen.frame('plate', 0, 0, width, height);
     this.energyFill = this.add
       .rectangle(width / 2, height - 5, width - 10, 1, ENERGY_COLOURS.full, 0.95)
       .setOrigin(0.5, 1);
     this.energyBolt = this.add.image(width / 2, -12, 'icon-energy-bolt');
-    this.energyText = this.pixelText(0, 0, 16).setOrigin(1, 0.5).setVisible(false);
+    this.energyText = this.screen.pixelText(0, 0, 16).setOrigin(1, 0.5).setVisible(false);
     // An invisible box, so there is something with a size to hover over: the
     // frame is a nine-slice and the fill is a sliver when it matters most.
     this.energyHit = this.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0);
@@ -2815,7 +2675,7 @@ export default class FarmScene extends Phaser.Scene {
       .setDepth(DEPTH.hud + 1);
     this.energyPanel.on('pointerover', () => this.energyText.setVisible(true));
     this.energyPanel.on('pointerout', () => this.energyText.setVisible(false));
-    this.toScreen(this.energyPanel);
+    this.screen.add(this.energyPanel);
   }
 
   /**
@@ -2838,7 +2698,7 @@ export default class FarmScene extends Phaser.Scene {
       .container(0, 0, [this.waitingBackdrop, this.waitingText])
       .setDepth(DEPTH.modal)
       .setVisible(false);
-    this.toScreen(this.waitingPanel);
+    this.screen.add(this.waitingPanel);
   }
 
   /**
@@ -2854,8 +2714,8 @@ export default class FarmScene extends Phaser.Scene {
    * turnip you were carrying.
    */
   private createSummaryPanel() {
-    this.summaryCard = this.frame('panel', 0, 0, SUMMARY.width, SUMMARY.height);
-    this.summaryTitle = this.pixelText(0, 0, 26).setOrigin(0.5, 0);
+    this.summaryCard = this.screen.frame('panel', 0, 0, SUMMARY.width, SUMMARY.height);
+    this.summaryTitle = this.screen.pixelText(0, 0, 26).setOrigin(0.5, 0);
     this.summaryRows = [];
     for (let i = 0; i < SUMMARY.maxRows; i += 1) {
       // Every icon is drawn at the same size whatever its source is, so a
@@ -2864,10 +2724,10 @@ export default class FarmScene extends Phaser.Scene {
         .image(0, 0, 'icon-coin')
         .setDisplaySize(SUMMARY.icon, SUMMARY.icon)
         .setVisible(false);
-      const text = this.pixelText(0, 0, 18).setOrigin(0, 0.5).setVisible(false);
+      const text = this.screen.pixelText(0, 0, 18).setOrigin(0, 0.5).setVisible(false);
       this.summaryRows.push({ icon, text });
     }
-    this.summaryHint = this.pixelText(0, 0, 16, PALETTE['light.7']).setOrigin(0.5, 0);
+    this.summaryHint = this.screen.pixelText(0, 0, 16, PALETTE['light.7']).setOrigin(0.5, 0);
     this.summaryHint.setText('Nhấn phím bất kỳ');
 
     this.summaryPanel = this.add
@@ -2879,7 +2739,7 @@ export default class FarmScene extends Phaser.Scene {
       ])
       .setDepth(DEPTH.modal + 1)
       .setVisible(false);
-    this.toScreen(this.summaryPanel);
+    this.screen.add(this.summaryPanel);
   }
 
   /**

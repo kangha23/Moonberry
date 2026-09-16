@@ -2,7 +2,7 @@
 /**
  * Every person's walk sheet, checked for the columns the game actually plays.
  *
- * `WALK_FRAMES` in `src/game/scenes/FarmScene.ts` was cut from 9 to 8 after a
+ * `WALK_FRAMES` in `src/game/scenes/farm/shared.ts` was cut from 9 to 8 after a
  * commit found column 8 of `player-sheet.png` and `rowan-sheet.png` fully
  * transparent — a blank frame flickering into the walk cycle once per stride.
  * Nothing enforced that finding beyond those two files: `import-lpc.mjs`
@@ -28,7 +28,7 @@ const ART_DIR = path.join('public', 'assets', 'lpc');
 /**
  * How many of each row's nine frames the game actually plays.
  *
- * Must agree with `WALK_FRAMES` in `src/game/scenes/FarmScene.ts`. The number
+ * Must agree with `WALK_FRAMES` in `src/game/scenes/farm/shared.ts`. The number
  * is written twice rather than shared, because that file is game code
  * compiled through Vite for the browser and this one is plain Node tooling —
  * there is no third place both sides could import it from without dragging
