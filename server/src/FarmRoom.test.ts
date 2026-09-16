@@ -363,11 +363,11 @@ describe('what the room broadcasts', () => {
 });
 
 describe('turning in for the night', () => {
-  /** Puts a connected player at the farmhouse door, where the bed is. */
+  /** Puts a connected player at the foot of the bed, inside the farmhouse. */
   function standAtBed(playerId: string): void {
-    const bed = areaMap(START_AREA).props.find((prop) => prop.interact === 'bed')!;
+    const bed = areaMap('farmhouse').props.find((prop) => prop.interact === 'bed')!;
     Object.assign(room.state.players[playerId], {
-      area: START_AREA,
+      area: 'farmhouse',
       x: bed.x + bed.width / 2,
       y: bed.y + bed.height + 8,
     });

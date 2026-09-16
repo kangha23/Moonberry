@@ -8,7 +8,7 @@
   "margin": 0,
   "name": "moonberry",
   "spacing": 0,
-  "tilecount": 15,
+  "tilecount": 29,
   "tiledversion": "1.10.2",
   "tileheight": 32,
   "tilewidth": 32,
@@ -357,6 +357,328 @@
           "name": "solid",
           "type": "bool",
           "value": false
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "image": "../public/assets/lpc/tile-floor-wood.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-floor-wood"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "floor"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "image": "../public/assets/lpc/tile-wall-upper-1.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-upper-1"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "image": "../public/assets/lpc/tile-wall-upper-2.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-upper-2"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "image": "../public/assets/lpc/tile-wall-upper-3.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-upper-3"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "image": "../public/assets/lpc/tile-wall-lower-1.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-lower-1"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "image": "../public/assets/lpc/tile-wall-lower-2.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-lower-2"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "image": "../public/assets/lpc/tile-wall-lower-3.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-lower-3"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "image": "../public/assets/lpc/tile-wall-left.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-left"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "image": "../public/assets/lpc/tile-wall-right.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-right"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "image": "../public/assets/lpc/tile-wall-bottom.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-bottom"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "image": "../public/assets/lpc/tile-wall-bottom-left.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-bottom-left"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "image": "../public/assets/lpc/tile-wall-bottom-right.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-bottom-right"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "image": "../public/assets/lpc/tile-wall-door-left.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-door-left"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "image": "../public/assets/lpc/tile-wall-door-right.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-door-right"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
         }
       ]
     }

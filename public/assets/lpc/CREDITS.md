@@ -222,6 +222,62 @@ tile in the set designed to tile against itself. The cells either side of it
 are edge pieces with transparent corners and were rejected by tiling them and
 looking: a path built from one of those is a row of ragged islands.
 
+## [LPC] Floors (CC-BY-SA 4.0)
+
+Applies to `tile-floor-wood` (cell 6, 37 — honey-coloured boards laid in a
+staggered run, which tiles with no visible seam) and `furniture-rug` (the red
+fringed rug, boxed into 96x84 so it can be centred on a three-tile footprint in
+front of the hearth). Exact cells are in `art/sources.json`.
+
+> "[LPC] Floors" by bluecarrot16, Lanea Zimmerman (Sharm), William Thompson
+> (William.Thompsonj), Hyptosis, SpiderDave, Cougarmint, Stephen Challener
+> (Redshrike), Bonsaiheldin, Tyler Olsen (Roots), Jetrel, jestan, The Open
+> Surge team (http://opensnc.sourceforge.net), Gaurav Munjal, Reemax, Silveira
+> Neto, bleutailfly, Casper Nilsson, NaRNeRZz, Buch, keith karnage, Arthur
+> Carvalho, Guilherme Vieira (n2liquid), Chris Hamons (maintainer).
+> CC-BY-SA 4.0. https://opengameart.org/content/lpc-floors
+
+**This one is CC-BY-SA 4.0, not 3.0**, and is listed apart from the 3.0 packs
+for that reason: the two licences can sit side by side in one game, but each
+file keeps the licence of the pack it came from. The upstream credits file is
+vendored verbatim at [`credits/CREDITS-floors.txt`](credits/CREDITS-floors.txt)
+and is part of this notice.
+
+## [LPC] Walls (CC-BY-SA 3.0)
+
+Applies to the thirteen `tile-wall-*` tiles of the farmhouse interior. The
+back wall is the cream plaster with dark timber framing (columns 60..62, rows
+56 and 58 — the top and bottom rows of the three-row set, so the wall keeps its
+header beam and its skirting in two tiles); the side and front walls are the
+ceiling trim from the top-left of the sheet, one piece per edge and corner.
+
+> "[LPC] Walls" by bluecarrot16, Lanea Zimmerman (Sharm), Daniel Armstrong
+> (HughSpectrum), William Thompson (William.Thompsonj), Hyptosis, Zabin,
+> Daniel Cook, Guido Bos, SpiderDave, Cougarmint, Stephen Challener
+> (Redshrike), Matthew Nash, Wolthera van Hövell tot Westerflier (TheraHedwig),
+> Reemax, bleutailfly, NaRNeRZz, Sir Spummington, Casper Nilsson,
+> KnoblePersona. CC-BY-SA 3.0. https://opengameart.org/content/lpc-walls
+
+The upstream credits file is vendored verbatim at
+[`credits/CREDITS-walls.txt`](credits/CREDITS-walls.txt) and is part of this
+notice.
+
+## [LPC] Wooden Furniture (CC-BY-SA 4.0 / CC-BY-SA 3.0 / GPL 3.0)
+
+Applies to `furniture-bed`, `furniture-stove` (the sink and the range, cut
+as one run of counter), `furniture-table`, `furniture-chair-east`,
+`furniture-chair-west` and `furniture-fireplace`, all from `blonde-wood.png`.
+The same sheet ships in dark wood, which is kept in reserve for a house upgrade.
+
+> "LPC Wooden Furniture" by bluecarrot16, Baŝto, Lanea Zimmerman (Sharm),
+> William Thompson, Tuomo Untinen (Reemax), Janna/Lilius/Jannax.
+> https://opengameart.org/content/lpc-wooden-furniture
+
+The upstream credits file says "All information in this file must be
+included", so it is vendored verbatim at
+[`credits/CREDITS-furniture.txt`](credits/CREDITS-furniture.txt) and is part
+of this notice.
+
 ## [LPC] Style Farm Animals (CC-BY 3.0 or GPL 2.0+)
 
 Applies to: `animal-chicken-sheet.png`, `animal-cow-sheet.png` and

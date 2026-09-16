@@ -27,6 +27,7 @@ is never an unreviewable diff.
 | `sfx/fanfare.wav` | Rising C–E–G–C, near-sine so it stays soft |
 | `sfx/rooster.wav` | Stacked harmonics on a hand-drawn pitch contour |
 | `sfx/footstep-grass.wav`, `sfx/footstep-path.wav` | Noise scuffs, different filter cutoffs |
+| `sfx/footstep-wood.wav` | The same scuff with a short 190 Hz knock under it, for floorboards |
 | `sfx/ui-select.wav`, `sfx/ui-confirm.wav` | One- and two-note sine blips |
 | `sfx/chime.wav` | Bell partials at 1 : 2.01 : 2.98 : 4.2 |
 | `sfx/slump.wav` | Falling low tone under a noise thud |
@@ -35,6 +36,7 @@ is never an unreviewable diff.
 | `music/day-farm-loop.wav` | C-major pad with a plucked eight-bar figure |
 | `music/day-village-loop.wav` | D-major pad, busier figure |
 | `music/night-loop.wav` | Low pad, sparse plucks, rolled off at 2.2 kHz |
+| `music/home-loop.wav` | C-major pad an octave down, slow low plucks, rolled off at 2.8 kHz |
 | `music/rain-loop.wav` | Filtered noise rain with gusts over a quiet pad |
 
 Every music bed is exactly 8 seconds and loops seamlessly: partial frequencies

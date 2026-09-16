@@ -44,16 +44,20 @@ tìm cái gì.
 
 ```
        0  1  2  3  4  5  6  7  8  9 10 11
-  0    #  #  #  #  #  #  #  #  #  #  #  #    #  tường — ô solid, không phải prop
-  1    #  #  #  #  #  #  #  #  #  #  #  #    .  sàn gỗ
-  2    #  B  B  .  .  S  S  .  .  .  .  #    B  giường (interact: bed)
-  3    #  B  B  .  .  .  .  .  .  .  .  #    S  bếp lò
-  4    #  .  .  .  T  T  .  .  F  F  .  #    T  bàn ăn và ghế
-  5    #  .  .  .  T  T  .  .  F  F  .  #    F  lò sưởi
-  6    #  .  R  R  .  .  .  .  .  .  .  #    R  thảm
-  7    #  .  R  R  .  .  ^  .  .  .  .  #    ^  chỗ đáp khi vào nhà
+  0    #  =  =  =  =  =  =  =  =  =  =  #    #  viền trần — ô solid, không phải prop
+  1    #  =  =  =  =  =  =  =  =  =  =  #    =  tường sau, vữa khung gỗ — ô solid
+  2    #  B  .  .  S  S  .  F  F  F  .  #    .  sàn gỗ
+  3    #  B  .  .  .  .  .  F  F  F  .  #    B  giường (interact: bed)
+  4    #  .  .  .  T  T  .  R  R  R  .  #    S  bồn rửa và bếp lò
+  5    #  .  .  c  T  T  c  R  R  R  .  #    T  bàn ăn, c  hai ghế
+  6    #  .  .  .  .  .  .  R  R  R  .  #    F  lò sưởi, R  thảm
+  7    #  .  .  .  .  .  ^  .  .  .  .  #    ^  chỗ đáp khi vào nhà
   8    #  #  #  #  #  #  D  #  #  #  #  #    D  ô cửa, đi vào là ra sân
 ```
+
+Sơ đồ này là cái đã ship, không phải bản phác đầu tiên — bản phác đặt lò sưởi
+giữa phòng và giường rộng hai ô; phần [Đã làm khác đi ở đâu](#đã-làm-khác-đi-ở-đâu)
+ở cuối nói vì sao.
 
 `maps/farmhouse.json`, cùng khuôn với ba bản đồ kia. Thêm một dòng vào
 [`scripts/build-maps.mjs`](../../scripts/build-maps.mjs) là có `AreaId` mới:
@@ -133,8 +137,9 @@ farm (5,7)  ←──  farmhouse (6,8)
 nhau là một vòng dịch chuyển vô tận. Vào nhà thì đáp ở (6,7) — một ô phía trên ô
 cửa bên trong; ra ngoài thì đáp ở (5,7) — ô đường ngay trước thềm.
 
-`label` của cổng là thứ người chơi đọc trên thanh nhắc, nên đặt là `"trong nhà"`
-và `"sân nông trại"`.
+`label` của cổng là thứ người chơi đọc trên thanh nhắc, nên đặt là `"ngôi nhà"`
+và `"sân nông trại"` — reducer ghép nó vào câu *"Bạn theo con đường tới …"*, và
+"tới trong nhà" không phải tiếng Việt.
 
 ## Giường, và những thứ ấn vào được
 
@@ -143,11 +148,12 @@ Prop trong nhà khai báo y hệt prop ngoài trời — `texture`, `solid`, `de
 
 | Prop | Ô | `interact` | Ghi chú |
 | --- | --- | --- | --- |
-| `bed` | (1,2) 2x2 | `bed` | chuyển từ ngôi nhà ngoài trời vào đây |
-| `stove` | (5,2) 2x1 | — | để dành cho nấu ăn |
-| `table` | (4,4) 2x2 | — | bàn ăn và hai ghế |
-| `fireplace` | (8,4) 2x2 | — | nguồn sáng ban đêm của căn phòng |
-| `rug` | (2,6) 2x2 | — | `solid: false`, `depth: 0` |
+| `bed` | (1,2) 1x2 | `bed` | chuyển từ ngôi nhà ngoài trời vào đây |
+| `stove` | (4,2) 2x1 | — | bồn rửa và bếp lò; để dành cho nấu ăn |
+| `table` | (4,4) 2x2 | — | bàn ăn |
+| `chair-west`, `chair-east` | (3,5), (6,5) | — | hai ghế quay vào bàn |
+| `fireplace` | (7,2) 3x2 | — | nguồn sáng của căn phòng, dựa tường sau |
+| `rug` | (7,4) 3x3 | — | `solid: false`, `depth: 0`, trước lò sưởi |
 
 **`interact: 'bed'` rời khỏi khối nhà ngoài trời.** Reducer không quan tâm khu
 vực nào — nó chỉ hỏi `interactableAt(...)?.interact === 'bed'`
@@ -273,6 +279,41 @@ cùng một game, nhưng phải ghi đúng của ai là của nấy, nên đừn
 Ba tấm đầu đã tải về và soi kỹ khi viết spec này: cả ba đều là PNG RGBA 8-bit,
 đọc được bằng `scripts/lib/png.mjs` sẵn có, và `trans="ff00ff"` trong file `.tsx`
 đi kèm chỉ là siêu dữ liệu cũ — ảnh có kênh alpha thật, không phải nền hồng.
+
+## Đã làm khác đi ở đâu
+
+Ghi lại để người đọc spec sau không phải tự dò ra từ diff.
+
+- **Giường một ô ngang, lò sưởi ba ô.** Tấm `blonde-wood.png` không đặt đồ trên
+  lưới 64px như bảng art trên kia tưởng: giường là 32x63, lò sưởi 96x72. Luật
+  "32px nguyên bản, không phóng to" thắng cái footprint vẽ trước, nên footprint
+  đổi theo art chứ không phải ngược lại.
+- **Lò sưởi dựa tường sau, không đứng giữa phòng.** Nó là một cái lò xây vào
+  tường nhìn thẳng từ phía trước; đặt ở (8,4) thì nó là một bức tường lửng mọc
+  giữa sàn. Tấm thảm chuyển ra trước nó, và được đệm thành 96px bề ngang
+  (`box`) để canh giữa được trên ba ô.
+- **Lò sưởi có lửa.** Tấm furniture vẽ lò nguội — một vòm tối trên bệ đá — và
+  riêng quầng sáng `glow` thì trông như sương hồng chứ không như lửa. Scene thêm
+  hai khung `hearth-fire-0/1` vẽ bằng palette, lật qua lại, và nhuộm quầng sáng
+  sang cam `light.4`.
+- **Không lấy gì từ gói Windows & Doors.** Cửa nằm ở tường dưới, mà nhìn từ trên
+  xuống thì cửa ở tường dưới là một khoảng trống trên viền trần; hai ô viền
+  `tile-wall-door-left/right` đóng khung nó. Gói đó để dành cho cửa sổ trên
+  tường sau khi có ai muốn trang trí.
+- **Tài nguyên không mọc trong nhà.** Không có trong bản thiết kế, và là lỗi
+  thấy ngay khi chụp màn hình: `seedNodes` coi mọi khu vực không phải nông trại
+  hay rừng là làng, nên buổi sáng đầu tiên rắc hoa dại lên sàn gỗ. `canHoldNode`
+  giờ từ chối mọi khu vực `indoor`, và vì cả gieo lẫn mọc qua đêm đều hỏi nó,
+  luật chỉ nằm ở một chỗ.
+- **Camera tự đệm bounds.** `setBounds` của Phaser kẹp một bản đồ nhỏ hơn khung
+  về mép trái-trên, đúng như phần Client đã nghi. `FarmScene.fitCameraBounds`
+  đệm bounds ra bằng khung nhìn ở cả hai phía, và chạy lại mỗi lần resize.
+- **Nhạc trong nhà là một bản mới, `home-loop`**, tổng hợp cùng chỗ với bốn bản
+  kia: cùng giọng Đô trưởng của nông trại, thấp hơn một quãng tám và thưa hơn.
+- **e2e không đi bộ từ điểm xuất phát tới cửa.** Giữ phím theo thời gian không
+  canh trúng được một ô cửa rộng 32px trên tốc độ khung hình bài test không
+  kiểm soát. Bài test sửa bản lưu để đặt người chơi trước thềm, rồi dùng chính
+  tường trong phòng làm thước để đi tới giường.
 
 ## Ngoài phạm vi
 

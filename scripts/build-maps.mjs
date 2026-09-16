@@ -20,6 +20,7 @@ const AREA_FILES = {
   farm: 'farm.json',
   village: 'village.json',
   forest: 'forest.json',
+  farmhouse: 'farmhouse.json',
 };
 
 function readJson(name) {

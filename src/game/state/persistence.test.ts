@@ -987,9 +987,9 @@ describe('version 7 saves, from before anything stood on the ground', () => {
 
   it('fills in from the edges over the following fortnight', () => {
     const restored = decodeSave(JSON.stringify(version7Envelope()))!;
-    // Stood at the farmhouse door, because that is the only place the reducer
-    // will let anybody turn in, and a night is what this test is about.
-    const bed = areaMap(START_AREA).props.find((prop) => prop.interact === 'bed')!;
+    // Stood at the bed, because that is the only place the reducer will let
+    // anybody turn in, and a night is what this test is about.
+    const bed = areaMap('farmhouse').props.find((prop) => prop.interact === 'bed')!;
     let farm: FarmState = {
       ...restored,
       players: {
@@ -998,7 +998,7 @@ describe('version 7 saves, from before anything stood on the ground', () => {
           online: true,
           x: bed.x + bed.width / 2,
           y: bed.y + bed.height + 8,
-          area: START_AREA,
+          area: 'farmhouse',
         },
       },
     };

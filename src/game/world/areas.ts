@@ -10,7 +10,7 @@ import {
 
 export { AREA_IDS };
 export type { AreaId };
-export type { AreaMap, AreaPortal, AreaProp, Point, TileDef, TileKind } from './tiled';
+export type { AreaCollider, AreaMap, AreaPortal, AreaProp, Point, TileDef, TileKind } from './tiled';
 export {
   EDGE_EAST,
   EDGE_NORTH,
@@ -145,6 +145,9 @@ export function isWalkable(
 
   for (const prop of map.props) {
     if (prop.solid && contains(prop, { x, y })) return false;
+  }
+  for (const rect of map.colliders) {
+    if (contains(rect, { x, y })) return false;
   }
   for (const rect of blocked.buildings) {
     if (contains(rect, { x, y })) return false;
@@ -346,6 +349,8 @@ export function describeTile(area: AreaId, tileX: number, tileY: number): string
   if (tile.kind === 'water') return 'Mặt nước lặng phản chiếu bầu trời. Bình tưới đầy lại mỗi sáng.';
   if (tile.kind === 'plot') return 'Hãy chọn một nông cụ để làm luống đất này.';
   if (tile.kind === 'path') return 'Con đường mòn nện chặt lượn giữa nông trại và ngôi làng.';
+  if (tile.kind === 'floor') return 'Sàn gỗ ấm, kêu cót két dưới chân.';
+  if (tile.kind === 'wall') return 'Tường vữa khung gỗ của căn nhà.';
   return 'Cỏ dại đung đưa trong làn gió thung lũng.';
 }
 
@@ -365,6 +370,12 @@ const PROP_LABELS: ReadonlyArray<[prefix: string, label: string]> = [
   ['tree', 'Cái cây'],
   ['well', 'Cái giếng'],
   ['ranch', 'Bãi quây gia súc'],
+  ['bed', 'Cái giường'],
+  ['stove', 'Bếp lò'],
+  ['table', 'Bàn ăn'],
+  ['chair', 'Cái ghế'],
+  ['fireplace', 'Lò sưởi'],
+  ['rug', 'Tấm thảm'],
 ];
 
 export function propLabel(name: string): string {

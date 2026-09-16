@@ -7,7 +7,7 @@
  * this file the only place that has to change if the map format does.
  */
 
-export type TileKind = 'grass' | 'path' | 'water' | 'plot';
+export type TileKind = 'grass' | 'path' | 'water' | 'plot' | 'floor' | 'wall';
 
 export interface Point {
   x: number;
@@ -111,6 +111,22 @@ export interface AreaPortal {
   label: string;
 }
 
+/**
+ * A rectangle that blocks the way with nothing drawn on it, in world pixels.
+ *
+ * A solid prop is its own collision box, which is exactly wrong for a
+ * building with a door in it: the picture is one rectangle and the wall is
+ * that rectangle minus a doorway. Colliders let the map say the second thing
+ * while the prop goes on saying the first.
+ */
+export interface AreaCollider {
+  name: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface AreaMap {
   id: string;
   /** What the map calls itself, set as a map property in Tiled. */
@@ -122,6 +138,11 @@ export interface AreaMap {
    * own track with an audio file and a map property, and no code change.
    */
   music: string | null;
+  /**
+   * True when this area is under a roof, set as a map property in Tiled: no
+   * rain, no night sky, and the area's own music bed whatever the weather.
+   */
+  indoor: boolean;
   /** Size in tiles. */
   width: number;
   height: number;
@@ -132,6 +153,8 @@ export interface AreaMap {
   /** One entry per cell, row-major. Null where the layer had no tile. */
   tiles: Array<TileDef | null>;
   props: AreaProp[];
+  /** Rectangles that block the way without being drawn. */
+  colliders: AreaCollider[];
   portals: AreaPortal[];
   spawns: Point[];
   /** Every cell whose tile is farmable, in row-major order. */
@@ -232,7 +255,7 @@ function asBoolean(value: unknown): boolean {
   return value === true;
 }
 
-const TILE_KINDS: readonly TileKind[] = ['grass', 'path', 'water', 'plot'];
+const TILE_KINDS: readonly TileKind[] = ['grass', 'path', 'water', 'plot', 'floor', 'wall'];
 
 function asTileKind(value: unknown): TileKind {
   return TILE_KINDS.includes(value as TileKind) ? (value as TileKind) : 'grass';
@@ -332,10 +355,13 @@ export function parseTiledMap(id: string, map: TiledMap, tileset: TiledTileset, 
     }
   }
 
+  const mapProperties = propertyMap(map.properties);
+
   return {
     id,
-    name: asString(propertyMap(map.properties).displayName, id),
-    music: asString(propertyMap(map.properties).music) || null,
+    name: asString(mapProperties.displayName, id),
+    music: asString(mapProperties.music) || null,
+    indoor: asBoolean(mapProperties.indoor),
     width: map.width,
     height: map.height,
     pixelWidth: map.width * map.tilewidth,
@@ -343,6 +369,13 @@ export function parseTiledMap(id: string, map: TiledMap, tileset: TiledTileset, 
     tileSize: map.tilewidth,
     tiles,
     props: objectsOfType(map, 'prop').map(toProp),
+    colliders: objectsOfType(map, 'collider').map(({ name, x, y, width, height }) => ({
+      name,
+      x,
+      y,
+      width,
+      height,
+    })),
     portals: objectsOfType(map, 'portal').map((object) => toPortal(object, map.tilewidth)),
     spawns: objectsOfType(map, 'spawn').map((object) => ({
       x: object.x + object.width / 2,

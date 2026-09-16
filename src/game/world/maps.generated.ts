@@ -3,7 +3,7 @@
 import type { TiledMap, TiledTileset } from './tiled';
 
 export const TILESET: TiledTileset = {
-  "tilecount": 15,
+  "tilecount": 29,
   "tilewidth": 32,
   "tileheight": 32,
   "tiles": [
@@ -351,11 +351,333 @@ export const TILESET: TiledTileset = {
           "value": false
         }
       ]
+    },
+    {
+      "id": 15,
+      "image": "../public/assets/lpc/tile-floor-wood.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-floor-wood"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "floor"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "image": "../public/assets/lpc/tile-wall-upper-1.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-upper-1"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "image": "../public/assets/lpc/tile-wall-upper-2.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-upper-2"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 18,
+      "image": "../public/assets/lpc/tile-wall-upper-3.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-upper-3"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "image": "../public/assets/lpc/tile-wall-lower-1.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-lower-1"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "image": "../public/assets/lpc/tile-wall-lower-2.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-lower-2"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "image": "../public/assets/lpc/tile-wall-lower-3.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-lower-3"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "image": "../public/assets/lpc/tile-wall-left.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-left"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "image": "../public/assets/lpc/tile-wall-right.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-right"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 24,
+      "image": "../public/assets/lpc/tile-wall-bottom.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-bottom"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "image": "../public/assets/lpc/tile-wall-bottom-left.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-bottom-left"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "image": "../public/assets/lpc/tile-wall-bottom-right.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-bottom-right"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "image": "../public/assets/lpc/tile-wall-door-left.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-door-left"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "image": "../public/assets/lpc/tile-wall-door-right.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-wall-door-right"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "wall"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": true
+        }
+      ]
     }
   ]
 };
 
-export const AREA_IDS = ["farm","village","forest"] as const;
+export const AREA_IDS = ["farm","village","forest","farmhouse"] as const;
 
 export type AreaId = (typeof AREA_IDS)[number];
 
@@ -1607,17 +1929,12 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
               {
                 "name": "solid",
                 "type": "bool",
-                "value": true
+                "value": false
               },
               {
                 "name": "depth",
                 "type": "int",
                 "value": 4
-              },
-              {
-                "name": "interact",
-                "type": "string",
-                "value": "bed"
               }
             ]
           },
@@ -2718,6 +3035,70 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
                 "value": "Hollowpine Wood"
               }
             ]
+          },
+          {
+            "id": 49,
+            "name": "to-farmhouse",
+            "type": "portal",
+            "x": 160,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "toArea",
+                "type": "string",
+                "value": "farmhouse"
+              },
+              {
+                "name": "toTileX",
+                "type": "int",
+                "value": 6
+              },
+              {
+                "name": "toTileY",
+                "type": "int",
+                "value": 7
+              },
+              {
+                "name": "label",
+                "type": "string",
+                "value": "ngôi nhà"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "objectgroup",
+        "name": "colliders",
+        "objects": [
+          {
+            "id": 46,
+            "name": "house-wall-west",
+            "type": "collider",
+            "x": 96,
+            "y": 96,
+            "width": 64,
+            "height": 128
+          },
+          {
+            "id": 47,
+            "name": "house-wall-east",
+            "type": "collider",
+            "x": 192,
+            "y": 96,
+            "width": 64,
+            "height": 128
+          },
+          {
+            "id": 48,
+            "name": "house-wall-door",
+            "type": "collider",
+            "x": 160,
+            "y": 96,
+            "width": 32,
+            "height": 96
           }
         ]
       }
@@ -5309,6 +5690,377 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
                 "name": "label",
                 "type": "string",
                 "value": "Amberfall Farm"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "farmhouse": {
+    "width": 12,
+    "height": 9,
+    "tilewidth": 32,
+    "tileheight": 32,
+    "properties": [
+      {
+        "name": "displayName",
+        "type": "string",
+        "value": "Farmhouse"
+      },
+      {
+        "name": "music",
+        "type": "string",
+        "value": "home-loop"
+      },
+      {
+        "name": "indoor",
+        "type": "bool",
+        "value": true
+      }
+    ],
+    "layers": [
+      {
+        "type": "tilelayer",
+        "name": "ground",
+        "width": 12,
+        "height": 9,
+        "data": [
+          23,
+          17,
+          18,
+          19,
+          17,
+          18,
+          19,
+          17,
+          18,
+          19,
+          17,
+          24,
+          23,
+          20,
+          21,
+          22,
+          20,
+          21,
+          22,
+          20,
+          21,
+          22,
+          20,
+          24,
+          23,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          24,
+          23,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          24,
+          23,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          24,
+          23,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          24,
+          23,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          24,
+          23,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          16,
+          24,
+          26,
+          25,
+          25,
+          25,
+          25,
+          28,
+          16,
+          29,
+          25,
+          25,
+          25,
+          27
+        ]
+      },
+      {
+        "type": "objectgroup",
+        "name": "props",
+        "objects": [
+          {
+            "id": 1,
+            "name": "bed",
+            "type": "prop",
+            "x": 32,
+            "y": 64,
+            "width": 32,
+            "height": 64,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "furniture-bed"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 3
+              },
+              {
+                "name": "interact",
+                "type": "string",
+                "value": "bed"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "name": "stove",
+            "type": "prop",
+            "x": 128,
+            "y": 64,
+            "width": 64,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "furniture-stove"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 2
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "name": "table",
+            "type": "prop",
+            "x": 128,
+            "y": 128,
+            "width": 64,
+            "height": 64,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "furniture-table"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "name": "chair-west",
+            "type": "prop",
+            "x": 96,
+            "y": 160,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "furniture-chair-east"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "name": "chair-east",
+            "type": "prop",
+            "x": 192,
+            "y": 160,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "furniture-chair-west"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 5
+              }
+            ]
+          },
+          {
+            "id": 6,
+            "name": "fireplace",
+            "type": "prop",
+            "x": 224,
+            "y": 64,
+            "width": 96,
+            "height": 64,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "furniture-fireplace"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 3
+              }
+            ]
+          },
+          {
+            "id": 7,
+            "name": "rug",
+            "type": "prop",
+            "x": 224,
+            "y": 128,
+            "width": 96,
+            "height": 96,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "furniture-rug"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 0
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "objectgroup",
+        "name": "portals",
+        "objects": [
+          {
+            "id": 8,
+            "name": "to-farm",
+            "type": "portal",
+            "x": 192,
+            "y": 256,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "toArea",
+                "type": "string",
+                "value": "farm"
+              },
+              {
+                "name": "toTileX",
+                "type": "int",
+                "value": 5
+              },
+              {
+                "name": "toTileY",
+                "type": "int",
+                "value": 7
+              },
+              {
+                "name": "label",
+                "type": "string",
+                "value": "sân nông trại"
               }
             ]
           }

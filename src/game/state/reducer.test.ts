@@ -166,10 +166,10 @@ function faceTileFromBelow(state: FarmState, id: PlayerId, tileX: number, tileY:
   return { ...placed, players: { ...placed.players, [id]: { ...placed.players[id], facing: 'up' } } };
 }
 
-/** Stands a player at the farmhouse door, which is where the bed is. */
+/** Stands a player at the foot of the bed, which is inside the farmhouse. */
 function standAtBed(state: FarmState, id: PlayerId): FarmState {
-  const bed = areaMap(START_AREA).props.find((prop) => prop.interact === 'bed')!;
-  return place(state, id, bed.x + bed.width / 2, bed.y + bed.height + 8, START_AREA);
+  const bed = areaMap('farmhouse').props.find((prop) => prop.interact === 'bed')!;
+  return place(state, id, bed.x + bed.width / 2, bed.y + bed.height + 8, 'farmhouse');
 }
 
 /** Runs the clock forward by whole in-game minutes, collecting every event. */
@@ -350,6 +350,31 @@ describe('movement', () => {
     expect(after.players.a.facing).toBe('right');
   });
 
+  it('walks into the farmhouse and back out onto the same doorstep', () => {
+    // The round trip through the front door, through the reducer, because the
+    // reducer is what decides where a player lands. A landing tile that was
+    // itself a doorway would bounce a player between the two maps on every
+    // step, which is a hung game rather than a wrong picture.
+    const doorstep = { x: 5 * TILE_SIZE + 16, y: 7 * TILE_SIZE + 16 };
+    let state = place(join(createFarmState(), 'a'), 'a', doorstep.x, doorstep.y);
+
+    const inward = applyIntent(state, { type: 'player/move', playerId: 'a', dx: 0, dy: -1, deltaMs: 250 });
+    state = inward.state;
+    expect(state.players.a.area).toBe('farmhouse');
+    expect(inward.events).toContainEqual({ kind: 'areaChanged', playerId: 'a', area: 'farmhouse' });
+    const landed = { x: state.players.a.x, y: state.players.a.y };
+
+    // A step further in stays in: landing did not put anybody on a portal.
+    const settled = applyIntent(state, { type: 'player/move', playerId: 'a', dx: 0, dy: -1, deltaMs: 16 }).state;
+    expect(settled.players.a.area).toBe('farmhouse');
+
+    // Straight back down the way they came.
+    state = applyIntent(state, { type: 'player/move', playerId: 'a', dx: 0, dy: 1, deltaMs: 250 }).state;
+    expect(state.players.a.area).toBe('farm');
+    expect({ x: state.players.a.x, y: state.players.a.y }).toEqual(doorstep);
+    expect(landed).toEqual({ x: 6 * TILE_SIZE + 16, y: 7 * TILE_SIZE + 16 });
+  });
+
   it('ignores movement intents for an unknown player', () => {
     const state = join(createFarmState(), 'a');
     const after = applyIntent(state, { type: 'player/move', playerId: 'ghost', dx: 1, dy: 0, deltaMs: 16 });
@@ -486,7 +511,7 @@ describe('sleeping', () => {
     expect(after.state.players.a.asleep).toBe(false);
   });
 
-  it('puts a player to bed when they act at the farmhouse', () => {
+  it('puts a player to bed when they act at the bed', () => {
     const state = inBed('a', 'b');
 
     const after = applyIntent(state, { type: 'player/act', playerId: 'a' });
@@ -1991,9 +2016,9 @@ describe('the herd', () => {
     for (let y = 0; y < map.height; y += 1) {
       for (let x = 0; x < map.width; x += 1) {
         if (!checkPlacement(START_AREA, state.buildings, state.plots, kind, x, y).ok) continue;
-        // Away from the farmhouse door, and deliberately. A press at a coop
-        // built against the bed is a press at the bed — the nearest thing
-        // wins, which is the rule everywhere else too — and a test that
+        // Away from anything interactive, and deliberately. A press at a coop
+        // built against a counter is a press at the counter — the nearest
+        // thing wins, which is the rule everywhere else too — and a test that
         // happened to build there would be testing that instead.
         const clear = buildingTiles({ kind, x, y }).every(
           (tile) =>
@@ -2010,8 +2035,7 @@ describe('the herd', () => {
 
   /** Walks the player to their own bed and turns in, which rolls the morning. */
   function sleepThrough(state: FarmState): ApplyResult {
-    const bed = propCentreOf('bed');
-    return applyIntent(place(state, 'a', bed.x, bed.y), { type: 'player/sleep', playerId: 'a' });
+    return applyIntent(standAtBed(state, 'a'), { type: 'player/sleep', playerId: 'a' });
   }
 
   /** A farm with one player, a finished coop, and money. */

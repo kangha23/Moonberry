@@ -25,18 +25,18 @@ cái thứ hai. Mọi thứ còn lại là chiều sâu đặt lên trên hai c�
 | 10 | [Thu thập tài nguyên](10-resources-and-tools.md) | 06 | Gỗ và đá bắt đầu tồn tại, và nông trại bắt đầu ở trạng thái đáng khai phá. |
 | 11 | [Chế tác](11-crafting.md) | 10, tốt hơn sau 09 | Cho cái kho một cái ruột, và cho nông trại bậc thang thứ hai. |
 | 12 | [Câu cá](12-fishing.md) | 10 | Ba mươi ô nước thôi chỉ là tường chắn, và buổi tối thôi là chỗ trống. |
+| 14 | [Bước vào trong nhà](14-farmhouse-interior.md) | — | Ngôi nhà thôi là mặt tiền, và giấc ngủ có một cái giường. |
 
 ## Phần còn lại
 
 Spec 08 nói về thứ người chơi nhìn thấy; spec 13 lấp trụ cột cuối cùng mà thể loại
-có và game này chưa có; spec 14 mở cánh cửa duy nhất trên bản đồ chưa mở được.
-Chúng lớn hơn phần lớn những cái trên, và mỗi cái đứng được một mình.
+có và game này chưa có. Chúng lớn hơn phần lớn những cái trên, và mỗi cái đứng
+được một mình.
 
 | # | Spec | Phụ thuộc | Vì sao nó ở đây |
 | --- | --- | --- | --- |
 | 08 | [Khung game và ngôn ngữ thị giác](08-frame-and-look.md) | 05 | Hai giây đầu đang nói "trang giới thiệu sản phẩm". Rẻ nhất tính theo ấn tượng đổi được. |
 | 13 | [Mỏ và chiến đấu](13-mine-and-combat.md) | 10, 11 | Nơi kim loại đến từ. Hệ thống duy nhất có rủi ro. |
-| 14 | [Bước vào trong nhà](14-farmhouse-interior.md) | —, tốt hơn sau 08 | Ngôi nhà thôi là mặt tiền, và giấc ngủ có một cái giường. |
 
 ### Về thứ tự
 
@@ -61,8 +61,9 @@ một dòng: mồi câu là công thức duy nhất spec 12 mượn của spec 1
 trước thì mồi sẽ là một thứ mua ở sạp thay vì một thứ tết từ sợi. Đi sau thì nó
 là dòng thứ mười sáu trong `RECIPES` và không có gì khác phải bàn.
 
-14 không phụ thuộc spec nào cả: nó chỉ chờ art nội thất, và art đó đã tìm xong.
-Nó nên đi sau 08 vì nó thêm một cảnh mới phải trông giống phần còn lại của game.
+**14 không phụ thuộc spec nào**, và đúng như nó hứa, nó không đổi `FarmState`:
+căn phòng không có HUD nào của riêng mình, chỉ là một bản đồ, một cờ `indoor` và
+bộ art nội thất.
 
 13 nên đi cuối dù có làm gì trước, vì nó là cái duy nhất phá vỡ một giả định nền:
 **bản đồ không còn tĩnh nữa.**
@@ -96,6 +97,17 @@ mọi thứ đã có: chặt cây lên cấp Hái lượm, đào lên cấp Khai
 cá, và mỗi cấp mở công thức ở spec 11. Làm nó sau cùng nghĩa là phải quay lại sửa
 cả ba chỗ — và sau spec 10 và 12 thì chặt cây, đào đá và kéo cá đều đã tồn tại,
 nên chỗ để móc vào đã sẵn sàng.
+
+### Spec 14 để lại gì
+
+- **Hình vẽ và vật cản đã tách nhau.** Object `collider` trong Tiled chặn đường
+  mà không vẽ gì, nên một công trình có cửa là một prop không solid cộng vài
+  collider. Chuồng gà và chuồng bò về sau dùng lại đúng cách đó.
+- **`indoor` là một thuộc tính bản đồ**, và nó tắt thời tiết, trời đêm, nhạc
+  mưa và việc mọc tài nguyên. Một khu vực trong nhà mới — hầm mỏ ở spec 13 chẳng
+  hạn — chỉ cần đặt cờ đó.
+- **Giường ở trong nhà**, nên mọi bài test đưa người chơi đi ngủ đều đặt họ vào
+  `'farmhouse'`.
 
 ### Spec 12 để lại gì
 

@@ -21,6 +21,7 @@ export type SoundId =
   | 'rooster'
   | 'footstep-grass'
   | 'footstep-path'
+  | 'footstep-wood'
   | 'ui-select'
   | 'ui-confirm'
   | 'chime'
@@ -44,6 +45,7 @@ export const SOUND_IDS: readonly SoundId[] = [
   'rooster',
   'footstep-grass',
   'footstep-path',
+  'footstep-wood',
   'ui-select',
   'ui-confirm',
   'chime',
@@ -308,8 +310,14 @@ export interface MusicContext {
  *
  * Rain outranks night: on a wet evening the rain is what you are standing in,
  * and layering the two would need a mixer this does not have.
+ *
+ * Indoors outranks both. Under a roof the rain is something outside the
+ * window, which is a sound effect's job rather than the music's — and if the
+ * night bed followed you in, stepping through the door at eight in the evening
+ * would change nothing you could hear.
  */
 export function musicFor({ area, weather, time }: MusicContext): MusicId {
+  if (areaMap(area).indoor) return areaMusic(area);
   if (isRainy(weather)) return RAIN_MUSIC;
   const hour = time.hour;
   if (hour >= NIGHT_FROM_HOUR || hour < NIGHT_UNTIL_HOUR) return NIGHT_MUSIC;
@@ -330,9 +338,12 @@ const FOOTSTEP_SOUNDS: Record<TileKind, SoundId | null> = {
   grass: 'footstep-grass',
   plot: 'footstep-grass',
   path: 'footstep-path',
+  floor: 'footstep-wood',
   // Nobody can stand on water, so a footstep there would be a bug telling on
   // itself rather than a sound.
   water: null,
+  // Nor on a wall, for the same reason.
+  wall: null,
 };
 
 export function footstepFor(kind: TileKind | undefined): SoundId | null {

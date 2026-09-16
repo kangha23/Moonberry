@@ -514,6 +514,13 @@ export default class FarmScene extends Phaser.Scene {
   private sprinkledFrom: FarmState['placeables'] | null = null;
   private questIcon: Phaser.GameObjects.Image | null = null;
   private houseGlow: Phaser.GameObjects.Image | null = null;
+  /**
+   * The fire in the farmhouse hearth: the only light in a room with no sky.
+   * The same glow that lights the house's windows from outside, lit all day
+   * rather than only after dark, and flickering rather than breathing.
+   */
+  private hearthGlow: Phaser.GameObjects.Image | null = null;
+  private hearthFire: Phaser.GameObjects.Image | null = null;
   private chimney: { x: number; y: number } | null = null;
 
   private cursor!: Phaser.GameObjects.Image;
@@ -1628,6 +1635,8 @@ export default class FarmScene extends Phaser.Scene {
     this.avatars.clear();
     this.questIcon = null;
     this.houseGlow = null;
+    this.hearthGlow = null;
+    this.hearthFire = null;
     this.chimney = null;
 
     this.areaLayer = this.add.group();
@@ -1640,12 +1649,33 @@ export default class FarmScene extends Phaser.Scene {
     this.renderProps(map);
     this.renderScatter(map);
 
-    this.cameras.main.setBounds(0, 0, map.pixelWidth, map.pixelHeight);
+    this.fitCameraBounds();
 
     this.refreshAllPlots();
     // Force the weather presentation to reapply against the new camera.
     this.lastWeather = '';
     this.updateWeatherPresentation();
+  }
+
+  /**
+   * Keeps the camera inside the area, and a small area in the middle of the
+   * screen.
+   *
+   * Phaser clamps a camera to its bounds by the left and top edges, so a map
+   * narrower than the view — the farmhouse is 384px wide against a view twice
+   * that — ends up pinned to the top-left corner with the rest of the screen
+   * empty. Padding the bounds out to the view's size on both sides leaves the
+   * camera exactly one place to be, which is centred.
+   *
+   * Depends on the zoom, so a resize has to ask again.
+   */
+  private fitCameraBounds() {
+    if (!this.builtArea) return;
+    const map = areaMap(this.builtArea);
+    const camera = this.cameras.main;
+    const padX = Math.max(0, (camera.width / camera.zoom - map.pixelWidth) / 2);
+    const padY = Math.max(0, (camera.height / camera.zoom - map.pixelHeight) / 2);
+    camera.setBounds(-padX, -padY, map.pixelWidth + padX * 2, map.pixelHeight + padY * 2);
   }
 
   private renderTiles(map: AreaMap, area: AreaId) {
@@ -1763,6 +1793,29 @@ export default class FarmScene extends Phaser.Scene {
         this.areaLayer?.addMultiple([shadow, glow]);
         this.houseGlow = glow;
         this.chimney = { x: centreX + prop.width / 3, y: top + 2 };
+      }
+
+      if (prop.texture === 'furniture-fireplace') {
+        // In the mouth of the hearth, standing on the hearthstone, which is
+        // about seven tenths of the way down the drawing: the mantel and the
+        // carving above the arch are the top third of it.
+        const top = image.y - image.displayHeight / 2;
+        const hearth = top + image.displayHeight * 0.7;
+        const fire = this.add
+          .image(centreX, hearth - 8, 'hearth-fire-0')
+          .setDepth(prop.depth + 0.5);
+        // Tinted towards the fire's own orange. The glow texture is the pale
+        // one the house windows use, and on its own it read as a haze rather
+        // than as firelight.
+        const glow = this.add
+          .image(centreX, hearth - 10, 'glow')
+          .setDepth(prop.depth + 1)
+          .setScale(1.6)
+          .setTint(tint('light.4'))
+          .setAlpha(0.6);
+        this.areaLayer?.addMultiple([fire, glow]);
+        this.hearthFire = fire;
+        this.hearthGlow = glow;
       }
 
       if (prop.texture === 'tree') {
@@ -2030,6 +2083,7 @@ export default class FarmScene extends Phaser.Scene {
 
     this.layoutHud();
     this.spreadAtmosphere();
+    this.fitCameraBounds();
   }
 
   /** Puts every piece of the HUD where this canvas size says it goes. */
@@ -2861,6 +2915,10 @@ export default class FarmScene extends Phaser.Scene {
   private updateAtmosphere(delta: number) {
     const farm = this.farm;
     const time = this.time.now / 1000;
+    // Under a roof there is no sky: no dusk, no night, no rain, nothing flying
+    // past. Everything that belongs to the weather is switched off here rather
+    // than when the area is built, because the clock keeps turning it back on.
+    const indoor = this.builtArea !== null && areaMap(this.builtArea).indoor;
 
     this.waterTimer += delta;
     if (this.waterTimer > 380 && this.textures.exists('tile-water-2') && this.textures.exists('tile-water-3')) {
@@ -2874,6 +2932,7 @@ export default class FarmScene extends Phaser.Scene {
     });
 
     this.clouds.forEach((cloud, i) => {
+      cloud.setVisible(!indoor);
       cloud.x += delta * 0.008 * (1 + (i % 3) * 0.4);
       if (cloud.x > this.hud.width + 100) cloud.x = -100;
     });
@@ -2883,6 +2942,7 @@ export default class FarmScene extends Phaser.Scene {
     const hour = farm.time.totalMinutes / 60;
     const fireflyNight = farm.weather === 'Firefly Shower' || hour >= 19 || hour < 6;
     this.petals.forEach((petal) => {
+      petal.setVisible(!indoor);
       const seed = Number(petal.getData('seed') ?? 0);
       const isPetal = Boolean(petal.getData('isPetal'));
       petal.y += delta * 0.012;
@@ -2919,19 +2979,29 @@ export default class FarmScene extends Phaser.Scene {
 
     const eveningAlpha = Phaser.Math.Clamp((hour - 18) / 4, 0, 0.42);
     const dawnAlpha = Phaser.Math.Clamp((7 - hour) / 2, 0, 0.18);
-    this.dayNightOverlay.setAlpha(Math.max(eveningAlpha, dawnAlpha));
+    this.dayNightOverlay.setAlpha(indoor ? 0 : Math.max(eveningAlpha, dawnAlpha));
     const sunset = hour >= 16.5 && hour <= 19 ? Math.sin(((hour - 16.5) / 2.5) * Math.PI) * 0.16 : 0;
-    this.sunsetOverlay.setAlpha(sunset);
+    this.sunsetOverlay.setAlpha(indoor ? 0 : sunset);
 
     if (this.houseGlow) {
       const nightGlow = hour >= 18 || hour < 6.5 ? 0.75 : hour >= 17 ? 0.35 : 0;
       this.houseGlow.setAlpha(nightGlow + Math.sin(time * 2.2) * 0.05);
     }
 
-    const showButterflies = farm.weather !== 'Drizzle' && hour >= 8 && hour < 18;
+    if (this.hearthGlow) {
+      // Brighter once it is dark outside, when it is the room's only light.
+      // Two sines at unrelated rates, so the flicker never settles into a beat.
+      const base = hour >= 18 || hour < 6.5 ? 0.72 : 0.5;
+      this.hearthGlow.setAlpha(base + Math.sin(time * 7.3) * 0.06 + Math.sin(time * 12.1) * 0.04);
+    }
+    // A frame every seventh of a second or so, off the clock rather than a
+    // timer, so a rebuilt room picks the flicker up mid-stride.
+    this.hearthFire?.setTexture(`hearth-fire-${Math.floor(time * 7) % 2}`);
+
+    const showButterflies = !indoor && farm.weather !== 'Drizzle' && hour >= 8 && hour < 18;
     this.butterflies.forEach((b) => b.setVisible(showButterflies));
 
-    const rainy = farm.weather === 'Drizzle';
+    const rainy = !indoor && farm.weather === 'Drizzle';
     this.rainDrops.forEach((drop, index) => {
       if (!rainy) return;
       drop.y += delta * (0.28 + (index % 5) * 0.018);
@@ -2947,8 +3017,11 @@ export default class FarmScene extends Phaser.Scene {
     const { weather } = this.farm;
     if (weather === this.lastWeather) return;
     this.lastWeather = weather;
-    const rainy = weather === 'Drizzle';
-    const fireflyWeather = weather === 'Firefly Shower';
+    // `buildArea` clears `lastWeather`, so walking through a door lands here
+    // and the weather is put away (or brought back) on the step itself.
+    const indoor = this.builtArea !== null && areaMap(this.builtArea).indoor;
+    const rainy = !indoor && weather === 'Drizzle';
+    const fireflyWeather = !indoor && weather === 'Firefly Shower';
     this.rainDrops.forEach((drop) => drop.setAlpha(rainy ? 0.72 : 0));
     this.fireflies.forEach((fly) => fly.setAlpha(fireflyWeather ? 0.85 : 0));
     // Rainy was the source literal `203142`, whose mechanical nearest is `shadow.2` (d=0.0507)

@@ -30,31 +30,54 @@ async function waitForGameRunning(page: Page) {
   await expect(announced(page)).not.toBeEmpty({ timeout: 15_000 })
 }
 
-test('walking to the farmhouse and turning in starts the next day', async ({ page }) => {
+/**
+ * Moves the saved player onto the farmhouse doorstep, and reloads into it.
+ *
+ * Walking there from the spawn point by holding keys cannot line up with a
+ * doorway one tile wide: key timing depends on a frame rate this test does not
+ * control. So the save the game wrote is edited instead, in an init script
+ * that runs before the game on the next load — early enough that nothing can
+ * autosave the old position back over it.
+ */
+async function reloadOnTheDoorstep(page: Page) {
+  await expect
+    .poll(() => page.evaluate(() => localStorage.getItem('moonberry:farm') !== null))
+    .toBe(true)
+  await page.addInitScript(() => {
+    if (sessionStorage.getItem('doorstep')) return
+    sessionStorage.setItem('doorstep', 'done')
+    const save = JSON.parse(localStorage.getItem('moonberry:farm') ?? 'null')
+    const player = save?.farm?.players?.local
+    if (!player) return
+    // The ring road in front of the house: column 5, row 7, facing the door.
+    Object.assign(player, { area: 'farm', x: 5 * 32 + 16, y: 7 * 32 + 16, facing: 'up' })
+    localStorage.setItem('moonberry:farm', JSON.stringify(save))
+  })
+  await page.reload()
+  await expect(page.locator('canvas').first()).toBeVisible()
+  await waitForGameRunning(page)
+}
+
+test('going indoors, turning in, and waking up still indoors', async ({ page }) => {
   await page.goto('/')
   // `.first()` because React's strict mode mounts the canvas twice on boot
   // and Phaser tears the first one down a beat later.
   await expect(page.locator('canvas').first()).toBeVisible()
   await waitForGameRunning(page)
+  await reloadOnTheDoorstep(page)
 
-  // Up the lane to the farmhouse. Since spec 10 the farm is overgrown and a
-  // rock is solid, so leaning on one direction and hoping is no longer a route
-  // — this shuffles sideways every few bursts to get round whatever came up
-  // overnight, and stops the moment the house is in reach.
-  const atTheDoor = async () => /đi ngủ/i.test((await announced(page).textContent()) ?? '')
+  // Up the step and through the door.
+  await walk(page, 'ArrowUp', 400)
+  await expect(announced(page)).toContainText('ngôi nhà')
 
-  // Five seconds is twenty tiles at the walking pace, which clears the thirty
-  // rows of farm with room to spare and leans on the top edge once it arrives.
-  // Kept tight on purpose: the whole test runs against a thirty-second budget,
-  // and under a parallel suite a Phaser game does not get the frame rate it
-  // would alone.
-  await walk(page, 'ArrowUp', 5000)
-  for (let i = 0; i < 24 && !(await atTheDoor()); i += 1) {
-    await walk(page, 'ArrowLeft', 250)
-    if (i % 3 === 2) await walk(page, i % 6 === 2 ? 'ArrowUp' : 'ArrowDown', 200)
-  }
-
-  expect(await announced(page).textContent()).toMatch(/đi ngủ/i)
+  // To the bed, with the room's own walls as the guide rather than a stopwatch:
+  // left along the clear row inside the door until the west wall stops it, then
+  // up that wall until the foot of the bed stops it. Both walks are longer
+  // than they need to be, and leaning on a wall costs nothing.
+  const atTheBed = async () => /đi ngủ/i.test((await announced(page).textContent()) ?? '')
+  await walk(page, 'ArrowLeft', 2000)
+  await walk(page, 'ArrowUp', 1500)
+  await expect.poll(atTheBed).toBe(true)
 
   // Held briefly rather than tapped: Phaser clears "just pressed" on key-up,
   // so a press that begins and ends inside one frame is never seen.
@@ -68,11 +91,14 @@ test('walking to the farmhouse and turning in starts the next day', async ({ pag
 
   // Standing at the bed, the prompt is about the bed, so step away from it:
   // what the prompt falls back to is the last thing the game said, which is
-  // the morning announcing itself. The farmhouse footprint is 160px tall with
-  // a 58px interact radius, so from the north edge this needs ~270px south —
-  // well over a second at 132px/s — to leave its range.
-  await walk(page, 'ArrowDown', 2000)
+  // the morning announcing itself.
+  await walk(page, 'ArrowDown', 1000)
   await expect(announced(page)).toContainText('Ngày 2 bắt đầu')
+
+  // And the morning happened indoors. The bed is only in the farmhouse, so
+  // walking back up to it and being offered it again is the proof.
+  await walk(page, 'ArrowUp', 1500)
+  await expect.poll(atTheBed).toBe(true)
 })
 
 test('the satchel opens over the canvas and takes the keyboard with it', async ({ page }) => {

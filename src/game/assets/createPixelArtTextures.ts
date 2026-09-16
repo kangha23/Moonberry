@@ -556,6 +556,33 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
     ctx.fillRect(0, 0, 96, 96);
   });
 
+  // The fire in the farmhouse hearth. The furniture sheet draws the fireplace
+  // cold — a dark arch over a clean hearthstone — and a room lit by nothing is
+  // not the room at the end of a day. Two frames, so the scene can flick
+  // between them: the tongues swap sides, which at this size is all a flicker
+  // needs to be. Drawn at native 32px scale on a pair of logs.
+  for (const [frame, lean] of [
+    [0, 0],
+    [1, 1],
+  ] as const) {
+    withTexture(scene, `hearth-fire-${frame}`, 20, 16, (ctx) => {
+      ctx.clearRect(0, 0, 20, 16);
+      // Logs, crossed.
+      rect(ctx, PALETTE['soil.1'], 2, 13, 16, 3);
+      rect(ctx, PALETTE['soil.4'], 3, 13, 6, 1);
+      rect(ctx, PALETTE['soil.4'], 11, 14, 6, 1);
+      // Outer flame, then the hotter core inside it, then the white heart.
+      const tall = lean === 0 ? [7, 11] : [11, 7];
+      rect(ctx, PALETTE['clothWarm.2'], 4, 7, 12, 6);
+      rect(ctx, PALETTE['clothWarm.2'], tall[0] - 1, 2, 3, 5);
+      rect(ctx, PALETTE['clothWarm.2'], tall[1] - 1, 4, 3, 3);
+      rect(ctx, PALETTE['light.4'], 6, 8, 8, 5);
+      rect(ctx, PALETTE['light.4'], tall[0], 4, 1, 4);
+      rect(ctx, PALETTE['gold.0'], 8, 9, 4, 4);
+      rect(ctx, PALETTE['light.7'], 9, 11, 2, 2);
+    });
+  }
+
   // The village well. Previously assembled from loose rectangles in the scene;
   // now a texture, so the map can name it like any other prop.
   withTexture(scene, 'well', 64, 64, (ctx) => {

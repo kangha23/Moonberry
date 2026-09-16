@@ -312,6 +312,19 @@ function footstep(seed, cutoff, length, gain) {
   return normalise(out, gain);
 }
 
+/**
+ * A footstep on floorboards: the same scuff, plus the hollow knock of a board
+ * with air under it, which is what tells a wooden floor from packed earth.
+ */
+function footstepWood() {
+  const out = footstep(0x3559, 2400, 0.12, 0.3);
+  for (let i = 0; i < out.length; i += 1) {
+    const t = i / SFX_RATE;
+    out[i] += Math.sin(2 * Math.PI * 190 * t) * Math.exp(-t * 55) * 0.35;
+  }
+  return normalise(out, 0.34);
+}
+
 /** A UI blip. `freqs` is the sequence of notes, one every 60 ms. */
 function blip(freqs, gain) {
   const out = seconds(0.06 * freqs.length + 0.09, SFX_RATE);
@@ -517,6 +530,29 @@ function nightLoop() {
 }
 
 /** Rain: mostly the weather, with just enough pad under it to have a key. */
+/**
+ * Indoors: the farm's own key, slower and lower, and nothing above the octave
+ * — a tune somebody might hum by a fire rather than one carried on the wind.
+ */
+function homeLoop() {
+  const out = musicBuffer();
+  pad(out, [130.81, 196, 261.63, 329.63], 0.08, 1 / (LOOP_SECONDS * 2));
+  pluck(
+    out,
+    [
+      { at: 0.0, freq: 392 },
+      { at: 1.0, freq: 329.63 },
+      { at: 2.0, freq: 261.63 },
+      { at: 4.0, freq: 293.66 },
+      { at: 5.0, freq: 329.63 },
+      { at: 6.5, freq: 261.63 },
+    ],
+    0.07,
+  );
+  lowPass(out, 2800, MUSIC_RATE);
+  return normalise(out, 0.42);
+}
+
 function rainLoop() {
   const out = musicBuffer();
   const noise = makeNoise(0x4f11);
@@ -623,6 +659,7 @@ const effects = {
   rooster,
   'footstep-grass': () => footstep(0x1337, 1700, 0.13, 0.32),
   'footstep-path': () => footstep(0x2448, 3400, 0.11, 0.36),
+  'footstep-wood': footstepWood,
   'ui-select': () => blip([880], 0.4),
   'ui-confirm': () => blip([659.25, 987.77], 0.45),
   chime,
@@ -641,6 +678,7 @@ const music = {
   'day-farm-loop': dayFarmLoop,
   'day-village-loop': dayVillageLoop,
   'night-loop': nightLoop,
+  'home-loop': homeLoop,
   'rain-loop': rainLoop,
 };
 

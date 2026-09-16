@@ -1240,17 +1240,12 @@
             {
               "name": "solid",
               "type": "bool",
-              "value": true
+              "value": false
             },
             {
               "name": "depth",
               "type": "int",
               "value": 4
-            },
-            {
-              "name": "interact",
-              "type": "string",
-              "value": "bed"
             }
           ]
         },
@@ -2451,6 +2446,84 @@
               "value": "Hollowpine Wood"
             }
           ]
+        },
+        {
+          "id": 49,
+          "name": "to-farmhouse",
+          "type": "portal",
+          "x": 160,
+          "y": 192,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "toArea",
+              "type": "string",
+              "value": "farmhouse"
+            },
+            {
+              "name": "toTileX",
+              "type": "int",
+              "value": 6
+            },
+            {
+              "name": "toTileY",
+              "type": "int",
+              "value": 7
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "ngôi nhà"
+            }
+          ]
+        }
+      ],
+      "opacity": 1,
+      "type": "objectgroup",
+      "visible": true,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "draworder": "topdown",
+      "id": 5,
+      "name": "colliders",
+      "objects": [
+        {
+          "id": 46,
+          "name": "house-wall-west",
+          "type": "collider",
+          "x": 96,
+          "y": 96,
+          "width": 64,
+          "height": 128,
+          "rotation": 0,
+          "visible": true
+        },
+        {
+          "id": 47,
+          "name": "house-wall-east",
+          "type": "collider",
+          "x": 192,
+          "y": 96,
+          "width": 64,
+          "height": 128,
+          "rotation": 0,
+          "visible": true
+        },
+        {
+          "id": 48,
+          "name": "house-wall-door",
+          "type": "collider",
+          "x": 160,
+          "y": 96,
+          "width": 32,
+          "height": 96,
+          "rotation": 0,
+          "visible": true
         }
       ],
       "opacity": 1,
@@ -2460,8 +2533,8 @@
       "y": 0
     }
   ],
-  "nextlayerid": 5,
-  "nextobjectid": 46,
+  "nextlayerid": 6,
+  "nextobjectid": 50,
   "orientation": "orthogonal",
   "properties": [
     {

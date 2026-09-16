@@ -213,11 +213,25 @@ describe('which bed plays', () => {
     expect(musicFor({ area: 'farm', weather: 'Firefly Shower', time: noon })).toBe(RAIN_MUSIC);
   });
 
+  it('plays the house its own bed indoors, whatever the sky is doing outside', () => {
+    const home = areaMusic('farmhouse');
+    expect(home).toBe('home-loop');
+    // Rain on the roof is not rain you are standing in.
+    expect(musicFor({ area: 'farmhouse', weather: 'Drizzle', time: noon })).toBe(home);
+    expect(musicFor({ area: 'farmhouse', weather: 'Firefly Shower', time: noon })).toBe(home);
+    // And walking in out of the dark has to sound like walking in.
+    expect(musicFor({ area: 'farmhouse', weather: 'Sunny', time: evening })).toBe(home);
+    expect(musicFor({ area: 'farmhouse', weather: 'Drizzle', time: smallHours })).toBe(home);
+  });
+
   it('can name every bed it might ever ask for, so they can all be preloaded', () => {
     const beds = allMusic(AREA_IDS);
     expect(beds).toContain(RAIN_MUSIC);
     expect(beds).toContain(NIGHT_MUSIC);
     for (const area of AREA_IDS) expect(beds).toContain(areaMusic(area));
+    // The house's bed in particular: missing from preload, the first step
+    // through the front door would be a silence.
+    expect(beds).toContain('home-loop');
     expect(new Set(beds).size).toBe(beds.length);
     for (const bed of beds) expect(musicUrls(bed)[0]).toBe(`/assets/audio/music/${bed}.wav`);
   });
@@ -234,8 +248,14 @@ describe('footsteps', () => {
     expect(footstepFor('plot')).toBe('footstep-grass');
   });
 
-  it('has nothing to say about water or about no tile at all', () => {
+  it('knocks on floorboards', () => {
+    expect(footstepFor('floor')).toBe('footstep-wood');
+    expect(footstepFor('floor')).not.toBe(footstepFor('path'));
+  });
+
+  it('has nothing to say about water, walls, or no tile at all', () => {
     expect(footstepFor('water')).toBeNull();
+    expect(footstepFor('wall')).toBeNull();
     expect(footstepFor(undefined)).toBeNull();
   });
 });

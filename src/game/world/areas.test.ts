@@ -93,6 +93,37 @@ describe('portals', () => {
     expect(portalAt(START_AREA, { x: portal.x - 200, y: portal.y })).toBeNull();
   });
 
+  it('connects the farm and the farmhouse both ways, through the front door', () => {
+    const inward = areaMap('farm').portals.find((portal) => portal.toArea === 'farmhouse');
+    const outward = areaMap('farmhouse').portals.find((portal) => portal.toArea === 'farm');
+
+    expect(inward).toBeDefined();
+    expect(outward).toBeDefined();
+    // The door is one tile, in the house's door column.
+    expect([inward!.x, inward!.y, inward!.width, inward!.height]).toEqual([5 * 32, 6 * 32, 32, 32]);
+  });
+
+  it('comes back out exactly where it went in', () => {
+    // The rule that stops a doorway from being a trap: step through, turn
+    // round, step back, and you are on the doorstep you started from — not in
+    // the doorway, which would be a loop, and not somewhere else.
+    const inward = areaMap('farm').portals.find((portal) => portal.toArea === 'farmhouse')!;
+    const doorstep = { x: inward.x + 16, y: inward.y + inward.height + 16 };
+
+    // Up the step and in.
+    const stepIn = resolveMove('farm', doorstep, 0, -1, 250);
+    expect(portalAt('farm', stepIn)).toBe(inward);
+    const inside = { x: inward.toX, y: inward.toY };
+    expect(portalAt('farmhouse', inside)).toBeNull();
+
+    // Straight back down and out.
+    const stepOut = resolveMove('farmhouse', inside, 0, 1, 250);
+    const outward = portalAt('farmhouse', stepOut);
+    expect(outward?.toArea).toBe('farm');
+    expect({ x: outward!.toX, y: outward!.toY }).toEqual(doorstep);
+    expect(portalAt('farm', doorstep)).toBeNull();
+  });
+
   it('connects the farm and the village both ways', () => {
     const out = areaMap('farm').portals.find((portal) => portal.toArea === 'village');
     const back = areaMap('village').portals.find((portal) => portal.toArea === 'farm');
@@ -114,6 +145,37 @@ describe('collision', () => {
       }
     }
     expect(found).toBe(true);
+  });
+
+  it('opens a hole in the farmhouse exactly one tile wide, at the door', () => {
+    const at = (x: number, y: number) => isWalkable('farm', x * TILE_SIZE + 16, y * TILE_SIZE + 16);
+
+    expect(at(5, 6)).toBe(true);
+    expect(at(4, 6)).toBe(false);
+    expect(at(6, 6)).toBe(false);
+    // And no further in than the door itself: the house is not a tunnel.
+    expect(at(5, 5)).toBe(false);
+    // Nor is the drawing solid anywhere the colliders are not.
+    const house = areaMap('farm').props.find((prop) => prop.name === 'farmhouse')!;
+    expect(house.solid).toBe(false);
+  });
+
+  it('keeps players out of every collider', () => {
+    for (const area of AREA_LIST) {
+      for (const rect of areaMap(area).colliders) {
+        expect(isWalkable(area, rect.x + rect.width / 2, rect.y + rect.height / 2)).toBe(false);
+      }
+    }
+  });
+
+  it('keeps players out of the farmhouse walls, and lets them stand on its floor', () => {
+    const map = areaMap('farmhouse');
+    for (let y = 0; y < map.height; y += 1) {
+      for (let x = 0; x < map.width; x += 1) {
+        const tile = tileAt('farmhouse', x, y)!;
+        expect(tile.solid, `${x},${y} is ${tile.kind}`).toBe(tile.kind === 'wall');
+      }
+    }
   });
 
   it('keeps players out of solid props', () => {
@@ -187,7 +249,7 @@ describe('targeting', () => {
 });
 
 describe('interactive props', () => {
-  it('finds the market and the forge in the village, and a bed on the farm', () => {
+  it('finds the market and the forge in the village, and the bed in the farmhouse', () => {
     // The villagers are not in here any more. They walk schedules out of
     // `FarmState` and are drawn over the map, so what the map still owns is
     // the counters and the doorways rather than the people.
@@ -197,7 +259,9 @@ describe('interactive props', () => {
 
     expect(blacksmith).toBeDefined();
     expect(market).toBeDefined();
-    expect(areaMap('farm').props.some((prop) => prop.interact === 'bed')).toBe(true);
+    expect(areaMap('farmhouse').props.some((prop) => prop.interact === 'bed')).toBe(true);
+    // One bed, and indoors. Sleeping on the doorstep is what this replaced.
+    expect(areaMap('farm').props.some((prop) => prop.interact === 'bed')).toBe(false);
   });
 
   it('leaves somewhere to stand next to every interactive prop', () => {
@@ -304,6 +368,33 @@ describe('parseTiledMap', () => {
 
   it('falls back to the id when a map does not name itself', () => {
     expect(parseTiledMap('unnamed', tinyMap([1, 1, 1, 1]), TINY_TILESET).name).toBe('unnamed');
+  });
+
+  it('reads a map as outdoors unless it says otherwise', () => {
+    const outdoors = tinyMap([1, 1, 1, 1]);
+    const indoors: TiledMap = { ...outdoors, properties: [{ name: 'indoor', type: 'bool', value: true }] };
+
+    expect(parseTiledMap('yard', outdoors, TINY_TILESET).indoor).toBe(false);
+    expect(parseTiledMap('parlour', indoors, TINY_TILESET).indoor).toBe(true);
+  });
+
+  it('reads colliders as bare rectangles, apart from the props', () => {
+    const map: TiledMap = {
+      ...tinyMap([1, 1, 1, 1]),
+      layers: [
+        ...tinyMap([1, 1, 1, 1]).layers,
+        {
+          type: 'objectgroup',
+          name: 'colliders',
+          objects: [{ id: 1, name: 'wall', type: 'collider', x: 0, y: 32, width: 64, height: 32 }],
+        },
+      ],
+    };
+
+    const parsed = parseTiledMap('walled', map, TINY_TILESET);
+
+    expect(parsed.colliders).toEqual([{ name: 'wall', x: 0, y: 32, width: 64, height: 32 }]);
+    expect(parsed.props).toEqual([]);
   });
 
   it('converts portal landing tiles into pixel centres', () => {

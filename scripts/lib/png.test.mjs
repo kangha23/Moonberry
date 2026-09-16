@@ -145,7 +145,16 @@ test('the free-size props have no empty rows to float them off the ground', () =
   // Only the props the importer lets be any size are checked. A 32px prop is
   // one tile of art placed as one tile, and where it sits inside that tile is
   // the drawing's business.
-  for (const file of ['tree.png', 'farmhouse.png']) {
+  //
+  // The farmhouse furniture is the same deal: a bed or a hearth is sized by its
+  // footprint and stands on the bottom edge like the house outside does. The
+  // rug is boxed wider than it is drawn so it can be centred on three tiles, so
+  // it has empty columns at the sides — but never an empty row.
+  const furniture = fs
+    .readdirSync(ART_DIR)
+    .filter((file) => file.startsWith('furniture-') && file.endsWith('.png'));
+  assert.ok(furniture.length > 0, 'the farmhouse has no furniture art');
+  for (const file of ['tree.png', 'farmhouse.png', ...furniture]) {
     const image = decodePng(fs.readFileSync(path.join(ART_DIR, file)));
     const rowIsEmpty = (y) => {
       for (let x = 0; x < image.width; x += 1) {

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DAY_END } from '../systems/time';
-import { areaMap, START_AREA } from '../world/areas';
+import { areaMap } from '../world/areas';
 import {
   energyRatio,
   formatClock,
@@ -84,13 +84,19 @@ describe('energy readouts', () => {
   });
 
   it('tells a player standing at the bed what turning in would cost them', () => {
-    const bed = areaMap(START_AREA).props.find((prop) => prop.interact === 'bed')!;
+    const bed = areaMap('farmhouse').props.find((prop) => prop.interact === 'bed')!;
     let farm = farmWith('a');
     farm = {
       ...farm,
       players: {
         ...farm.players,
-        a: { ...farm.players.a, x: bed.x + bed.width / 2, y: bed.y + bed.height + 8, energy: 42 },
+        a: {
+          ...farm.players.a,
+          area: 'farmhouse',
+          x: bed.x + bed.width / 2,
+          y: bed.y + bed.height + 8,
+          energy: 42,
+        },
       },
     };
 

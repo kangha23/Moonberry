@@ -118,6 +118,95 @@
           "extract": "lpc-terrains/terrain-v7.png"
         }
       }
+    },
+    "lpc-floors": {
+      "title": "[LPC] Floors",
+      "page": "https://opengameart.org/content/lpc-floors",
+      "licence": "CC-BY-SA 4.0 — see credits/CREDITS-floors.txt",
+      "authors": [
+        "bluecarrot16",
+        "Lanea Zimmerman (Sharm)",
+        "William Thompson (William.Thompsonj)",
+        "Hyptosis",
+        "SpiderDave",
+        "Cougarmint",
+        "Stephen Challener (Redshrike)",
+        "Bonsaiheldin",
+        "Tyler Olsen (Roots)",
+        "Jetrel",
+        "jestan",
+        "The Open Surge team",
+        "Gaurav Munjal",
+        "Reemax",
+        "Silveira Neto",
+        "bleutailfly",
+        "Casper Nilsson",
+        "NaRNeRZz",
+        "Buch",
+        "keith karnage",
+        "Arthur Carvalho",
+        "Guilherme Vieira (n2liquid)",
+        "Chris Hamons"
+      ],
+      "files": {
+        "floors.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-floors.zip",
+          "sha256": "68403971cdc51c58e5f6e9a00bfa6008715b3e0694aac59969d03b8328879e23",
+          "extract": "lpc-floors/floors.png"
+        }
+      }
+    },
+    "lpc-walls": {
+      "title": "[LPC] Walls",
+      "page": "https://opengameart.org/content/lpc-walls",
+      "licence": "CC-BY-SA 3.0 — see credits/CREDITS-walls.txt",
+      "authors": [
+        "bluecarrot16",
+        "Lanea Zimmerman (Sharm)",
+        "Daniel Armstrong (HughSpectrum)",
+        "William Thompson (William.Thompsonj)",
+        "Hyptosis",
+        "Zabin",
+        "Daniel Cook",
+        "Guido Bos",
+        "SpiderDave",
+        "Cougarmint",
+        "Stephen Challener (Redshrike)",
+        "Matthew Nash",
+        "Wolthera van Hövell tot Westerflier (TheraHedwig)",
+        "Reemax",
+        "bleutailfly",
+        "NaRNeRZz",
+        "Sir Spummington",
+        "Casper Nilsson",
+        "KnoblePersona"
+      ],
+      "files": {
+        "walls.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-walls.zip",
+          "sha256": "604871bda6e4ece50270f0db9d8674351dab861e2d2624430346d1c4eda2aa8e",
+          "extract": "lpc-walls/walls.png"
+        }
+      }
+    },
+    "lpc-furniture": {
+      "title": "[LPC] Wooden Furniture",
+      "page": "https://opengameart.org/content/lpc-wooden-furniture",
+      "licence": "CC-BY-SA 4.0 / CC-BY-SA 3.0 / GPL 3.0 — see credits/CREDITS-furniture.txt",
+      "authors": [
+        "bluecarrot16",
+        "Baŝto",
+        "Lanea Zimmerman (Sharm)",
+        "William Thompson",
+        "Tuomo Untinen (Reemax)",
+        "Janna/Lilius/Jannax"
+      ],
+      "files": {
+        "blonde-wood.png": {
+          "from": "https://opengameart.org/sites/default/files/blonde-wood_3.png",
+          "sha256": "877447045fdf8f09960c1b78aa927ab16b2fb9fb017da1a408889aae2dc30901"
+        }
+      }
     }
   },
   "notImported": {
@@ -975,6 +1064,227 @@
         40
       ],
       "floor": 28
+    },
+    {
+      "target": "tile-floor-wood",
+      "pack": "lpc-floors",
+      "file": "floors.png",
+      "grid": 32,
+      "cell": [
+        6,
+        37
+      ]
+    },
+    {
+      "target": "tile-wall-upper-1",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        60,
+        56
+      ]
+    },
+    {
+      "target": "tile-wall-upper-2",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        61,
+        56
+      ]
+    },
+    {
+      "target": "tile-wall-upper-3",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        62,
+        56
+      ]
+    },
+    {
+      "target": "tile-wall-lower-1",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        60,
+        58
+      ]
+    },
+    {
+      "target": "tile-wall-lower-2",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        61,
+        58
+      ]
+    },
+    {
+      "target": "tile-wall-lower-3",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        62,
+        58
+      ]
+    },
+    {
+      "target": "tile-wall-left",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        2,
+        8
+      ]
+    },
+    {
+      "target": "tile-wall-right",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        0,
+        8
+      ]
+    },
+    {
+      "target": "tile-wall-bottom",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        1,
+        7
+      ]
+    },
+    {
+      "target": "tile-wall-bottom-left",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        2,
+        5
+      ]
+    },
+    {
+      "target": "tile-wall-bottom-right",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        1,
+        5
+      ]
+    },
+    {
+      "target": "tile-wall-door-left",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        2,
+        7
+      ]
+    },
+    {
+      "target": "tile-wall-door-right",
+      "pack": "lpc-walls",
+      "file": "walls.png",
+      "grid": 32,
+      "cell": [
+        0,
+        7
+      ]
+    },
+    {
+      "target": "furniture-bed",
+      "pack": "lpc-furniture",
+      "file": "blonde-wood.png",
+      "rect": [
+        416,
+        417,
+        32,
+        63
+      ]
+    },
+    {
+      "target": "furniture-stove",
+      "pack": "lpc-furniture",
+      "file": "blonde-wood.png",
+      "rect": [
+        192,
+        7,
+        64,
+        51
+      ]
+    },
+    {
+      "target": "furniture-table",
+      "pack": "lpc-furniture",
+      "file": "blonde-wood.png",
+      "rect": [
+        224,
+        227,
+        64,
+        54
+      ]
+    },
+    {
+      "target": "furniture-chair-east",
+      "pack": "lpc-furniture",
+      "file": "blonde-wood.png",
+      "rect": [
+        384,
+        512,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "furniture-chair-west",
+      "pack": "lpc-furniture",
+      "file": "blonde-wood.png",
+      "rect": [
+        416,
+        512,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "furniture-fireplace",
+      "pack": "lpc-furniture",
+      "file": "blonde-wood.png",
+      "rect": [
+        384,
+        752,
+        96,
+        72
+      ]
+    },
+    {
+      "target": "furniture-rug",
+      "pack": "lpc-floors",
+      "file": "floors.png",
+      "rect": [
+        192,
+        838,
+        64,
+        84
+      ],
+      "box": [
+        96,
+        84
+      ]
     }
   ]
 }

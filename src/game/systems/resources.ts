@@ -660,6 +660,11 @@ export function canHoldNode(
   taken: ReadonlySet<string>,
 ): boolean {
   if (taken.has(tileKey(area, x, y))) return false;
+  // Nothing grows under a roof. Asked here rather than in each spawner, because
+  // the spawners walk every area and fall through to a default: the first
+  // morning's hedgerow roll is the village's, and it planted forage on the
+  // farmhouse floorboards the day there was a floor.
+  if (areaMap(area).indoor) return false;
 
   const tile = tileAt(area, x, y);
   if (!tile || tile.solid || tile.kind === 'water') return false;

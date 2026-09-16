@@ -99,6 +99,17 @@ describe('the ground a world starts with', () => {
     expect(nodesOn(nodes, 'village').every((row) => row.kind === 'forage')).toBe(true);
   });
 
+  it('grows nothing indoors, on the first morning or any after', () => {
+    expect(nodesOn(nodes, 'farmhouse')).toEqual([]);
+    // A whole season of nights, because growth has its own spawners.
+    let later = nodes;
+    for (let day = 2; day <= 28; day += 1) later = startNodeDay(later, world(), 'Spring', day, SEED).nodes;
+    expect(nodesOn(later, 'farmhouse')).toEqual([]);
+    for (let y = 2; y < 8; y += 1) {
+      expect(canHoldNode('farmhouse', 2, y, 'forage', world(), new Set())).toBe(false);
+    }
+  });
+
   it('never stands two things on one tile', () => {
     const tiles = nodes.map((row) => `${row.area}:${row.x},${row.y}`);
     expect(new Set(tiles).size).toBe(tiles.length);

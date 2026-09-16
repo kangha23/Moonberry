@@ -47,11 +47,41 @@ const GRASS_TEXTURES = [
   'tile-grass-3xy',
 ];
 
+/**
+ * Every piece of the farmhouse's walls, one tile each.
+ *
+ * The back wall is two rows of timber-framed plaster, three drawings wide so
+ * the posts do not line up into a grid. The other three sides are the ceiling
+ * seen from above — a dark void with a wooden edge on whichever side faces the
+ * room — so each edge and corner is its own drawing rather than a rotation of
+ * one: LPC light comes from the top left, and a rotated beam would say so.
+ */
+const WALL_TEXTURES = [
+  'tile-wall-upper-1',
+  'tile-wall-upper-2',
+  'tile-wall-upper-3',
+  'tile-wall-lower-1',
+  'tile-wall-lower-2',
+  'tile-wall-lower-3',
+  'tile-wall-left',
+  'tile-wall-right',
+  'tile-wall-bottom',
+  'tile-wall-bottom-left',
+  'tile-wall-bottom-right',
+  'tile-wall-door-left',
+  'tile-wall-door-right',
+];
+
 const TILES = [
   ...GRASS_TEXTURES.map((texture) => ({ texture, kind: 'grass', solid: false })),
   { texture: 'tile-path', kind: 'path', solid: false },
   { texture: 'tile-water', kind: 'water', solid: true },
   { texture: 'plot-wild', kind: 'plot', solid: false },
+  // The farmhouse interior. Appended rather than slotted in beside the ground
+  // they resemble, because a gid is a tile's index here and every map already
+  // written stores gids: inserting one would repaint the farm.
+  { texture: 'tile-floor-wood', kind: 'floor', solid: false },
+  ...WALL_TEXTURES.map((texture) => ({ texture, kind: 'wall', solid: true })),
 ];
 
 /** gid is the tileset index plus firstgid; firstgid is 1. */
@@ -215,7 +245,7 @@ function props(list) {
   }));
 }
 
-function map({ width, height, layers, nextobjectid, displayName, music }) {
+function map({ width, height, layers, nextobjectid, displayName, music, indoor = false }) {
   return {
     compressionlevel: -1,
     height,
@@ -224,7 +254,9 @@ function map({ width, height, layers, nextobjectid, displayName, music }) {
     nextlayerid: layers.length + 1,
     nextobjectid,
     orientation: 'orthogonal',
-    properties: props({ displayName, music }),
+    // `indoor` is only written when it is true, so the three outdoor maps stay
+    // byte-for-byte what they were, and a map without it reads as outdoors.
+    properties: props(indoor ? { displayName, music, indoor } : { displayName, music }),
     renderorder: 'right-down',
     tiledversion: '1.10.2',
     tileheight: TILE,
@@ -279,8 +311,12 @@ function farmMap() {
     // by five: `farmhouse.png` is 160x109, which is five tiles across and a
     // little under three and a half down. The extra row this used to have sat
     // above the roof as a wall you bumped into with nothing drawn on it.
+    //
+    // Not solid, and not the bed any more. The picture is one rectangle and
+    // the wall is that rectangle with a doorway in it, so the collision is the
+    // three colliders below, and the bed is indoors where a bed belongs.
     rectObject(id++, 'farmhouse', 'prop', 3, 3, 5, 4, {
-      properties: props({ texture: 'farmhouse', solid: true, depth: 4, interact: 'bed' }),
+      properties: props({ texture: 'farmhouse', solid: false, depth: 4 }),
     }),
     rectObject(id++, 'tree-west', 'prop', 2, 16, 2, 2, {
       properties: props({ texture: 'tree', solid: true, depth: 16 }),
@@ -324,6 +360,27 @@ function farmMap() {
   );
   id = scattered.nextId;
 
+  // The way in. Added after the scatter so every object id above keeps the
+  // number it had before the house could be entered; all of it sits inside
+  // the house's footprint, which the scatter keeps clear anyway.
+  //
+  // Column 5 is the door, measured off the drawing rather than by eye: the
+  // door in `farmhouse.png` is at x 64..96 and the house stands at x=96, so
+  // the doorway is world x 160..192 — tile 5. The rest of the footprint is wall.
+  const colliders = [
+    rectObject(id++, 'house-wall-west', 'collider', 3, 3, 2, 4),
+    rectObject(id++, 'house-wall-east', 'collider', 6, 3, 2, 4),
+    rectObject(id++, 'house-wall-door', 'collider', 5, 3, 1, 3),
+  ];
+
+  portals.push(
+    // Lands a tile inside the door rather than on it: a landing tile that is
+    // itself a portal would send the player straight back out.
+    rectObject(id++, 'to-farmhouse', 'portal', 5, 6, 1, 1, {
+      properties: props({ toArea: 'farmhouse', toTileX: 6, toTileY: 7, label: 'ngôi nhà' }),
+    }),
+  );
+
   return map({
     displayName: 'Amberfall Farm',
     music: 'day-farm-loop',
@@ -335,6 +392,7 @@ function farmMap() {
       objectLayer(2, 'props', [...objects, ...scattered.objects]),
       objectLayer(3, 'spawns', spawns),
       objectLayer(4, 'portals', portals),
+      objectLayer(5, 'colliders', colliders),
     ],
   });
 }
@@ -508,6 +566,90 @@ function forestMap() {
   });
 }
 
+// --- the farmhouse -----------------------------------------------------------
+// Twelve by nine, about a tenth of the farm, and smaller than one screen on
+// purpose: the whole room reads in one frame, with nothing for a camera to go
+// looking for.
+//
+//        0  1  2  3  4  5  6  7  8  9 10 11
+//   0    #  =  =  =  =  =  =  =  =  =  =  #    #  ceiling edge   =  back wall
+//   1    #  =  =  =  =  =  =  =  =  =  =  #    .  floorboards
+//   2    #  B  .  .  S  S  .  F  F  F  .  #    B  bed            S  sink and stove
+//   3    #  B  .  .  .  .  .  F  F  F  .  #    F  fireplace      T  table
+//   4    #  .  .  .  T  T  .  R  R  R  .  #    c  chairs         R  rug
+//   5    #  .  .  c  T  T  c  R  R  R  .  #    ^  where you land coming in
+//   6    #  .  .  .  .  .  .  R  R  R  .  #    D  the doorway, back to the yard
+//   7    #  .  .  .  .  .  ^  .  .  .  .  #
+//   8    #  #  #  #  #  #  D  #  #  #  #  #
+
+const HOUSE_W = 12;
+const HOUSE_H = 9;
+const HOUSE_DOOR_X = 6;
+
+function farmhouseGround(x, y) {
+  if (y === HOUSE_H - 1) {
+    if (x === HOUSE_DOOR_X) return GID['tile-floor-wood'];
+    if (x === 0) return GID['tile-wall-bottom-left'];
+    if (x === HOUSE_W - 1) return GID['tile-wall-bottom-right'];
+    if (x === HOUSE_DOOR_X - 1) return GID['tile-wall-door-left'];
+    if (x === HOUSE_DOOR_X + 1) return GID['tile-wall-door-right'];
+    return GID['tile-wall-bottom'];
+  }
+  if (x === 0) return GID['tile-wall-left'];
+  if (x === HOUSE_W - 1) return GID['tile-wall-right'];
+  if (y <= 1) return GID[`tile-wall-${y === 0 ? 'upper' : 'lower'}-${((x - 1) % 3) + 1}`];
+  return GID['tile-floor-wood'];
+}
+
+function farmhouseMap() {
+  const ground = buildLayer(HOUSE_W, HOUSE_H, farmhouseGround);
+
+  let id = 1;
+  // Depth is the bottom row, the way every other prop on every other map sorts.
+  const furniture = (name, texture, tx, ty, tw, th, extra = {}) =>
+    rectObject(id++, name, 'prop', tx, ty, tw, th, {
+      properties: props({ texture, solid: true, depth: ty + th - 1, ...extra }),
+    });
+
+  const objects = [
+    // Headboard against the back wall, with its whole long side free to stand at.
+    furniture('bed', 'furniture-bed', 1, 2, 1, 2, { interact: 'bed' }),
+    // Nothing to do at it yet; it is here for cooking, which is not a spec yet.
+    furniture('stove', 'furniture-stove', 4, 2, 2, 1),
+    furniture('table', 'furniture-table', 4, 4, 2, 2),
+    furniture('chair-west', 'furniture-chair-east', 3, 5, 1, 1),
+    furniture('chair-east', 'furniture-chair-west', 6, 5, 1, 1),
+    // The room's only light, built into the back wall where a hearth belongs.
+    // The scene hangs a flickering glow on it.
+    furniture('fireplace', 'furniture-fireplace', 7, 2, 3, 2),
+    // Underfoot, so neither solid nor above anything.
+    rectObject(id++, 'rug', 'prop', 7, 4, 3, 3, {
+      properties: props({ texture: 'furniture-rug', solid: false, depth: 0 }),
+    }),
+  ];
+
+  const portals = [
+    // Lands on the road in front of the step, not back on the doorstep portal.
+    rectObject(id++, 'to-farm', 'portal', HOUSE_DOOR_X, HOUSE_H - 1, 1, 1, {
+      properties: props({ toArea: 'farm', toTileX: 5, toTileY: 7, label: 'sân nông trại' }),
+    }),
+  ];
+
+  return map({
+    displayName: 'Farmhouse',
+    music: 'home-loop',
+    indoor: true,
+    width: HOUSE_W,
+    height: HOUSE_H,
+    nextobjectid: id,
+    layers: [
+      tileLayer(1, 'ground', HOUSE_W, HOUSE_H, ground),
+      objectLayer(2, 'props', objects),
+      objectLayer(3, 'portals', portals),
+    ],
+  });
+}
+
 fs.mkdirSync(outDir, { recursive: true });
 
 const files = {
@@ -515,6 +657,7 @@ const files = {
   'farm.json': farmMap(),
   'village.json': villageMap(),
   'forest.json': forestMap(),
+  'farmhouse.json': farmhouseMap(),
 };
 
 for (const [name, contents] of Object.entries(files)) {
