@@ -553,6 +553,37 @@ function homeLoop() {
   return normalise(out, 0.42);
 }
 
+/**
+ * The mine: the only bed in a minor key, an octave under the night one, with
+ * nothing on top but the odd high note falling like a drip. Distinct on
+ * purpose — spec 13 wants underground to sound like somewhere else, and a
+ * player who hears it knows where they are before they read the plate.
+ */
+function mineLoop() {
+  const out = musicBuffer();
+  pad(out, [55, 82.41, 110, 130.81], 0.1, 1 / (LOOP_SECONDS * 2));
+  pluck(
+    out,
+    [
+      { at: 0.4, freq: 1318.51 },
+      { at: 2.9, freq: 987.77 },
+      { at: 3.3, freq: 1046.5 },
+      { at: 6.1, freq: 880 },
+    ],
+    0.035,
+  );
+  pluck(
+    out,
+    [
+      { at: 0.0, freq: 110 },
+      { at: 4.0, freq: 98 },
+    ],
+    0.06,
+  );
+  lowPass(out, 1800, MUSIC_RATE);
+  return normalise(out, 0.4);
+}
+
 function rainLoop() {
   const out = musicBuffer();
   const noise = makeNoise(0x4f11);
@@ -680,6 +711,7 @@ const music = {
   'night-loop': nightLoop,
   'home-loop': homeLoop,
   'rain-loop': rainLoop,
+  'mine-loop': mineLoop,
 };
 
 fs.mkdirSync(sfxDir, { recursive: true });

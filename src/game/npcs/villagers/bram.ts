@@ -24,6 +24,8 @@ export const BRAM: NpcDef = {
   birthday: { season: 'Summer', day: 21 },
   defaultGiftReaction: 'neutral',
   gifts: {
+    // Spec 15. Everybody in the valley is glad of a bánh chưng.
+    'banh-chung': 'liked',
     // What he keeps for the herd, and what he keeps for himself.
     clover: 'loved',
     barley: 'loved',

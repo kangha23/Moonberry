@@ -4,6 +4,7 @@ import { JUNIPER } from './villagers/juniper';
 import { MAEVE } from './villagers/maeve';
 import { ROWAN } from './villagers/rowan';
 import { TOBIAS } from './villagers/tobias';
+import { XOAN } from './villagers/xoan';
 import type { NpcDef, NpcId } from './types';
 
 export * from './types';
@@ -23,6 +24,7 @@ export const NPCS: Record<NpcId, NpcDef> = {
   juniper: JUNIPER,
   ash: ASH,
   bram: BRAM,
+  xoan: XOAN,
 };
 
 export const NPC_IDS = Object.keys(NPCS) as NpcId[];

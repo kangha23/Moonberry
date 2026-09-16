@@ -4,6 +4,7 @@ import { HOTBAR_SIZE, createInventory, moveStack, slotAt, splitStack } from '../
 import { ITEMS } from '../systems/items';
 import { STARTING_RECIPES } from '../systems/crafting';
 import { createQuest } from '../systems/quest';
+import { mineSeedFor } from '../systems/mine';
 import { seedNodes } from '../systems/resources';
 import { createTimeState, seasonForDay, weatherForDay } from '../systems/time';
 import {
@@ -24,6 +25,7 @@ import {
   EXHAUSTED_SPEED_SCALE,
   MAX_PLAYERS,
   STARTING_MAX_ENERGY,
+  STARTING_MAX_HEALTH,
   type FarmState,
   type PlayerId,
   type PlayerState,
@@ -59,6 +61,13 @@ import {
 } from './rules/placeables';
 import { applyAct } from './rules/act';
 import { applyTick } from './rules/clock';
+import {
+  applyAttack,
+  applyDescend,
+  applyExitMine,
+  applyUseElevator,
+  reconcileMonsters,
+} from './rules/mine';
 
 // The renderer and the tests read the clock through this file, as they always have.
 export { CLOCK_STEP_MINUTES, CLOCK_STEP_MS } from './rules/clock';
@@ -78,7 +87,13 @@ const STARTING_COINS = 24;
  */
 const DEFAULT_SPAWN_SEED = 0x6d6f6f6e;
 
-export function createFarmState(spawnSeed = DEFAULT_SPAWN_SEED): FarmState {
+/**
+ * `worldSeed` defaults to the spawn seed for the same reason the spawn seed is
+ * a constant: this function stays reproducible. A host that wants two farms
+ * to have two different mines passes one in; it is drawn once, here, and
+ * never changes after.
+ */
+export function createFarmState(spawnSeed = DEFAULT_SPAWN_SEED, worldSeed = spawnSeed): FarmState {
   const plots: Record<string, PlotState> = {};
   for (const area of Object.keys(AREAS) as AreaId[]) {
     for (const tile of plotTiles(area)) {
@@ -102,6 +117,10 @@ export function createFarmState(spawnSeed = DEFAULT_SPAWN_SEED): FarmState {
     // from under the brambles.
     nodes: seedNodes({ plots, buildings: [], placeables: [] }, season, spawnSeed),
     spawnSeed,
+    worldSeed,
+    mineSeed: mineSeedFor(worldSeed, time.day),
+    deepestFloor: 0,
+    monsters: [],
     npcs: spawnNpcs(season, weatherForDay(1), time),
     animals: [],
     hay: 0,
@@ -124,6 +143,9 @@ function createPlayer(id: PlayerId, name: string, spawn: Point): PlayerState {
     selectedSlot: 0,
     energy: STARTING_MAX_ENERGY,
     maxEnergy: STARTING_MAX_ENERGY,
+    health: STARTING_MAX_HEALTH,
+    maxHealth: STARTING_MAX_HEALTH,
+    invulnerableUntil: 0,
     asleep: false,
     panel: null,
     openChest: null,
@@ -145,8 +167,17 @@ function createPlayer(id: PlayerId, name: string, spawn: Point): PlayerState {
  * and no dependency on Phaser, React, or the DOM.
  *
  * This function is what will later move to the server unchanged.
+ *
+ * Every intent passes through `reconcileMonsters` on the way out, because
+ * almost any of them can move somebody on to or off a mine floor — a step, a
+ * ladder, a faint, a disconnect, the morning — and a floor's monsters wake and
+ * sleep with its first and last player rather than with any one intent.
  */
 export function applyIntent(state: FarmState, intent: Intent): ApplyResult {
+  return reconcileMonsters(state, dispatch(state, intent));
+}
+
+function dispatch(state: FarmState, intent: Intent): ApplyResult {
   switch (intent.type) {
     case 'player/join': {
       // A returning member is not a new one: they keep their inventory and
@@ -409,6 +440,18 @@ export function applyIntent(state: FarmState, intent: Intent): ApplyResult {
 
     case 'player/cancelCast':
       return applyCancelCast(state, intent.playerId);
+
+    case 'player/attack':
+      return applyAttack(state, intent.playerId, intent.target);
+
+    case 'player/descend':
+      return applyDescend(state, intent.playerId);
+
+    case 'player/useElevator':
+      return applyUseElevator(state, intent.playerId, intent.depth);
+
+    case 'player/exitMine':
+      return applyExitMine(state, intent.playerId);
 
     case 'world/tick':
       return applyTick(state, intent.deltaMs);

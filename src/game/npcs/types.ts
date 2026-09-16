@@ -9,7 +9,7 @@ import type { AreaId } from '../world/areas';
  * A union rather than a string, so a typo in a gift table or a schedule is a
  * compile error rather than a villager who silently never appears.
  */
-export type NpcId = 'rowan' | 'maeve' | 'tobias' | 'juniper' | 'ash' | 'bram';
+export type NpcId = 'rowan' | 'maeve' | 'tobias' | 'juniper' | 'ash' | 'bram' | 'xoan';
 
 export type GiftReaction = 'loved' | 'liked' | 'neutral' | 'disliked' | 'hated';
 

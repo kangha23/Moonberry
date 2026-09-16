@@ -21,7 +21,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { composite, decodePng, encodeImage, flip, rgba, sliceRect, upscale } from './lib/png.mjs';
+import { composite, decodePng, encodeImage, flip, rgba, sliceRect, smoothScale, upscale } from './lib/png.mjs';
 
 /**
  * Where an import lands — the *source* folder, not the one the game loads.
@@ -50,6 +50,17 @@ export const OUT_DIR = path.join('art', 'raw', 'lpc');
  */
 export const ANIMAL = { cols: 4, rows: 4 };
 
+/**
+ * An action sheet's shape: eight frames a direction, four directions down in
+ * the LPC row order (up, left, down, right).
+ *
+ * For art drawn as one strip per direction and per action — a monster's walk,
+ * its attack and its death, a player's sword swing — rather than as an LPC
+ * character. The frame size is whatever the strip was drawn at; the game reads
+ * it off the file by dividing, exactly as it does for an animal.
+ */
+export const ACTION = { cols: 8, rows: 4 };
+
 export const EXPECTED = [
   { match: /^tile-/, size: [32, 32], note: 'a world tile' },
   { match: /^plot-/, size: [32, 32], note: 'a soil state' },
@@ -67,6 +78,12 @@ export const EXPECTED = [
     match: /^animal-[a-z0-9-]+-sheet$/,
     divisible: [ANIMAL.cols, ANIMAL.rows],
     note: 'an animal walk cycle: 4 frames across, 4 directions down',
+  },
+  {
+    // Also before the people rule, for the same reason as the animals.
+    match: /^(monster|attack)-[a-z0-9-]+-sheet$/,
+    divisible: [ACTION.cols, ACTION.rows],
+    note: 'an action sheet: 8 frames across, 4 directions down',
   },
   {
     match: /-sheet$/,
@@ -472,7 +489,9 @@ export function cut(source, flags) {
  */
 export function scaleFor(image, expected, flags) {
   if (flags.scale !== undefined) return numbers(flags.scale, 1, 'scale')[0];
-  if (!expected || flags.walkcycle || flags.animals) return 1;
+  // A rule with no fixed size (an animal or an action sheet) has no factor to
+  // aim for, so nothing is scaled unless the cut asks.
+  if (!expected?.size || flags.walkcycle || flags.animals) return 1;
   const [wantW, wantH] = expected.size;
   const factor = wantW / image.width;
   if (Number.isInteger(factor) && factor >= 1 && image.height * factor === wantH) return factor;
@@ -505,7 +524,18 @@ export function planImport(source, target, flags = {}) {
 
   if (flags.recolour !== undefined) region = recolour(region, parseRecolour(flags.recolour));
 
-  let image = upscale(region, scaleFor(region, expected, flags));
+  let image;
+  if (flags.smooth !== undefined) {
+    // Trimmed to the drawing first: the scale is meant for the icon, and the
+    // source cell's own padding scaled up with it would only have to be cut
+    // away again by --box.
+    if (flags.scale !== undefined) throw new Error('--smooth and --scale are two answers to one question; pass one.');
+    const [factor] = numbers(flags.smooth, 1, 'smooth');
+    const ink = imageInkBounds(region);
+    image = ink ? smoothScale(sliceRect(region, ink.left, ink.top, ink.width, ink.height), factor) : region;
+  } else {
+    image = upscale(region, scaleFor(region, expected, flags));
+  }
 
   if (flags.floor !== undefined && flags.box === undefined) {
     throw new Error('--floor needs --box: there is no box for it to place a floor inside.');
@@ -629,6 +659,7 @@ for. The names the loader knows:
   grass-tuft                                   32x32
   <name>-sheet                                 576x256
   animal-<kind>-sheet                          any size divisible by 4
+  monster-<name>-sheet, attack-<name>-sheet    any size divisible by 8 across, 4 down
   tree, farmhouse                              any size
 
 Options:
@@ -637,6 +668,8 @@ Options:
   --cell CX,CY     which cell to take, in grid coordinates. Needs --grid.
   --scale N        upscale by a whole number, nearest neighbour. Default: the
                    factor that lands on the required size, or 1.
+  --smooth F       trim to the drawn pixels and scale by F (above 1, at most 3)
+                   through Scale3x, for art a size too small. Not with --scale.
   --flip x|y|xy    mirror the cut. A tiling texture mirrored is the same art
                    with its pattern somewhere else, which is the cheapest way
                    to stop a field showing its 32px grid.

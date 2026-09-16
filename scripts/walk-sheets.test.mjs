@@ -71,7 +71,14 @@ function inkedColumns(image) {
  * import-lpc.mjs) and has no ninth-column question to ask.
  */
 function isPersonWalkSheet(file) {
-  return file.endsWith('-sheet.png') && !file.startsWith('animal-');
+  // Monster and attack sheets are action strips, not LPC walk cycles: eight
+  // frames that are all played, so the ninth-column rule does not apply.
+  return (
+    file.endsWith('-sheet.png') &&
+    !file.startsWith('animal-') &&
+    !file.startsWith('monster-') &&
+    !file.startsWith('attack-')
+  );
 }
 
 const files = fs.existsSync(ART_DIR) ? fs.readdirSync(ART_DIR).filter(isPersonWalkSheet) : [];

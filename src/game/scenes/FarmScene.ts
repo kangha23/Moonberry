@@ -1,7 +1,7 @@
 import Phaser from 'phaser';
 import { zoomFor } from '../constants';
 import { createPixelArtTextures } from '../assets/createPixelArtTextures';
-import { LPC_ANIMAL_SHEETS, LPC_IMAGES, LPC_PORTRAITS, LPC_SHEETS } from '../assets/lpc.generated';
+import { LPC_ACTION_SHEETS, LPC_ANIMAL_SHEETS, LPC_IMAGES, LPC_PORTRAITS, LPC_SHEETS } from '../assets/lpc.generated';
 import { PALETTE, tint } from '../assets/palette.generated';
 import { hudLayout, hudZones } from '../ui/hudLayout';
 import { SoundManager } from '../audio/SoundManager';
@@ -9,7 +9,7 @@ import { FOOTSTEP_INTERVAL_MS, footstepFor, musicFor } from '../audio/soundtrack
 import { connectToFarm, type FarmConnection } from '../net/client';
 import type { NpcId, PortraitMood } from '../npcs/types';
 import type { GameEvent } from '../state/intents';
-import { hotbarSlots } from '../state/selectors';
+import { hotbarSlots, mineActionFor } from '../state/selectors';
 import {
   dispatch,
   farmStore,
@@ -30,18 +30,21 @@ import { checkTool, nodeAt } from '../systems/resources';
 import { HOTBAR_SIZE } from '../systems/inventory';
 import type { CastPhase } from '../systems/fishing';
 import { areaOfEffectOf, itemDef } from '../systems/items';
+import { floorFor } from '../systems/mine';
 import {
   AREA_IDS,
   START_AREA,
   TILE_SIZE,
   areaMap,
   isWithinReach,
+  mineDepth,
   targetTile,
   tileAt,
   worldToTile,
   type AreaId,
   type Point,
 } from '../world/areas';
+import { mineFloorMap } from '../world/mineMap';
 import { AreaView } from './farm/area';
 import { AtmosphereView } from './farm/atmosphere';
 import { AvatarView } from './farm/avatars';
@@ -50,6 +53,7 @@ import { FishingHud } from './farm/fishing';
 import { GroundView } from './farm/ground';
 import { Hud } from './farm/hud';
 import { HerdView } from './farm/herd';
+import { MineView } from './farm/mine';
 import { ScreenLayer } from './farm/screen';
 import { MorningSummary } from './farm/summary';
 import { VillagerView } from './farm/villagers';
@@ -77,6 +81,14 @@ function withAlpha(hex: string, alpha: number): string {
   const g = (n >> 8) & 255;
   const b = n & 255;
   return `rgba(${r},${g},${b},${alpha})`;
+}
+
+/** Which way a swing at a tile turns the swordsman, by the longer axis. */
+function facingToward(from: Point, tile: Point): 'up' | 'down' | 'left' | 'right' {
+  const dx = tile.x * TILE_SIZE + TILE_SIZE / 2 - from.x;
+  const dy = tile.y * TILE_SIZE + TILE_SIZE / 2 - from.y;
+  if (Math.abs(dy) > Math.abs(dx)) return dy > 0 ? 'down' : 'up';
+  return dx > 0 ? 'right' : 'left';
 }
 
 /** Player id used while playing offline. Online, the server's session id wins. */
@@ -119,6 +131,8 @@ export default class FarmScene extends Phaser.Scene {
   private villagerView!: VillagerView;
   /** The animals out of doors, drawn. */
   private herdView!: HerdView;
+  /** The monsters, the sword, the dark and the elevator. */
+  private mineView!: MineView;
 
   private cursor!: Phaser.GameObjects.Image;
   /** Drawn on the tile under the mouse when that tile is out of reach. */
@@ -246,6 +260,14 @@ export default class FarmScene extends Phaser.Scene {
         frameHeight: sheet.frameHeight,
       }),
     );
+    // Eight frames of one action per direction: the player's sword swing and
+    // each monster's walk, attack and death. Frame size measured by the manifest.
+    LPC_ACTION_SHEETS.forEach((sheet) =>
+      this.load.spritesheet(sheet.key, sheet.url, {
+        frameWidth: sheet.frameWidth,
+        frameHeight: sheet.frameHeight,
+      }),
+    );
     // Four faces a villager, 64px each, in `PORTRAIT_MOODS` order.
     LPC_PORTRAITS.forEach((npc) =>
       this.load.spritesheet(`portrait-${npc}`, `/assets/lpc/portrait-${npc}.png`, { frameWidth: 64, frameHeight: 64 }),
@@ -266,6 +288,7 @@ export default class FarmScene extends Phaser.Scene {
     this.avatarView = new AvatarView(context);
     this.villagerView = new VillagerView(context);
     this.herdView = new HerdView(context);
+    this.mineView = new MineView(context, this.screen, this.avatarView);
     this.hud = new Hud(context, this.screen);
     this.summary = new MorningSummary(this, this.screen);
     this.dialogue = new DialogueBox(this, this.screen);
@@ -274,12 +297,14 @@ export default class FarmScene extends Phaser.Scene {
 
     createPixelArtTextures(this);
     this.avatarView.createWalkAnimations();
+    this.mineView.createMonsterAnimations();
     this.villagerView.createVillagerAnimations();
     this.herdView.createAnimalAnimations();
     this.screen.create();
     this.atmosphere.createWeatherSprites();
     this.atmosphere.createAmbient();
     this.hud.createUi();
+    this.mineView.createUi();
     this.dialogue.create();
     this.summary.createSummaryPanel();
     this.fishingHud.createFishingUi();
@@ -439,6 +464,7 @@ export default class FarmScene extends Phaser.Scene {
     this.villagerView.syncNpcs(delta);
     this.herdView.syncAnimals(delta);
     this.avatarView.syncAvatars();
+    this.mineView.update(delta);
     this.updateCursor();
     this.updateBuildGhost();
     this.fishingHud.updateFishing(time);
@@ -523,6 +549,9 @@ export default class FarmScene extends Phaser.Scene {
     const { localPlayerId } = farmStore.getState();
     for (const event of events) {
       this.audio.handleEvent(event, localPlayerId);
+      // The mine reads its own events: the numbers are all the reducer's, the
+      // flash and the stillness are the view's.
+      this.mineView.handleEvent(event, localPlayerId);
 
       if (event.kind === 'plotChanged') {
         this.groundView.refreshPlot(event.key);
@@ -767,7 +796,10 @@ export default class FarmScene extends Phaser.Scene {
   }
 
   private isOverHud(pointer: Phaser.Input.Pointer): boolean {
-    return this.hud.zones.some((zone) => zone.contains(pointer.x, pointer.y));
+    return (
+      this.hud.zones.some((zone) => zone.contains(pointer.x, pointer.y)) ||
+      this.mineView.containsPointer(pointer.x, pointer.y)
+    );
   }
 
   /**
@@ -848,7 +880,9 @@ export default class FarmScene extends Phaser.Scene {
     if (this.footstepTimer > FOOTSTEP_INTERVAL_MS) {
       this.footstepTimer = 0;
       const under = tileAt(player.area, worldToTile(player.x), worldToTile(player.y));
-      const step = footstepFor(under?.kind);
+      // The mine's shell says "floor" everywhere, which is the farmhouse's
+      // boards; underfoot down there is rock, which sounds like the path.
+      const step = mineDepth(player.area) !== null ? footstepFor('path') : footstepFor(under?.kind);
       if (step) this.audio.play(step);
     }
 
@@ -1102,6 +1136,8 @@ export default class FarmScene extends Phaser.Scene {
       return;
     }
 
+    if (this.actInMine()) return;
+
     // Where a click lands is never silently redirected. Sending a target the
     // reach rule will refuse is the point: the refusal comes back as a line in
     // the prompt bar, and the player learns the rule instead of watching their
@@ -1112,6 +1148,49 @@ export default class FarmScene extends Phaser.Scene {
     }
     const target = this.actionTile();
     sendAction(target ? { type: 'act', target } : { type: 'act' });
+  }
+
+  /**
+   * The action key in and at the mouth of the mine. Returns true when it was
+   * the mine's to handle.
+   *
+   * Which intent to send is decided by `mineActionFor`, the same selector the
+   * prompt bar reads, so the bar never promises something the key will not
+   * do. Whether it happens is still the server's: the fan is drawn at once,
+   * but no health moves until an event says it did.
+   */
+  private actInMine(): boolean {
+    const player = this.localPlayer;
+    if (!player) return false;
+    const aimed = this.actSource === 'pointer' && this.pointerTile !== null;
+    const action = mineActionFor(this.farm, player, aimed);
+    if (!action) return false;
+
+    if (action === 'attack') {
+      const target = aimed ? this.pointerTile : this.actionTile();
+      this.mineView.swing(player, target);
+      this.avatarView.swing(player.id, target ? facingToward(player, target) : player.facing);
+      sendAction(target ? { type: 'attack', target } : { type: 'attack' });
+      return true;
+    }
+
+    // Everything else is one press, not a held repeat: arriving at the foot
+    // of a ladder puts you on the next floor's way out, and a key still held
+    // would climb straight back up it.
+    this.actSpent = true;
+    if (action === 'elevator') {
+      if (this.mineView.elevatorOpen) this.mineView.closeElevator();
+      else this.mineView.openElevator(player, false);
+      return true;
+    }
+    if (action === 'descend' && mineDepth(player.area) === null) {
+      // At the mouth: straight down to floor 1, or the elevator's list once
+      // the farm has opened a stop worth riding to.
+      if (!this.mineView.elevatorOpen && this.mineView.openElevator(player, true)) return true;
+    }
+    this.audio.play('ui-confirm');
+    sendAction({ type: action });
+    return true;
   }
 
   // --- world building -------------------------------------------------------
@@ -1128,6 +1207,7 @@ export default class FarmScene extends Phaser.Scene {
     this.groundView.forgetArea();
     this.areaView.forgetArea();
     this.avatarView.forgetArea();
+    this.mineView.forgetArea();
     this.villagerView.forgetArea();
 
     this.areaLayer = this.add.group();
@@ -1135,10 +1215,14 @@ export default class FarmScene extends Phaser.Scene {
     // The tile under the cursor belonged to the map that just went away.
     this.pointerTile = null;
 
-    const map = areaMap(area);
+    // A mine floor is drawn from today's seed, down the same path a Tiled map
+    // is: the reducer's shell for it has the size and no walls.
+    const depth = mineDepth(area);
+    const map = depth === null ? areaMap(area) : mineFloorMap(floorFor(this.farm.mineSeed, depth));
     this.areaView.renderTiles(map, area);
     this.areaView.renderProps(map);
     this.areaView.renderScatter(map);
+    this.mineView.buildDarkness();
 
     this.areaView.fitCameraBounds();
 
@@ -1192,6 +1276,7 @@ export default class FarmScene extends Phaser.Scene {
     this.hud.layoutHud();
     this.buildHint.setPosition(width / 2, Math.min(96, height * 0.14));
     this.fishingHud.layout(width, height);
+    this.mineView.layout(width, height);
     this.summary.layout(width, height);
     this.dialogue.layout(this.hud.layout);
   }

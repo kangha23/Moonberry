@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { DAY_END } from '../systems/time';
 import { areaMap } from '../world/areas';
 import {
+  elevatorStops,
   energyRatio,
+  healthRatio,
+  mineActionFor,
+  showHealthBar,
   formatClock,
   promptFor,
   openPanel,
@@ -11,6 +15,10 @@ import {
   waitingOnLabel,
 } from './selectors';
 import { applyIntent, createFarmState } from './reducer';
+import { generateFloor } from '../systems/mine';
+import { newStack } from '../systems/inventory';
+import { TILE_SIZE, mineArea, type Point } from '../world/areas';
+import { elevatorTile } from '../world/mineMap';
 import type { FarmStoreState } from './store';
 import { STARTING_MAX_ENERGY, type FarmState, type PlayerId } from './types';
 
@@ -277,5 +285,51 @@ describe('standing next to somebody, as the player sees it', () => {
     };
 
     expect(promptFor(away)).toBe('Nothing yet.');
+  });
+});
+
+describe('the mine, as the HUD and the action key read it', () => {
+  type Floor = ReturnType<typeof generateFloor>;
+  const centre = (tile: Point) => ({ x: tile.x * TILE_SIZE + TILE_SIZE / 2, y: tile.y * TILE_SIZE + TILE_SIZE / 2 });
+
+  function underground(depth: number, tile: (floor: Floor) => Point, sword = false) {
+    const farm = farmWith('a');
+    const floor = generateFloor(farm.mineSeed, depth);
+    const inventory = [...farm.players.a.inventory];
+    if (sword) inventory[0] = newStack('rusty-sword');
+    const player = { ...farm.players.a, area: mineArea(depth), ...centre(tile(floor)), inventory, selectedSlot: 0 };
+    return { farm: { ...farm, players: { a: player } }, player };
+  }
+
+  it('shows the health tube underground or when hurt, and hides it at full on the farm', () => {
+    const player = farmWith('a').players.a;
+    expect(showHealthBar(player)).toBe(false);
+    expect(showHealthBar({ ...player, health: player.maxHealth - 1 })).toBe(true);
+    expect(showHealthBar({ ...player, area: mineArea(3) })).toBe(true);
+    expect(healthRatio({ ...player, health: 25 })).toBe(0.25);
+  });
+
+  it('turns the action key into the ladder, the way out, the elevator or a swing', () => {
+    const ladder = underground(4, (f) => f.ladder!);
+    expect(mineActionFor(ladder.farm, ladder.player, false)).toBe('descend');
+    const exit = underground(4, (f) => f.entrance);
+    expect(mineActionFor(exit.farm, exit.player, false)).toBe('exitMine');
+    const lift = underground(5, (f) => elevatorTile(f)!);
+    expect(mineActionFor(lift.farm, lift.player, false)).toBe('elevator');
+
+    // A sword on the ladder: the key goes down, a click swings.
+    const armed = underground(4, (f) => f.ladder!, true);
+    expect(mineActionFor(armed.farm, armed.player, false)).toBe('descend');
+    expect(mineActionFor(armed.farm, armed.player, true)).toBe('attack');
+
+    // Nothing underfoot and nothing in hand: the ordinary act.
+    const bare = underground(4, (f) => ({ x: f.entrance.x + 1, y: f.entrance.y + 1 }));
+    expect(mineActionFor(bare.farm, bare.player, false)).toBeNull();
+  });
+
+  it('lists the elevator stops the farm has opened', () => {
+    const farm = farmWith('a');
+    expect(elevatorStops({ ...farm, deepestFloor: 4 })).toEqual([]);
+    expect(elevatorStops({ ...farm, deepestFloor: 17 })).toEqual([5, 10, 15]);
   });
 });

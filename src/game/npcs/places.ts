@@ -15,6 +15,7 @@ export interface Place {
 }
 
 const village = (x: number, y: number): Place => ({ area: 'village', x, y });
+const plaza = (x: number, y: number): Place => ({ area: 'plaza', x, y });
 
 /** The well in the middle of the village, and the two sides people stand on. */
 export const WELL = village(12, 10);
@@ -51,3 +52,22 @@ export const TOBIAS_DOOR = village(4, 6);
 export const JUNIPER_DOOR = village(24, 6);
 export const MAEVE_DOOR = village(24, 16);
 export const BRAM_DOOR = village(1, 22);
+
+/**
+ * Bà Xoan's doorstep, along the lane from Bram's.
+ *
+ * In the village rather than on the phố so the phố needs no house of its own:
+ * she walks to work through the south gate like everybody who works there
+ * would. Named with the other doorsteps because it is one.
+ */
+export const XOAN_DOOR = village(5, 22);
+
+/**
+ * The phố, spec 15's street.
+ *
+ * Beside the xôi cart rather than behind it, which is the difference between
+ * a counter and a villager who is always in the way of it: stood in front of
+ * the cart a player is nearer the cart, stood at her elbow they are nearer her.
+ * See `applyAct`, where the nearer of the two wins.
+ */
+export const XOI_STALL = plaza(6, 9);

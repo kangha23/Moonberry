@@ -9,20 +9,59 @@
  */
 import type Phaser from 'phaser';
 import { FRINGE_BOUNDARIES, fringeTexture } from '../../assets/createPixelArtTextures';
-import { tint } from '../../assets/palette.generated';
+import { PALETTE, tint } from '../../assets/palette.generated';
 import type { FarmState } from '../../state/types';
+import { boardLayout, type Box } from '../../ui/hudLayout';
 import { BUILDING_AREA, buildingBounds, buildingDef, isComplete } from '../../systems/buildings';
 import {
   TILE_SIZE,
+  type AreaProp,
   areaMap,
   edgeMask,
+  mineDepth,
   pairKindAt,
   plotKey,
   type AreaId,
   type AreaMap,
 } from '../../world/areas';
+import { signKindOf, signLines } from '../../world/tiled';
 import type { GroundView } from './ground';
 import { AVATAR_DEPTH_BASE, propDepth, type SceneContext } from './shared';
+
+/**
+ * The face a shop's board is lettered in.
+ *
+ * A system face, not the HUD's pixel ones: VT323 and the rest have no Vietnamese
+ * diacritics, and a board that reads "B NH BAO" is worse than one in a face
+ * that does not match the art. See spec 15.
+ */
+const SIGN_FONT = 'system-ui, "Segoe UI", Roboto, "Noto Sans", Arial, sans-serif';
+
+/**
+ * How many texture pixels the lettering is rendered at per world pixel.
+ *
+ * The world is magnified two to four times, and text rendered at world size
+ * would be magnified with it into mush. Rendering it this much finer keeps the
+ * strokes sharp at every zoom the camera uses.
+ */
+const SIGN_RESOLUTION = 4;
+
+/**
+ * What colour each slot on a board is lettered in: dark on a shop's cream
+ * board and on the white of a cột mốc, white on a road sign's blue and on the
+ * cột mốc's red cap.
+ */
+const SLOT_COLOUR: Record<string, string> = {
+  board: PALETTE['soil.0'],
+  top: PALETTE['light.7'],
+  name: PALETTE['light.7'],
+  bottom: PALETTE['light.7'],
+  cap: PALETTE['light.7'],
+  stone: PALETTE['soil.0'],
+};
+
+/** How far past a mine floor's edge the camera may go, in world pixels. */
+const MINE_CAMERA_MARGIN = 4 * TILE_SIZE;
 
 /** The map of the built area, drawn. */
 export class AreaView {
@@ -84,8 +123,12 @@ export class AreaView {
     if (!this.context.builtArea) return;
     const map = areaMap(this.context.builtArea);
     const camera = this.scene.cameras.main;
-    const padX = Math.max(0, (camera.width / camera.zoom - map.pixelWidth) / 2);
-    const padY = Math.max(0, (camera.height / camera.zoom - map.pixelHeight) / 2);
+    // A mine floor's way in and way down sit one tile in from two corners,
+    // exactly where the area plate and the tubes are pinned. A margin of dark
+    // round the floor lets the camera keep the player off the HUD there.
+    const margin = mineDepth(this.context.builtArea) === null ? 0 : MINE_CAMERA_MARGIN;
+    const padX = Math.max(margin, (camera.width / camera.zoom - map.pixelWidth) / 2);
+    const padY = Math.max(margin, (camera.height / camera.zoom - map.pixelHeight) / 2);
     camera.setBounds(-padX, -padY, map.pixelWidth + padX * 2, map.pixelHeight + padY * 2);
   }
 
@@ -194,6 +237,8 @@ export class AreaView {
       image.setDepth(depth);
       this.context.areaLayer?.add(image);
 
+      if (prop.sign) this.renderSign(prop, image, depth);
+
       if (prop.texture === 'farmhouse') {
         const shadow = this.scene.add
           .image(centreX, prop.y + prop.height, 'shadow-soft')
@@ -266,6 +311,87 @@ export class AreaView {
         });
       }
     }
+  }
+
+  /**
+   * Letters a shop's board, over the picture as it was drawn.
+   *
+   * Only over a picture that is there: a sign with no front under it would be
+   * words floating over the pavement, which is worse than no sign. The map
+   * parser has already refused a sign on anything without a board and a board
+   * without a sign, so this has nothing left to check but the texture.
+   */
+  private renderSign(prop: AreaProp, image: Phaser.GameObjects.Image, depth: number) {
+    const kind = signKindOf(prop.texture);
+    if (!prop.sign || !kind || !this.scene.textures.exists(prop.texture)) return;
+    const layout = boardLayout(
+      kind,
+      {
+        x: image.x - image.displayWidth / 2,
+        y: image.y - image.displayHeight / 2,
+        width: image.displayWidth,
+        height: image.displayHeight,
+      },
+      signLines(prop.sign),
+    );
+    for (const line of layout.lines) {
+      const text = this.scene.add
+        .text(line.x, line.y, line.text, {
+          fontFamily: SIGN_FONT,
+          fontSize: `${line.fontSize}px`,
+          fontStyle: 'bold',
+          color: SLOT_COLOUR[line.slot] ?? PALETTE['soil.0'],
+        })
+        .setOrigin(0.5)
+        .setResolution(SIGN_RESOLUTION)
+        // On the board, and less than a row above it, for the reason a window's
+        // glow is: a whole row up would put it in front of whoever walks past.
+        .setDepth(depth + 0.25);
+      this.context.areaLayer?.add(text);
+    }
+    if (layout.arrow && prop.arrow) this.renderArrow(layout.arrow, prop.arrow, depth + 0.25);
+  }
+
+  /**
+   * A road sign's arrow: a shaft and a head, in the lettering's white.
+   *
+   * Drawn rather than lettered, because "←" in a system font is a thin glyph
+   * that sits on the baseline, and the arrow on a real sign is the boldest
+   * thing on it.
+   */
+  private renderArrow(box: Box, direction: NonNullable<AreaProp['arrow']>, depth: number) {
+    const horizontal = direction === 'left' || direction === 'right';
+    // Worked out pointing right along a unit box, then turned.
+    const long = horizontal ? box.width : box.height;
+    const short = horizontal ? box.height : Math.min(box.width, box.height * 1.4);
+    const cx = box.x + box.width / 2;
+    const cy = box.y + box.height / 2;
+    const head = Math.min(short, long * 0.4);
+    const shaft = Math.max(2, Math.round(short * 0.28));
+    const turn = (along: number, across: number) => {
+      switch (direction) {
+        case 'right':
+          return { x: cx + along, y: cy + across };
+        case 'left':
+          return { x: cx - along, y: cy + across };
+        case 'down':
+          return { x: cx + across, y: cy + along };
+        case 'up':
+          return { x: cx + across, y: cy - along };
+      }
+    };
+    const tip = long / 2;
+    const neck = tip - head;
+    const graphics = this.scene.add.graphics().setDepth(depth);
+    graphics.fillStyle(tint('light.7'), 1);
+    // The shaft as two triangles and the head as one, which is a polygon
+    // without handing Phaser the Vector2s `fillPoints` wants.
+    const tri = (a: { x: number; y: number }, b: { x: number; y: number }, c: { x: number; y: number }) =>
+      graphics.fillTriangle(a.x, a.y, b.x, b.y, c.x, c.y);
+    tri(turn(-tip, -shaft / 2), turn(neck, -shaft / 2), turn(neck, shaft / 2));
+    tri(turn(-tip, -shaft / 2), turn(neck, shaft / 2), turn(-tip, shaft / 2));
+    tri(turn(neck, -short / 2), turn(tip, 0), turn(neck, short / 2));
+    this.context.areaLayer?.add(graphics);
   }
 
   /**

@@ -33,6 +33,24 @@
         }
       }
     },
+    "lpc-crops": {
+      "title": "[LPC] Crops",
+      "page": "https://opengameart.org/content/lpc-crops",
+      "licence": "CC-BY-SA 3.0+ / GPL 3.0+ — see credits/CREDITS-crops.txt",
+      "authors": [
+        "bluecarrot16",
+        "Daniel Eddeland (daneeklu)",
+        "Joshua Taylor",
+        "Richard Kettering (Jetrel)"
+      ],
+      "files": {
+        "crops.png": {
+          "from": "https://opengameart.org/sites/default/files/crops-v2.1.zip",
+          "sha256": "7213ca189733a4922aa93bc0e6d43e8ad38d0eea744ecfcc0593974c9db9cc11",
+          "extract": "crops-v2/crops.png"
+        }
+      }
+    },
     "lpc-containers": {
       "title": "[LPC] Containers",
       "page": "https://opengameart.org/content/lpc-containers",
@@ -708,6 +726,158 @@
         "TheraHedwig"
       ],
       "files": {}
+    },
+    "emberfield": {
+      "title": "Emberfield art",
+      "page": "Local archive emberfield-art.zip, supplied by the Moonberry project owner",
+      "licence": "Supplied by the project owner, who confirmed on 2026-09-17 that Moonberry may use it. Not CC0 and not LPC: do not reuse it outside this project without asking the owner.",
+      "authors": [
+        "Moonberry project owner"
+      ],
+      "files": {
+        "coin.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "9dc26ac266643b30ce1b7e8b20f5919491df8c5f6402156d06001430016da12a"
+        },
+        "item-icons.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "e5dced4f6e04f7f79101f189f95124a0dba93546e464d76af8af6b72f1d670e8"
+        },
+        "merchant-cart.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "5f7b3e3444ec8031fdadf5584d3c64091a22b2de82e1ab2d2eff45f7c8e64b6e"
+        },
+        "skeleton-attack-down.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "a3e432b1bf34476c08fed2798ca4b819a500c94baa4458fed4d009f539d29d17"
+        },
+        "skeleton-attack-left.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "17b4b1f136567e50dcec24de13b5917c5a7b6feff80d00394ccac9bd46c7531a"
+        },
+        "skeleton-attack-right.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "14886b5c61286eb610fe0c23bedce22f3f7cae05359a5506b731d44c6e9c4285"
+        },
+        "skeleton-attack-up.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "de14278613e65f4aaf2e577a9368c0ba92b6d0793d254aefbf0404ed4f00a629"
+        },
+        "skeleton-death.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "8421de62d1af36d3463f08a0eea2075a7bd0b84cc99719515ff2a5ef28611660"
+        },
+        "skeleton-walk-down.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "1de9c6a2dc0a8628c2e2f44853a661a42c42f7f1320fe05b9b5ef3aaa78cd9d5"
+        },
+        "skeleton-walk-left.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "5f5fe5f4b6d9cb155055055da6f118dba2ef449342d519cbe81b385767636253"
+        },
+        "skeleton-walk-right.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "a94e07b47e2745963767229e3e9b4ae601e780840b172fb9f42a6e6e73c2c589"
+        },
+        "skeleton-walk-up.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "db424437f6a769aa4aac0561fc9349bef7a684d43563fbee587d14d2fc41c591"
+        },
+        "soldier-attack-down.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "808d614cbf32fe38bb5294f1b7a64d86c4478cf11468eb504800399899240c65"
+        },
+        "soldier-attack-left.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "fbc48d26e93b8ae65242352e1dd437d4882d315e5fab3e17ac2d0367913b445f"
+        },
+        "soldier-attack-right.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "6fe37045e61a40e5252fe6a95725ee6a53d8adabafccbe8dfae6253eeb960a7b"
+        },
+        "soldier-attack-up.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "79135c896fe7b4639e6ae2cb7dc9d45c5ce41cfe10c7a36bc53dc8e41cf853e0"
+        },
+        "soldier-run-down.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "24571635667c043f046da84d16c3bed2e414044f293e9a32b840742e3880dad6"
+        },
+        "soldier-run-left.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "edb3544aa41fd3350d57912ae946273bd4178678c25f9b544e9a18a0954a3ddb"
+        },
+        "soldier-run-right.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "90b05990554a9451bbd4b5ddc22cbd8aecf6ba0dc171c6e04603a443002e8615"
+        },
+        "soldier-run-up.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "6931b7bd0b1d3b4dddd0fac2216ee0e4e9f486004b3a7fe35655895a07115547"
+        },
+        "tx-props.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "bc100749fcf3cc9008a0078454f704bc63f9000d6f3e4a91574b83da098fa71e"
+        },
+        "tx-struct.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "ef29e2c13d1dc77e2431ee38a9c9a118b420352d3b27c7ac28adbc3224cdb5a8"
+        },
+        "tx-tileset-stone-ground.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "fc5b3817bc03b760bba398d5f356b19cb5d901252d9ce18f97880666b17e7315"
+        },
+        "tx-tileset-wall.png": {
+          "from": "file:///C:/Users/Admin/Desktop/emberfield-art.zip",
+          "sha256": "9c32a07a940e23352dd43a92f724480fedf0cd43edd530219d6e29801e9cc2bb"
+        }
+      }
+    },
+    "lpc-monsters": {
+      "title": "[LPC] Monsters",
+      "page": "https://opengameart.org/content/lpc-monsters",
+      "licence": "CC-BY-SA 3.0 / GPL 3.0",
+      "authors": [
+        "Charles Sanchez (CharlesGabriel)",
+        "bagzie",
+        "bluecarrot16"
+      ],
+      "files": {
+        "slime.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-monsters.zip",
+          "sha256": "2c591d0e0c89dd579f84fb10ac9b24b97836941d6881abb5db85dc257892878f",
+          "extract": "lpc-monsters/slime.png"
+        },
+        "bat.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-monsters.zip",
+          "sha256": "2c591d0e0c89dd579f84fb10ac9b24b97836941d6881abb5db85dc257892878f",
+          "extract": "lpc-monsters/bat.png"
+        },
+        "ghost.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-monsters.zip",
+          "sha256": "2c591d0e0c89dd579f84fb10ac9b24b97836941d6881abb5db85dc257892878f",
+          "extract": "lpc-monsters/ghost.png"
+        },
+        "big_worm.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-monsters.zip",
+          "sha256": "2c591d0e0c89dd579f84fb10ac9b24b97836941d6881abb5db85dc257892878f",
+          "extract": "lpc-monsters/big_worm.png"
+        }
+      }
+    },
+    "sandesu-farm-tools": {
+      "title": "Farm Tool Icon 24x24",
+      "page": "https://vayasandesu.itch.io/farm-tool-icon-24x24",
+      "licence": "CC-BY-SA 4.0",
+      "authors": [
+        "Sandesu (vayasandesu)"
+      ],
+      "files": {
+        "farm-tools.png": {
+          "from": "https://vayasandesu.itch.io/farm-tool-icon-24x24",
+          "sha256": "695d663f672ba38ffc9fa4111c8ddd992bdfe2b94aeff085dc06db0b5a5d070d"
+        }
+      }
     }
   },
   "notImported": {
@@ -715,18 +885,8 @@
     "animal-cow-sheet": "imported before this table existed; source coordinates were not recorded",
     "animal-duck-sheet": "imported before this table existed; source coordinates were not recorded",
     "animal-goat-sheet": "imported before this table existed; source coordinates were not recorded",
-    "crop-cranberry": "imported before this table existed; source coordinates were not recorded",
-    "crop-melon": "imported before this table existed; source coordinates were not recorded",
-    "crop-pumpkin": "imported before this table existed; source coordinates were not recorded",
-    "crop-rhubarb": "imported before this table existed; source coordinates were not recorded",
-    "crop-sprout": "imported before this table existed; source coordinates were not recorded",
-    "crop-strawberry": "imported before this table existed; source coordinates were not recorded",
-    "crop-tomato": "imported before this table existed; source coordinates were not recorded",
-    "crop-turnip": "imported before this table existed; source coordinates were not recorded",
-    "crop-winterberry": "imported before this table existed; source coordinates were not recorded",
     "farmhouse": "imported before this table existed; source coordinates were not recorded",
     "grass-tuft": "imported before this table existed; source coordinates were not recorded",
-    "player-sheet": "imported before this table existed; source coordinates were not recorded",
     "tile-grass-1x": "imported before this table existed; source coordinates were not recorded",
     "tile-grass-1xy": "imported before this table existed; source coordinates were not recorded",
     "tile-grass-1y": "imported before this table existed; source coordinates were not recorded",
@@ -844,6 +1004,106 @@
       "cell": [
         5,
         22
+      ]
+    },
+    {
+      "target": "crop-seeded",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        10,
+        9
+      ]
+    },
+    {
+      "target": "crop-sprout",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        10,
+        1
+      ]
+    },
+    {
+      "target": "crop-turnip",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        10,
+        7
+      ]
+    },
+    {
+      "target": "crop-melon",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        23,
+        7
+      ]
+    },
+    {
+      "target": "crop-pumpkin",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        27,
+        7
+      ]
+    },
+    {
+      "target": "crop-rhubarb",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        1,
+        17
+      ]
+    },
+    {
+      "target": "crop-strawberry",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        20,
+        17
+      ]
+    },
+    {
+      "target": "crop-cranberry",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        22,
+        17
+      ]
+    },
+    {
+      "target": "crop-winterberry",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        23,
+        17
+      ]
+    },
+    {
+      "target": "crop-tomato",
+      "pack": "lpc-crops",
+      "file": "crops.png",
+      "grid": 32,
+      "cell": [
+        28,
+        17
       ]
     },
     {
@@ -1350,22 +1610,6 @@
       "floor": 32
     },
     {
-      "target": "item-chest",
-      "pack": "lpc-containers",
-      "file": "container.png",
-      "rect": [
-        353,
-        258,
-        31,
-        28
-      ],
-      "box": [
-        32,
-        32
-      ],
-      "floor": 30
-    },
-    {
       "target": "placeable-big-chest",
       "pack": "lpc-containers",
       "file": "container.png",
@@ -1380,22 +1624,6 @@
         32
       ],
       "floor": 32
-    },
-    {
-      "target": "item-big-chest",
-      "pack": "lpc-containers",
-      "file": "container.png",
-      "rect": [
-        161,
-        354,
-        31,
-        30
-      ],
-      "box": [
-        32,
-        32
-      ],
-      "floor": 31
     },
     {
       "target": "placeable-jar",
@@ -1902,37 +2130,6 @@
         64,
         96
       ]
-    },
-    {
-      "target": "market-stall",
-      "pack": "lpc-decorations",
-      "file": "decorations-medieval.png",
-      "rect": [
-        192,
-        800,
-        64,
-        158
-      ],
-      "box": [
-        96,
-        158
-      ],
-      "floor": 157,
-      "recolour": {
-        "984800": "8f6540",
-        "884000": "7d5633",
-        "894000": "7d5633",
-        "8d4401": "7d5633",
-        "944903": "8f6540",
-        "9a4a01": "8f6540",
-        "9c4c02": "8f6540",
-        "9e4e03": "8f6540",
-        "a45406": "8f6540",
-        "581000": "48331f",
-        "601800": "48331f",
-        "702800": "6b3a24",
-        "c8d0a8": "b78d64"
-      }
     },
     {
       "target": "cottage",
@@ -8026,6 +8223,6453 @@
             "ff8a00": "c1c1c1"
           }
         }
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "mine-floor-shallow",
+      "file": "tx-tileset-stone-ground.png",
+      "rect": [
+        176,
+        16,
+        32,
+        32
+      ],
+      "recolour": {
+        "656054": "48331f",
+        "696155": "553d27",
+        "878579": "553d27",
+        "57341f": "48331f",
+        "5f584a": "48331f",
+        "645e52": "48331f",
+        "675f52": "48331f",
+        "78746a": "553d27",
+        "7b766e": "553d27",
+        "8e8c81": "63492f",
+        "95938b": "63492f",
+        "98968e": "63492f",
+        "99978e": "63492f",
+        "9d9a91": "7d5633",
+        "9e9b92": "7d5633",
+        "9f9c92": "7d5633",
+        "9f9c93": "7d5633"
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "mine-floor-middle",
+      "file": "tx-tileset-stone-ground.png",
+      "rect": [
+        176,
+        16,
+        32,
+        32
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "mine-floor-deep",
+      "file": "tx-tileset-stone-ground.png",
+      "rect": [
+        176,
+        16,
+        32,
+        32
+      ],
+      "recolour": {
+        "656054": "281825",
+        "696155": "2d2330",
+        "878579": "2d2330",
+        "57341f": "281825",
+        "5f584a": "281825",
+        "645e52": "281825",
+        "675f52": "281825",
+        "78746a": "2d2330",
+        "7b766e": "2d2330",
+        "8e8c81": "332f66",
+        "95938b": "332f66",
+        "98968e": "332f66",
+        "99978e": "332f66",
+        "9d9a91": "7a5a96",
+        "9e9b92": "7a5a96",
+        "9f9c92": "7a5a96",
+        "9f9c93": "7a5a96"
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "mine-wall-shallow",
+      "file": "tx-tileset-wall.png",
+      "rect": [
+        64,
+        192,
+        32,
+        32
+      ],
+      "recolour": {
+        "543624": "3a2718",
+        "553726": "3a2718",
+        "553827": "3a2718",
+        "584132": "48331f",
+        "624937": "48331f",
+        "665444": "63492f",
+        "675544": "63492f",
+        "676159": "63492f",
+        "676259": "63492f",
+        "868579": "8f6540",
+        "929088": "8f6540",
+        "4f2913": "3a2718",
+        "4f311e": "3a2718",
+        "53321e": "3a2718",
+        "4f3625": "3a2718",
+        "563b2a": "3a2718",
+        "5a3b27": "3a2718",
+        "563d2c": "3a2718",
+        "593d2a": "3a2718",
+        "583f30": "48331f",
+        "5b4231": "48331f",
+        "5e4532": "48331f",
+        "594a3c": "48331f",
+        "594a3d": "48331f",
+        "594a3e": "48331f",
+        "5a4a3d": "48331f",
+        "594b3e": "48331f",
+        "5d4d41": "48331f",
+        "5c5147": "63492f",
+        "5e5146": "63492f",
+        "5c5247": "63492f",
+        "5d5247": "63492f",
+        "5d5248": "63492f",
+        "5f5349": "63492f",
+        "68625a": "63492f",
+        "68635a": "7d5633",
+        "69635b": "7d5633",
+        "69645b": "7d5633",
+        "6a645c": "7d5633",
+        "6a655c": "7d5633",
+        "6b655d": "7d5633",
+        "6a665c": "7d5633",
+        "6b665d": "7d5633",
+        "6c665e": "7d5633",
+        "6b675d": "7d5633",
+        "6c675e": "7d5633",
+        "6c685e": "8f6540",
+        "6d685f": "8f6540",
+        "6d695f": "8f6540",
+        "726e69": "8f6540",
+        "88877b": "8f6540",
+        "918f88": "8f6540",
+        "94928b": "8f6540",
+        "99978f": "8f6540"
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "mine-wall-middle",
+      "file": "tx-tileset-wall.png",
+      "rect": [
+        64,
+        192,
+        32,
+        32
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "mine-wall-deep",
+      "file": "tx-tileset-wall.png",
+      "rect": [
+        64,
+        192,
+        32,
+        32
+      ],
+      "recolour": {
+        "543624": "1f0106",
+        "553726": "1f0106",
+        "553827": "1f0106",
+        "584132": "281825",
+        "624937": "281825",
+        "665444": "2d2330",
+        "675544": "2d2330",
+        "676159": "2d2330",
+        "676259": "2d2330",
+        "868579": "7a5a96",
+        "929088": "7a5a96",
+        "4f2913": "1f0106",
+        "4f311e": "1f0106",
+        "53321e": "1f0106",
+        "4f3625": "1f0106",
+        "563b2a": "1f0106",
+        "5a3b27": "1f0106",
+        "563d2c": "1f0106",
+        "593d2a": "1f0106",
+        "583f30": "281825",
+        "5b4231": "281825",
+        "5e4532": "281825",
+        "594a3c": "281825",
+        "594a3d": "281825",
+        "594a3e": "281825",
+        "5a4a3d": "281825",
+        "594b3e": "281825",
+        "5d4d41": "281825",
+        "5c5147": "2d2330",
+        "5e5146": "2d2330",
+        "5c5247": "2d2330",
+        "5d5247": "2d2330",
+        "5d5248": "2d2330",
+        "5f5349": "2d2330",
+        "68625a": "2d2330",
+        "68635a": "332f66",
+        "69635b": "332f66",
+        "69645b": "332f66",
+        "6a645c": "332f66",
+        "6a655c": "332f66",
+        "6b655d": "332f66",
+        "6a665c": "332f66",
+        "6b665d": "332f66",
+        "6c665e": "332f66",
+        "6b675d": "332f66",
+        "6c675e": "332f66",
+        "6c685e": "7a5a96",
+        "6d685f": "7a5a96",
+        "6d695f": "7a5a96",
+        "726e69": "7a5a96",
+        "88877b": "7a5a96",
+        "918f88": "7a5a96",
+        "94928b": "7a5a96",
+        "99978f": "7a5a96"
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "mine-entrance",
+      "size": [
+        64,
+        64
+      ],
+      "pieces": [
+        {
+          "pack": "emberfield",
+          "file": "tx-tileset-stone-ground.png",
+          "rect": [
+            176,
+            16,
+            36,
+            48
+          ],
+          "at": [
+            14,
+            16
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "tx-struct.png",
+          "rect": [
+            416,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "monster-skeleton-walk-sheet",
+      "size": [
+        1024,
+        512
+      ],
+      "pieces": [
+        {
+          "pack": "emberfield",
+          "file": "skeleton-walk-up.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "skeleton-walk-left.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "skeleton-walk-down.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            256
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "skeleton-walk-right.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            384
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "monster-skeleton-attack-sheet",
+      "size": [
+        1024,
+        512
+      ],
+      "pieces": [
+        {
+          "pack": "emberfield",
+          "file": "skeleton-attack-up.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "skeleton-attack-left.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "skeleton-attack-down.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            256
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "skeleton-attack-right.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            384
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "monster-skeleton-death-sheet",
+      "size": [
+        1024,
+        512
+      ],
+      "pieces": [
+        {
+          "pack": "emberfield",
+          "file": "skeleton-death.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "skeleton-death.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "skeleton-death.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            256
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "skeleton-death.png",
+          "rect": [
+            0,
+            0,
+            1024,
+            128
+          ],
+          "at": [
+            0,
+            384
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "player-sheet",
+      "size": [
+        576,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-up.png",
+          "rect": [
+            16,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-up.png",
+          "rect": [
+            112,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-up.png",
+          "rect": [
+            208,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-up.png",
+          "rect": [
+            304,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-up.png",
+          "rect": [
+            400,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-up.png",
+          "rect": [
+            496,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-up.png",
+          "rect": [
+            592,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-up.png",
+          "rect": [
+            688,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-left.png",
+          "rect": [
+            16,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-left.png",
+          "rect": [
+            112,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-left.png",
+          "rect": [
+            208,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-left.png",
+          "rect": [
+            304,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-left.png",
+          "rect": [
+            400,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-left.png",
+          "rect": [
+            496,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-left.png",
+          "rect": [
+            592,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-left.png",
+          "rect": [
+            688,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-down.png",
+          "rect": [
+            16,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-down.png",
+          "rect": [
+            112,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-down.png",
+          "rect": [
+            208,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-down.png",
+          "rect": [
+            304,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-down.png",
+          "rect": [
+            400,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-down.png",
+          "rect": [
+            496,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-down.png",
+          "rect": [
+            592,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-down.png",
+          "rect": [
+            688,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-right.png",
+          "rect": [
+            16,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-right.png",
+          "rect": [
+            112,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-right.png",
+          "rect": [
+            208,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-right.png",
+          "rect": [
+            304,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-right.png",
+          "rect": [
+            400,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-right.png",
+          "rect": [
+            496,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-right.png",
+          "rect": [
+            592,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-run-right.png",
+          "rect": [
+            688,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "attack-player-sheet",
+      "size": [
+        768,
+        384
+      ],
+      "pieces": [
+        {
+          "pack": "emberfield",
+          "file": "soldier-attack-up.png",
+          "rect": [
+            0,
+            0,
+            768,
+            80
+          ],
+          "at": [
+            0,
+            16
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-attack-left.png",
+          "rect": [
+            0,
+            0,
+            768,
+            80
+          ],
+          "at": [
+            0,
+            112
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-attack-down.png",
+          "rect": [
+            0,
+            0,
+            768,
+            80
+          ],
+          "at": [
+            0,
+            208
+          ]
+        },
+        {
+          "pack": "emberfield",
+          "file": "soldier-attack-right.png",
+          "rect": [
+            0,
+            0,
+            768,
+            80
+          ],
+          "at": [
+            0,
+            304
+          ]
+        }
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-rusty-sword",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        0,
+        5
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-torch",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        9,
+        10
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-chest",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        11,
+        11
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-big-chest",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        14,
+        16
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-wood",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        0,
+        17
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-stone",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        1,
+        17
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-coal",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        2,
+        20
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-fiber",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        5,
+        17
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-sap",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        9,
+        15
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-bait",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        2,
+        16
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-eel",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        5,
+        16
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-strawberry",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        4,
+        14
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-tomato",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        9,
+        14
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-gem",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        15,
+        12
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-quartz",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        14,
+        12
+      ]
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-copper-ore",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        2,
+        17
+      ],
+      "recolour": {
+        "274979": "b45045",
+        "6eeeff": "eaa473",
+        "80bdff": "eaa473",
+        "3898ff": "d28560",
+        "2b5d9b": "ff7b3a",
+        "2c61a2": "ff7b3a",
+        "1f2c47": "841a20"
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-iron-ore",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        2,
+        17
+      ],
+      "recolour": {
+        "274979": "726b7e",
+        "6eeeff": "f8dbbd",
+        "80bdff": "f8dbbd",
+        "3898ff": "acbfb0",
+        "2b5d9b": "93828d",
+        "2c61a2": "93828d",
+        "1f2c47": "4c4a5d"
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-gold-ore",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        2,
+        17
+      ],
+      "recolour": {
+        "274979": "8d8f3a",
+        "6eeeff": "f8dbbd",
+        "80bdff": "f8dbbd",
+        "3898ff": "c8c05a",
+        "2b5d9b": "c8c05a",
+        "2c61a2": "c8c05a",
+        "1f2c47": "7d5633"
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "item-copper-bar",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        3,
+        17
+      ],
+      "recolour": {
+        "ffe433": "d28560",
+        "f2a633": "b45045",
+        "fffad6": "eaa473"
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "market-stall",
+      "file": "merchant-cart.png",
+      "rect": [
+        0,
+        0,
+        64,
+        64
+      ],
+      "box": [
+        96,
+        64
+      ],
+      "floor": 63
+    },
+    {
+      "pack": "emberfield",
+      "target": "xoi-cart",
+      "file": "merchant-cart.png",
+      "rect": [
+        0,
+        0,
+        64,
+        64
+      ],
+      "box": [
+        96,
+        64
+      ],
+      "floor": 63,
+      "recolour": {
+        "73dff2": "f8dbbd",
+        "6ccbdc": "f8dbbd",
+        "2abbd0": "eaa473",
+        "b070eb": "ef404a",
+        "d59ff4": "f8dbbd",
+        "7c3ce1": "a21e34",
+        "f6bafe": "f8dbbd"
+      }
+    },
+    {
+      "pack": "emberfield",
+      "target": "icon-coin",
+      "file": "coin.png",
+      "rect": [
+        0,
+        0,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "monster-slime-walk-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ]
+    },
+    {
+      "target": "monster-slime-attack-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            384,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            448,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            384,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            384,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            448,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            384,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ]
+    },
+    {
+      "target": "monster-blue-slime-walk-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ],
+      "recolour": {
+        "109452": "1896b3",
+        "130e13": "10111b",
+        "002908": "3c49ad",
+        "005218": "206c9f",
+        "5acd73": "acbfb0",
+        "e6d5b4": "f8dbbd"
+      }
+    },
+    {
+      "target": "monster-blue-slime-attack-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            384,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            448,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            384,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            384,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            448,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            384,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "slime.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ],
+      "recolour": {
+        "109452": "1896b3",
+        "130e13": "10111b",
+        "002908": "3c49ad",
+        "005218": "206c9f",
+        "5acd73": "acbfb0",
+        "e6d5b4": "f8dbbd"
+      }
+    },
+    {
+      "target": "monster-bat-walk-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            384,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            384,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            384,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            384,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "bat.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ]
+    },
+    {
+      "target": "monster-ghost-walk-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ]
+    },
+    {
+      "target": "monster-ghost-attack-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ]
+    },
+    {
+      "target": "monster-ghost-death-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "ghost.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ]
+    },
+    {
+      "target": "monster-worm-walk-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            192,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            128,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            192,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            128,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            192,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            128,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            192,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            128,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            64,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ]
+    },
+    {
+      "target": "monster-worm-attack-sheet",
+      "pack": "lpc-monsters",
+      "size": [
+        512,
+        256
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            256,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            256,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            64,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            256,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            128,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            256,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            256,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            320,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            320,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            384,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-monsters",
+          "file": "big_worm.png",
+          "rect": [
+            0,
+            192,
+            64,
+            64
+          ],
+          "at": [
+            448,
+            192
+          ]
+        }
+      ]
+    },
+    {
+      "target": "item-hoe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        1,
+        7
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29
+    },
+    {
+      "target": "item-copper-hoe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        2,
+        7
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29
+    },
+    {
+      "target": "item-steel-hoe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        3,
+        7
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29
+    },
+    {
+      "target": "item-gold-hoe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        4,
+        7
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29
+    },
+    {
+      "target": "item-watering-can",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        1,
+        8
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 24
+    },
+    {
+      "target": "item-copper-watering-can",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        2,
+        8
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 24
+    },
+    {
+      "target": "item-steel-watering-can",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        3,
+        8
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 24
+    },
+    {
+      "target": "item-gold-watering-can",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        4,
+        8
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 24
+    },
+    {
+      "target": "item-axe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        1,
+        5
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 26
+    },
+    {
+      "target": "item-copper-axe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        2,
+        5
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 26
+    },
+    {
+      "target": "item-steel-axe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        3,
+        5
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 26
+    },
+    {
+      "target": "item-gold-axe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        4,
+        5
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 26
+    },
+    {
+      "target": "item-pickaxe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        1,
+        3
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 27
+    },
+    {
+      "target": "item-copper-pickaxe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        2,
+        3
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 27
+    },
+    {
+      "target": "item-steel-pickaxe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        3,
+        3
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 27
+    },
+    {
+      "target": "item-gold-pickaxe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        4,
+        3
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 27
+    },
+    {
+      "target": "item-scythe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        1,
+        6
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29
+    },
+    {
+      "target": "item-gold-scythe",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        4,
+        6
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29
+    },
+    {
+      "target": "item-fishing-rod",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        0,
+        9
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29
+    },
+    {
+      "target": "item-copper-fishing-rod",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        1,
+        9
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29,
+      "recolour": {
+        "b8b5b9": "ba756a"
+      }
+    },
+    {
+      "target": "item-steel-fishing-rod",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        1,
+        9
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29,
+      "recolour": {
+        "b8b5b9": "dae0ea"
+      }
+    },
+    {
+      "target": "item-gold-fishing-rod",
+      "pack": "sandesu-farm-tools",
+      "file": "farm-tools.png",
+      "grid": 24,
+      "cell": [
+        1,
+        9
+      ],
+      "smooth": 1.4,
+      "box": [
+        32,
+        32
+      ],
+      "floor": 29,
+      "recolour": {
+        "b8b5b9": "ffca28"
+      }
+    },
+    {
+      "target": "item-basket",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        0,
+        20
+      ]
+    },
+    {
+      "target": "item-copper-basket",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        0,
+        20
+      ],
+      "recolour": {
+        "9c4331": "5b3138",
+        "a25948": "8e5252",
+        "b56750": "ba756a",
+        "ffa070": "e9b5a3",
+        "ffb271": "e9b5a3"
+      }
+    },
+    {
+      "target": "item-steel-basket",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        0,
+        20
+      ],
+      "recolour": {
+        "9c4331": "6d758d",
+        "a25948": "8b93af",
+        "b56750": "b3b9d1",
+        "ffa070": "dae0ea",
+        "ffb271": "dae0ea"
+      }
+    },
+    {
+      "target": "item-gold-basket",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        0,
+        20
+      ],
+      "recolour": {
+        "9c4331": "ffa000",
+        "a25948": "ffca28",
+        "b56750": "ffd54f",
+        "ffa070": "f2f0e5",
+        "ffb271": "f2f0e5"
+      }
+    },
+    {
+      "target": "item-turnip-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        11,
+        20
+      ]
+    },
+    {
+      "target": "item-clover-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        10,
+        20
+      ]
+    },
+    {
+      "target": "item-strawberry-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        5,
+        20
+      ]
+    },
+    {
+      "target": "item-rhubarb-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        9,
+        20
+      ]
+    },
+    {
+      "target": "item-wheat-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        3,
+        20
+      ]
+    },
+    {
+      "target": "item-sunflower-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        1,
+        20
+      ]
+    },
+    {
+      "target": "item-tomato-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        4,
+        20
+      ]
+    },
+    {
+      "target": "item-melon-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        12,
+        20
+      ],
+      "recolour": {
+        "97a2b7": "acbfb0",
+        "7884ab": "449a8d",
+        "585572": "1e413e",
+        "3e375c": "0a2726"
+      }
+    },
+    {
+      "target": "item-barley-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        3,
+        20
+      ],
+      "recolour": {
+        "d3a15e": "f2dca0",
+        "a66f4c": "d9b36a",
+        "734538": "a67c3e",
+        "5b3139": "6e4f2a"
+      }
+    },
+    {
+      "target": "item-cranberry-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        5,
+        20
+      ],
+      "recolour": {
+        "e14141": "a9303d",
+        "a9303d": "7a213a",
+        "7a213a": "5d1426",
+        "5d1426": "3b0d18"
+      }
+    },
+    {
+      "target": "item-pumpkin-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        8,
+        20
+      ],
+      "recolour": {
+        "ffde5d": "ffbf36",
+        "ffbf36": "f08a1d",
+        "c44d29": "b0351a"
+      }
+    },
+    {
+      "target": "item-frostcap-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        6,
+        20
+      ]
+    },
+    {
+      "target": "item-winterberry-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        2,
+        20
+      ]
+    },
+    {
+      "target": "item-nep-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        12,
+        20
+      ]
+    },
+    {
+      "target": "item-dau-xanh-seeds",
+      "pack": "emberfield",
+      "file": "item-icons.png",
+      "grid": 32,
+      "cell": [
+        10,
+        20
+      ],
+      "recolour": {
+        "83e04c": "4da744",
+        "4da744": "2b7a3a",
+        "2b941e": "1f5a2c",
+        "204613": "163d20"
       }
     }
   ]

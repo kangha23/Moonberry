@@ -17,7 +17,8 @@ import {
 import { addItem, removeItem } from '../../systems/inventory';
 import { ITEMS, itemDef, upgradeFor, type ItemId } from '../../systems/items';
 import { placeableById } from '../../systems/placeables';
-import { buyFromStall } from '../../systems/shop';
+import { isStaffed } from '../../npcs/schedule';
+import { STALLS, buyFromStall, stallFor, type StallId } from '../../systems/shop';
 import { interactableAt, isWithinReach } from '../../world/areas';
 import type { ApplyResult, GameEvent } from '../intents';
 import {
@@ -41,6 +42,28 @@ import { unchanged, say, withPlayer } from './common';
 export function counterAt(player: PlayerState): PanelId | null {
   const interact = interactableAt(player.area, player)?.interact;
   return interact ? (PANEL_FOR_INTERACT[interact] ?? null) : null;
+}
+
+/** Which stall this player is standing at, if any. The same position `counterAt` reads. */
+export function stallAt(player: PlayerState): StallId | null {
+  return stallFor(interactableAt(player.area, player)?.interact);
+}
+
+/**
+ * Whether a stall is trading right now.
+ *
+ * The market always is. A stall with a keeper is open while somebody's
+ * schedule has them keeping it, which for the xôi cart is seven till noon and
+ * two till five — asked of the clock rather than of anybody's position.
+ */
+export function stallOpen(state: FarmState, stall: StallId): boolean {
+  const { keptBy } = STALLS[stall];
+  return keptBy === null || isStaffed(keptBy, state.season, state.weather, state.time);
+}
+
+/** What a closed stall says to somebody who walks up to it. */
+export function closedStallMessage(stall: StallId): string {
+  return `${STALLS[stall].label} đã dọn hàng. Bà Xoan bán từ 7 giờ đến trưa, và từ 2 đến 5 giờ chiều.`;
 }
 
 /** Sets a player's open panel, or returns the state untouched if it is already so. */
@@ -91,11 +114,15 @@ export function applyBuy(state: FarmState, playerId: PlayerId, item: string, cou
   const player = state.players[playerId];
   if (!player) return unchanged(state);
 
-  if (counterAt(player) !== 'market') {
+  const stall = stallAt(player);
+  if (counterAt(player) !== 'market' || !stall) {
     return { state, events: [say(playerId, 'Bạn không đứng ở sạp chợ.')] };
   }
+  if (!stallOpen(state, stall)) {
+    return { state, events: [say(playerId, closedStallMessage(stall))] };
+  }
 
-  const result = buyFromStall(player.inventory, state.coins, state.season, item, count);
+  const result = buyFromStall(player.inventory, state.coins, state.season, item, count, stall);
   const events: GameEvent[] = [say(playerId, result.message)];
   if (!result.changed) return { state, events };
 

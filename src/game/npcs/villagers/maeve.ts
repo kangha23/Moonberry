@@ -23,6 +23,8 @@ export const MAEVE: NpcDef = {
   birthday: { season: 'Autumn', day: 3 },
   defaultGiftReaction: 'neutral',
   gifts: {
+    // Spec 15. Everybody in the valley is glad of a bánh chưng.
+    'banh-chung': 'liked',
     wood: 'loved',
     pumpkin: 'loved',
     barley: 'liked',

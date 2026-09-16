@@ -27,6 +27,7 @@ cái thứ hai. Mọi thứ còn lại là chiều sâu đặt lên trên hai c�
 | 11 | [Chế tác](11-crafting.md) | 10, tốt hơn sau 09 | Cho cái kho một cái ruột, và cho nông trại bậc thang thứ hai. |
 | 12 | [Câu cá](12-fishing.md) | 10 | Ba mươi ô nước thôi chỉ là tường chắn, và buổi tối thôi là chỗ trống. |
 | 14 | [Bước vào trong nhà](14-farmhouse-interior.md) | — | Ngôi nhà thôi là mặt tiền, và giấc ngủ có một cái giường. |
+| 15 | [Phố Việt](15-vietnamese-street.md) | 07, 11, 04 | Một khu phố nghe tiếng Việt. Bước đầu của thành phố, không trả giá của nó. |
 
 ## Phần còn lại
 
@@ -96,6 +97,18 @@ mọi thứ đã có: chặt cây lên cấp Hái lượm, đào lên cấp Khai
 cá, và mỗi cấp mở công thức ở spec 11. Làm nó sau cùng nghĩa là phải quay lại sửa
 cả ba chỗ — và sau spec 10 và 12 thì chặt cây, đào đá và kéo cá đều đã tồn tại,
 nên chỗ để móc vào đã sẵn sàng.
+
+### Spec 15 để lại gì
+
+- **Một prop có thể mang chữ.** `sign` trên prop có bảng (`shopfront*`),
+  client vẽ bằng font hệ thống lên hộp `SIGNBOARD`. Thuộc tính prop giờ là
+  danh sách đóng: gõ sai tên là lỗi load map.
+- **Một quầy có thể có người trông.** `STALLS` trong `shop.ts` cho phép nhiều
+  sạp dùng chung panel chợ với stock riêng, và `keptBy` gắn giờ mở cửa với
+  một activity trong lịch NPC chứ không với tên NPC.
+- **NPC có thể làm việc ngoài village.** Bà Xoan ở village, bán ở `plaza`;
+  `advanceNpcs` cho người đổi map "tới luôn", nên không cần gì thêm.
+- **Test đối xứng portal quét mọi map**, nên thêm map mới mà quên cửa về là đỏ.
 
 ### Spec 14 để lại gì
 

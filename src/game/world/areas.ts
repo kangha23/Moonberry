@@ -1,4 +1,5 @@
-import { AREA_IDS, MAP_SOURCES, TILESET, type AreaId } from './maps.generated';
+import { MAX_DEPTH, floorSize } from '../systems/mine';
+import { AREA_IDS, MAP_SOURCES, TILESET, type AreaId as StaticAreaId } from './maps.generated';
 import {
   parseTiledMap,
   type AreaMap,
@@ -6,10 +7,23 @@ import {
   type AreaProp,
   type Point,
   type TileDef,
+  type TileKind,
 } from './tiled';
 
 export { AREA_IDS };
-export type { AreaId };
+export type { StaticAreaId };
+
+/** A floor of the mine. Generated, not drawn in Tiled — see spec 13. */
+export type MineAreaId = `mine:${number}`;
+
+/**
+ * Every place a player can stand: the Tiled maps, and the mine's floors.
+ *
+ * Open rather than closed since spec 13, because forty generated floors are
+ * not forty entries in `AREA_IDS`. Anything that iterates the world still
+ * iterates `AREAS`, which is only the static maps.
+ */
+export type AreaId = StaticAreaId | MineAreaId;
 export type { AreaCollider, AreaMap, AreaPortal, AreaProp, Point, TileDef, TileKind } from './tiled';
 export {
   EDGE_EAST,
@@ -29,7 +43,7 @@ export const INTERACT_RADIUS = 58;
 export type Direction = 'up' | 'down' | 'left' | 'right';
 
 /** Where a player starts, and where the farming happens. */
-export const START_AREA: AreaId = 'farm';
+export const START_AREA: StaticAreaId = 'farm';
 
 /**
  * Every area, parsed once at module load.
@@ -38,16 +52,73 @@ export const START_AREA: AreaId = 'farm';
  * state: the client and the server build byte-identical worlds from the same
  * generated source, and nothing has to send a map over the wire.
  */
-export const AREAS: Record<AreaId, AreaMap> = Object.fromEntries(
+export const AREAS: Record<StaticAreaId, AreaMap> = Object.fromEntries(
   AREA_IDS.map((id) => [id, parseTiledMap(id, MAP_SOURCES[id], TILESET)]),
-) as Record<AreaId, AreaMap>;
+) as Record<StaticAreaId, AreaMap>;
+
+export function mineArea(depth: number): MineAreaId {
+  return `mine:${depth}`;
+}
+
+/** The depth of a mine floor, or null for anything that is not one. */
+export function mineDepth(area: string): number | null {
+  if (!area.startsWith('mine:')) return null;
+  const depth = Number(area.slice('mine:'.length));
+  if (!Number.isInteger(depth) || depth < 1 || depth > MAX_DEPTH) return null;
+  return area === mineArea(depth) ? depth : null;
+}
+
+export function isMineArea(area: string): area is MineAreaId {
+  return mineDepth(area) !== null;
+}
 
 export function isAreaId(value: unknown): value is AreaId {
-  return typeof value === 'string' && (AREA_IDS as readonly string[]).includes(value);
+  if (typeof value !== 'string') return false;
+  return (AREA_IDS as readonly string[]).includes(value) || isMineArea(value);
+}
+
+/** Every mine tile before the seed has said where the walls are. */
+const MINE_FLOOR_TILE: TileDef = { texture: 'mine-floor', kind: 'floor', solid: false };
+const mineShells = new Map<number, AreaMap>();
+
+/**
+ * The shape of a mine floor that does not depend on the day: its size and
+ * nothing else — no props, no portals, no plots, every tile open.
+ *
+ * The walls are the seed's, and the seed lives on `FarmState`, which this
+ * module is never handed. They arrive through `Blockers.floor` exactly as
+ * buildings and nodes do, so `isWalkable` stays a function of its arguments.
+ */
+function mineShell(depth: number): AreaMap {
+  let shell = mineShells.get(depth);
+  if (shell) return shell;
+  const size = floorSize(depth);
+  shell = {
+    id: mineArea(depth),
+    name: `Mỏ — tầng ${depth}`,
+    // One bed for every floor. Indoors, so it outranks the rain and the night
+    // the way the farmhouse's does: underground, neither is audible.
+    music: 'mine-loop',
+    indoor: true,
+    width: size,
+    height: size,
+    pixelWidth: size * TILE_SIZE,
+    pixelHeight: size * TILE_SIZE,
+    tileSize: TILE_SIZE,
+    tiles: Array<TileDef>(size * size).fill(MINE_FLOOR_TILE),
+    props: [],
+    colliders: [],
+    portals: [],
+    spawns: [],
+    plotTiles: [],
+  };
+  mineShells.set(depth, shell);
+  return shell;
 }
 
 export function areaMap(area: AreaId): AreaMap {
-  return AREAS[area];
+  const depth = mineDepth(area);
+  return depth === null ? AREAS[area as StaticAreaId] : mineShell(depth);
 }
 
 /**
@@ -63,14 +134,36 @@ export function worldToTile(value: number): number {
 }
 
 export function tileAt(area: AreaId, tileX: number, tileY: number): TileDef | null {
-  const map = AREAS[area];
+  const map = areaMap(area);
   if (tileX < 0 || tileX >= map.width || tileY < 0 || tileY >= map.height) return null;
   return map.tiles[tileY * map.width + tileX];
 }
 
 /** Every farmable cell in an area, which is what seeds the plot records. */
 export function plotTiles(area: AreaId): Point[] {
-  return AREAS[area].plotTiles;
+  return areaMap(area).plotTiles;
+}
+
+/**
+ * Where somebody climbing out of the mine stands: just south of the prop whose
+ * `interact` is `mine`, on whichever map has one, so the mouth of the mine is
+ * in front of them and the action key takes them straight back down.
+ *
+ * Read off the maps rather than written down, like every other interactive
+ * prop — moving the entrance in Tiled moves where the mine lets you out. Null
+ * when no map has an entrance, and the caller falls back to the farm.
+ */
+export function mineMouth(): ({ area: StaticAreaId } & Point) | null {
+  for (const area of AREA_IDS) {
+    const entrance = AREAS[area].props.find((prop) => prop.interact === 'mine');
+    if (!entrance) continue;
+    return {
+      area,
+      x: entrance.x + entrance.width / 2,
+      y: entrance.y + entrance.height + TILE_SIZE / 2,
+    };
+  }
+  return null;
 }
 
 /** Player spawn points, taken from the starting area's spawn objects. */
@@ -126,6 +219,18 @@ export interface Blockers {
    * every call site.
    */
   placeables: readonly Blocker[];
+  /**
+   * A generated floor's walls, in tiles. Spec 13's source, and the reason this
+   * type is an object: absent on every Tiled map, present on a mine floor.
+   */
+  floor?: FloorGrid | null;
+}
+
+/** The part of a mine floor collision needs. `MineFloor` satisfies it. */
+export interface FloorGrid {
+  width: number;
+  height: number;
+  tiles: ReadonlyArray<ReadonlyArray<TileKind>>;
 }
 
 export const NO_BLOCKERS: Blockers = { buildings: [], nodes: [], placeables: [] };
@@ -137,11 +242,12 @@ export function isWalkable(
   y: number,
   blocked: Blockers = NO_BLOCKERS,
 ): boolean {
-  const map = AREAS[area];
+  const map = areaMap(area);
   if (x < 0 || y < 0 || x >= map.pixelWidth || y >= map.pixelHeight) return false;
 
   const tile = tileAt(area, worldToTile(x), worldToTile(y));
   if (!tile || tile.solid) return false;
+  if (blocked.floor && blocked.floor.tiles[worldToTile(y)]?.[worldToTile(x)] !== 'floor') return false;
 
   for (const prop of map.props) {
     if (prop.solid && contains(prop, { x, y })) return false;
@@ -206,7 +312,7 @@ export function interactableAt(area: AreaId, point: Point, radius = INTERACT_RAD
   let best: AreaProp | null = null;
   let bestDistance = radius;
 
-  for (const prop of AREAS[area].props) {
+  for (const prop of areaMap(area).props) {
     if (!prop.interact) continue;
     const gap = distanceToRect(prop, point);
     if (gap < bestDistance) {
@@ -219,7 +325,7 @@ export function interactableAt(area: AreaId, point: Point, radius = INTERACT_RAD
 
 /** The portal a player is standing in, if any. */
 export function portalAt(area: AreaId, point: Point): AreaPortal | null {
-  for (const portal of AREAS[area].portals) {
+  for (const portal of areaMap(area).portals) {
     if (contains(portal, point)) return portal;
   }
   return null;
@@ -238,7 +344,7 @@ const FACING_OFFSETS: Record<Direction, Point> = {
 
 /** The tile a player at `position` facing `facing` would act on. */
 export function targetTile(area: AreaId, position: Point, facing: Direction): Point {
-  const map = AREAS[area];
+  const map = areaMap(area);
   const offset = FACING_OFFSETS[facing];
   return {
     x: clamp(worldToTile(position.x) + offset.x, 0, map.width - 1),
@@ -263,7 +369,7 @@ export function areaOfEffectTiles(
   size: { width: number; height: number },
   area: AreaId,
 ): Point[] {
-  const map = AREAS[area];
+  const map = areaMap(area);
   const left = centre.x - Math.floor((size.width - 1) / 2);
   const top = centre.y - Math.floor((size.height - 1) / 2);
   const tiles: Point[] = [];
@@ -307,6 +413,7 @@ export function isWithinReach(from: Point, tileX: number, tileY: number): boolea
  * the tile is in *this* area and within *this* player's reach.
  */
 export const MAX_AREA_TILES = Math.max(
+  floorSize(MAX_DEPTH),
   ...AREA_IDS.map((id) => Math.max(AREAS[id].width, AREAS[id].height)),
 );
 
@@ -330,7 +437,7 @@ export function resolveMove(
   const length = Math.hypot(dx, dy);
   if (length === 0) return from;
 
-  const map = AREAS[area];
+  const map = areaMap(area);
   const step = (speed * deltaMs) / 1000;
   // Half a tile of margin keeps the sprite from hanging off the edge.
   const margin = TILE_SIZE / 2;
@@ -344,10 +451,14 @@ export function resolveMove(
 }
 
 export function describeTile(area: AreaId, tileX: number, tileY: number): string {
+  if (isMineArea(area)) return 'Đá lạnh và ẩm. Đâu đó dưới sâu có tiếng nước nhỏ giọt.';
   const tile = tileAt(area, tileX, tileY);
   if (!tile) return 'Thế giới kết thúc ở đây.';
   if (tile.kind === 'water') return 'Mặt nước lặng phản chiếu bầu trời. Bình tưới đầy lại mỗi sáng.';
   if (tile.kind === 'plot') return 'Hãy chọn một nông cụ để làm luống đất này.';
+  if (tile.kind === 'path' && tile.texture === 'tile-plaza') {
+    return 'Vỉa hè lát gạch đỏ, mòn nhẵn ở chỗ xe xôi vẫn đỗ.';
+  }
   if (tile.kind === 'path') return 'Con đường mòn nện chặt lượn giữa nông trại và ngôi làng.';
   if (tile.kind === 'floor') return 'Sàn gỗ ấm, kêu cót két dưới chân.';
   if (tile.kind === 'wall') return 'Tường vữa khung gỗ của căn nhà.';
@@ -376,6 +487,16 @@ const PROP_LABELS: ReadonlyArray<[prefix: string, label: string]> = [
   ['chair', 'Cái ghế'],
   ['fireplace', 'Lò sưởi'],
   ['rug', 'Tấm thảm'],
+  // Spec 15's street.
+  ['shopfront', 'Cửa hàng'],
+  ['signpost', 'Biển chỉ đường'],
+  ['milestone', 'Cột mốc'],
+  ['xoi-cart', 'Xe xôi bà Xoan'],
+  ['street-cabinet', 'Tủ kính'],
+  ['street-pole', 'Cột điện'],
+  ['street-wire', 'Dây điện'],
+  ['bench', 'Ghế đá'],
+  ['pot', 'Chậu hoa'],
 ];
 
 export function propLabel(name: string): string {

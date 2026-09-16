@@ -461,6 +461,7 @@ const TOOL_NAMES: Record<Tool, string> = {
   // on purpose: a seventh implement should be a compile error here, not a
   // sentence with `undefined` in the middle of it.
   rod: 'cần câu',
+  sword: 'thanh kiếm',
 };
 
 function toolName(tool: Tool): string {
@@ -837,6 +838,11 @@ export function seedNodes(world: SpawnWorld, season: Season, seed: number): Reso
 
         // The village. Nothing to clear there — it is somebody else's ground —
         // but the hedgerows have things in them, which is Juniper's whole point.
+        //
+        // Named rather than fallen through to, since spec 15: the phố is paved
+        // and somebody else's too, and berries between the bricks are not a
+        // hedgerow.
+        if (area !== 'village') continue;
         if (draw < 0.012) place(area, x, y, 'forage', { item: forageFor(season, seed, area, x, y) });
       }
     }

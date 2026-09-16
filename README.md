@@ -473,9 +473,7 @@ nào cũng được.
 
 ## Triển khai
 
-Bản chính thức chạy trên Vercel theo `vercel.json` (đầu ra tĩnh của Vite):
-
-https://stardew-valley-clone-five.vercel.app
+Bản chính thức chạy trên Vercel theo `vercel.json` (đầu ra tĩnh của Vite).
 
 ## Giấy phép
 

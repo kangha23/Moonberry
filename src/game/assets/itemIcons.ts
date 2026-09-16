@@ -177,6 +177,40 @@ const TOOL_SHAPES: Record<string, (metal: MetalPalette) => readonly IconRect[]> 
 };
 
 export const ITEM_ICONS: Record<ItemId, readonly IconRect[]> = {
+  // The three dishes of spec 15. Placeholders on the same footing as every
+  // generated icon here, until somebody draws them by hand: see the table at
+  // the end of `docs/specs/15-vietnamese-street.md` for the tool and the
+  // import command, and a PNG under that name wins over these rectangles.
+  //
+  // Bánh chưng: a square parcel of lá dong, tied twice with lạt.
+  'banh-chung': [
+    [PALETTE['leaf.0'], 2, 3, 12, 11],
+    [PALETTE['leaf.1'], 3, 4, 10, 9],
+    [PALETTE['leaf.2'], 4, 5, 3, 2],
+    [PALETTE['light.2'], 7, 3, 2, 11],
+    [PALETTE['light.2'], 2, 8, 12, 2],
+    [PALETTE['foliage.0'], 2, 13, 12, 1],
+  ],
+  // Xôi đậu: a white mound flecked with yellow beans, on a leaf.
+  'xoi-dau': [
+    [PALETTE['leaf.1'], 2, 10, 12, 3],
+    [PALETTE['leaf.0'], 3, 13, 10, 1],
+    [PALETTE['light.7'], 5, 4, 6, 1],
+    [PALETTE['light.7'], 3, 5, 10, 5],
+    [PALETTE['light.6'], 3, 9, 10, 1],
+    [PALETTE['light.5'], 5, 6, 2, 1],
+    [PALETTE['light.5'], 9, 7, 2, 1],
+    [PALETTE['light.5'], 6, 8, 2, 1],
+  ],
+  // Chè đậu: a glass of bean paste with a strawberry on top.
+  'che-dau': [
+    [PALETTE['light.6'], 4, 3, 8, 11],
+    [PALETTE['light.7'], 4, 3, 8, 1],
+    [PALETTE['gold.0'], 5, 8, 6, 5],
+    [PALETTE['building.3'], 6, 5, 4, 3],
+    [PALETTE['clothWarm.2'], 8, 6, 2, 2],
+    [PALETTE['building.2'], 5, 14, 6, 1],
+  ],
   turnip: [
     [PALETTE['leaf.2'], 6, 1, 2, 3],
     [PALETTE['light.0'], 8, 2, 3, 2],
@@ -276,6 +310,10 @@ export const CROP_PALETTES: Record<CropId, CropPalette> = {
   pumpkin: { form: 'gourd', body: PALETTE['light.3'], light: PALETTE['light.5'], dark: PALETTE['soil.5'], seed: PALETTE['light.3'] },
   frostcap: { form: 'cap', body: PALETTE['light.6'], light: PALETTE['light.7'], dark: PALETTE['building.2'], seed: PALETTE['building.2'] },
   winterberry: { form: 'berry', body: PALETTE['water.2'], light: PALETTE['water.3'], dark: PALETTE['water.0'], seed: PALETTE['water.2'] },
+  // Spec 15's pair. Nếp is a pale ear rather than wheat's gold, and its packet
+  // window is the husk; đậu xanh is a green pod-bunch in the berry shape.
+  nep: { form: 'grain', body: PALETTE['light.6'], light: PALETTE['light.7'], dark: PALETTE['leaf.3'], seed: PALETTE['gold.0'] },
+  'dau-xanh': { form: 'berry', body: PALETTE['leaf.2'], light: PALETTE['light.1'], dark: PALETTE['leaf.0'], seed: PALETTE['light.1'] },
 };
 
 const LEAF = PALETTE['leaf.2'];
@@ -714,6 +752,35 @@ ITEM_ICONS['copper-bar'] ??= [
   [PALETTE['light.5'], 3, 6, 10, 2],
   [PALETTE['soil.4'], 2, 10, 12, 2],
   [PALETTE['light.7'], 4, 7, 3, 1],
+];
+
+/** Spec 13's ores: one lump of rock, flecked with the metal's colour. */
+function oreIcon(fleck: string, shine: string): readonly IconRect[] {
+  return [
+    [PALETTE['building.2'], 3, 5, 10, 8],
+    [PALETTE['building.2'], 5, 3, 6, 2],
+    [PALETTE['building.0'], 3, 11, 10, 2],
+    [fleck, 5, 6, 3, 2],
+    [fleck, 9, 8, 2, 3],
+    [shine, 5, 6, 1, 1],
+  ];
+}
+
+ITEM_ICONS['copper-ore'] ??= oreIcon(PALETTE['soil.6'], PALETTE['light.5']);
+ITEM_ICONS['iron-ore'] ??= oreIcon(PALETTE['light.2'], PALETTE['light.7']);
+ITEM_ICONS['gold-ore'] ??= oreIcon(PALETTE['light.5'], PALETTE['light.7']);
+ITEM_ICONS.gem ??= [
+  [PALETTE['building.0'], 4, 4, 8, 9],
+  [PALETTE['light.2'], 5, 5, 6, 7],
+  [PALETTE['light.7'], 6, 6, 2, 2],
+];
+/** A blade on the diagonal, which is all a 16x16 sword can be. */
+ITEM_ICONS['rusty-sword'] ??= [
+  [PALETTE['light.2'], 9, 2, 3, 3],
+  [PALETTE['light.2'], 7, 4, 3, 3],
+  [PALETTE['light.2'], 5, 6, 3, 3],
+  [PALETTE['soil.4'], 3, 9, 5, 2],
+  [PALETTE['soil.0'], 2, 11, 3, 3],
 ];
 
 /**

@@ -1065,6 +1065,82 @@
           ]
         },
         {
+          "id": 25,
+          "name": "signpost-plaza",
+          "type": "prop",
+          "x": 640,
+          "y": 672,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "texture",
+              "type": "string",
+              "value": "signpost"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "depth",
+              "type": "int",
+              "value": 21
+            },
+            {
+              "name": "sign",
+              "type": "string",
+              "value": "Khu phố\nPHỐ VIỆT"
+            },
+            {
+              "name": "arrow",
+              "type": "string",
+              "value": "down"
+            }
+          ]
+        },
+        {
+          "id": 26,
+          "name": "signpost-farm",
+          "type": "prop",
+          "x": 64,
+          "y": 416,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "texture",
+              "type": "string",
+              "value": "signpost"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "depth",
+              "type": "int",
+              "value": 13
+            },
+            {
+              "name": "sign",
+              "type": "string",
+              "value": "Nông trại\nAMBERFALL"
+            },
+            {
+              "name": "arrow",
+              "type": "string",
+              "value": "left"
+            }
+          ]
+        },
+        {
           "id": 13,
           "name": "tuft-tall",
           "type": "prop",
@@ -1416,6 +1492,39 @@
               "value": "Amberfall Farm"
             }
           ]
+        },
+        {
+          "id": 24,
+          "name": "to-plaza",
+          "type": "portal",
+          "x": 544,
+          "y": 736,
+          "width": 96,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "toArea",
+              "type": "string",
+              "value": "plaza"
+            },
+            {
+              "name": "toTileX",
+              "type": "int",
+              "value": 22
+            },
+            {
+              "name": "toTileY",
+              "type": "int",
+              "value": 13
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Phố Việt"
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -1426,7 +1535,7 @@
     }
   ],
   "nextlayerid": 4,
-  "nextobjectid": 24,
+  "nextobjectid": 27,
   "orientation": "orthogonal",
   "properties": [
     {

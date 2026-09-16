@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { HUD, hotbarIconSize, hudLayout, hudZones } from './hudLayout';
+import {
+  HUD,
+  SIGNBOARD,
+  SIGNPOST,
+  SIGN_FONT_MIN,
+  boardLayout,
+  hotbarIconSize,
+  hudLayout,
+  hudZones,
+  signLayout,
+} from './hudLayout';
 import { HOTBAR_SIZE } from '../systems/inventory';
 
 /** Every window worth caring about, plus a few nobody should have to. */
@@ -41,7 +51,7 @@ describe('hudLayout', () => {
   it('keeps every plate inside the canvas', () => {
     for (const [width, height] of SIZES) {
       const layout = hudLayout(width, height);
-      for (const box of [layout.prompt, layout.clock, layout.quest, layout.energy]) {
+      for (const box of [layout.prompt, layout.clock, layout.quest, layout.energy, layout.health]) {
         expect(box.x).toBeGreaterThanOrEqual(0);
         expect(box.y).toBeGreaterThanOrEqual(0);
         expect(box.x + box.width).toBeLessThanOrEqual(width);
@@ -88,6 +98,25 @@ describe('hudLayout', () => {
     expect(energy.height).toBeGreaterThanOrEqual(HUD.energy.minHeight);
   });
 
+  it('stands the health tube beside the energy tube, the same size and never on top of it', () => {
+    for (const [width, height] of SIZES) {
+      const { energy, health } = hudLayout(width, height);
+      expect(health.height).toBe(energy.height);
+      expect(health.width).toBe(energy.width);
+      expect(health.y).toBe(energy.y);
+      expect(health.x + health.width).toBeLessThanOrEqual(energy.x);
+    }
+  });
+
+  it('claims the health tube for the HUD, so a click on it is not a swing', () => {
+    const layout = hudLayout(1440, 900);
+    const { health } = layout;
+    const inside = hudZones(layout).some(
+      (z) => health.x + 4 >= z.x && health.x + 4 <= z.x + z.width && health.y + 4 >= z.y && health.y + 4 <= z.y + z.height,
+    );
+    expect(inside).toBe(true);
+  });
+
   it('leaves the middle of the screen free of HUD', () => {
     const layout = hudLayout(1440, 900);
     const middle = { x: 720, y: 450 };
@@ -110,5 +139,89 @@ describe('hudLayout', () => {
     expect(covers(layout.hotbar.x + 4, layout.hotbar.y)).toBe(true);
     expect(covers(layout.prompt.x + 20, layout.prompt.y + 10)).toBe(true);
     expect(covers(layout.clock.x + 10, layout.clock.y + 10)).toBe(true);
+  });
+});
+
+describe('signLayout', () => {
+  /** A shop front as the street draws it: five tiles wide, four tall. */
+  const FRONT = { x: 32, y: 160, width: 160, height: 128 };
+
+  it('puts the board where the drawing leaves it blank, and centres the name on it', () => {
+    const layout = signLayout(FRONT, 'CHÈ');
+    expect(layout.board.x).toBeCloseTo(FRONT.x + FRONT.width * SIGNBOARD.left);
+    expect(layout.board.y).toBeCloseTo(FRONT.y + FRONT.height * SIGNBOARD.top);
+    expect(layout.board.x + layout.board.width).toBeCloseTo(FRONT.x + FRONT.width * SIGNBOARD.right);
+    expect(layout.board.y + layout.board.height).toBeCloseTo(FRONT.y + FRONT.height * SIGNBOARD.bottom);
+    expect(layout.x).toBeCloseTo(layout.board.x + layout.board.width / 2);
+    expect(layout.y).toBeCloseTo(layout.board.y + layout.board.height / 2);
+  });
+
+  it('letters a short name as tall as the board allows, and no taller', () => {
+    const layout = signLayout(FRONT, 'CHÈ');
+    expect(layout.fontSize).toBeLessThanOrEqual(layout.board.height);
+    expect(layout.fontSize).toBe(Math.floor(layout.board.height * 0.72));
+  });
+
+  it('shrinks a long name until it fits across the board', () => {
+    const short = signLayout(FRONT, 'CHÈ');
+    const long = signLayout(FRONT, 'CƠM BÌNH DÂN NGON');
+    expect(long.fontSize).toBeLessThan(short.fontSize);
+    // A generous estimate of the lettering's width still stays on the board.
+    expect([...'CƠM BÌNH DÂN NGON'].length * long.fontSize * 0.66).toBeLessThanOrEqual(long.board.width);
+  });
+
+  it('follows the drawing wherever it stands and however big it is', () => {
+    const moved = signLayout({ ...FRONT, x: FRONT.x + 320, y: FRONT.y - 64 }, 'TẠP HOÁ');
+    const here = signLayout(FRONT, 'TẠP HOÁ');
+    expect(moved.x - here.x).toBeCloseTo(320);
+    expect(moved.y - here.y).toBeCloseTo(-64);
+    expect(signLayout({ ...FRONT, width: 320, height: 256 }, 'TẠP HOÁ').fontSize).toBeGreaterThan(here.fontSize);
+  });
+
+  it('never letters smaller than the floor, even on a sliver of a front', () => {
+    expect(signLayout({ x: 0, y: 0, width: 8, height: 8 }, 'BÁNH BAO').fontSize).toBe(SIGN_FONT_MIN);
+  });
+});
+
+describe('boardLayout', () => {
+  const POST = { x: 100, y: 50, width: 96, height: 96 };
+
+  it('letters a two-line road sign small on top and big underneath, with the arrow below both', () => {
+    const layout = boardLayout('signpost', POST, ['Khu phố', 'PHỐ VIỆT']);
+    expect(layout.lines.map((line) => line.slot)).toEqual(['top', 'name']);
+    const [top, name] = layout.lines;
+    expect(top.y).toBeLessThan(name.y);
+    expect(name.board.height).toBeGreaterThan(top.board.height);
+    expect(layout.arrow).not.toBeNull();
+    expect(layout.arrow!.y).toBeGreaterThanOrEqual(name.board.y + name.board.height);
+  });
+
+  it('keeps every line and the arrow inside the blue board', () => {
+    const board = {
+      x: POST.x + POST.width * SIGNPOST.board.left,
+      y: POST.y + POST.height * SIGNPOST.board.top,
+      right: POST.x + POST.width * SIGNPOST.board.right,
+      bottom: POST.y + POST.height * SIGNPOST.board.bottom,
+    };
+    const layout = boardLayout('signpost', POST, ['Nông trại', 'AMBERFALL', '300 m']);
+    for (const box of [...layout.lines.map((line) => line.board), layout.arrow!]) {
+      expect(box.x).toBeGreaterThanOrEqual(board.x);
+      expect(box.y).toBeGreaterThanOrEqual(board.y);
+      expect(box.x + box.width).toBeLessThanOrEqual(board.right + 1e-9);
+      expect(box.y + box.height).toBeLessThanOrEqual(board.bottom + 1e-9);
+    }
+  });
+
+  it('puts a one-line road sign in the capitals slot, and gives a shop front no arrow', () => {
+    expect(boardLayout('signpost', POST, ['PHỐ VIỆT']).lines.map((line) => line.slot)).toEqual(['name']);
+    const shop = boardLayout('shopfront', { x: 0, y: 0, width: 160, height: 128 }, ['CHÈ']);
+    expect(shop.arrow).toBeNull();
+    expect(shop.lines[0]).toMatchObject(signLayout({ x: 0, y: 0, width: 160, height: 128 }, 'CHÈ'));
+  });
+
+  it('puts a cột mốc’s first line on the cap and its second on the stone', () => {
+    const layout = boardLayout('milestone', { x: 0, y: 0, width: 32, height: 48 }, ['PV', '0 km']);
+    expect(layout.lines.map((line) => line.slot)).toEqual(['cap', 'stone']);
+    expect(layout.arrow).toBeNull();
   });
 });

@@ -82,6 +82,10 @@ const TILES = [
   // written stores gids: inserting one would repaint the farm.
   { texture: 'tile-floor-wood', kind: 'floor', solid: false },
   ...WALL_TEXTURES.map((texture) => ({ texture, kind: 'wall', solid: true })),
+  // Spec 15's brick pavement. A path as far as any rule is concerned — nothing
+  // solid grows on it and villagers walk it — and appended for the reason the
+  // floor above was.
+  { texture: 'tile-plaza', kind: 'path', solid: false },
 ];
 
 /** gid is the tileset index plus firstgid; firstgid is 1. */
@@ -268,6 +272,27 @@ function map({ width, height, layers, nextobjectid, displayName, music, indoor =
   };
 }
 
+/**
+ * A road sign, one tile, standing on the tile given.
+ *
+ * `lines` are the sign's lines top to bottom — the small one, then the place in
+ * capitals — and `arrow` is the way it points. Not solid: the poles are a
+ * pixel wide, and a sign that stops a player on a lane is worse than one they
+ * walk through.
+ */
+function signpost(id, name, tx, ty, lines, arrow) {
+  return rectObject(id, name, 'prop', tx, ty, 1, 1, {
+    properties: props({ texture: 'signpost', solid: false, depth: ty, sign: lines.join('\n'), arrow }),
+  });
+}
+
+/** A cột mốc: one line on the red cap, one on the stone. */
+function milestone(id, name, tx, ty, lines) {
+  return rectObject(id, name, 'prop', tx, ty, 1, 1, {
+    properties: props({ texture: 'milestone', solid: true, depth: ty, sign: lines.join('\n') }),
+  });
+}
+
 function tileLayer(id, name, width, height, data) {
   return { data, height, id, name, opacity: 1, type: 'tilelayer', visible: true, width, x: 0, y: 0 };
 }
@@ -379,6 +404,22 @@ function farmMap() {
     rectObject(id++, 'to-farmhouse', 'portal', 5, 6, 1, 1, {
       properties: props({ toArea: 'farmhouse', toTileX: 6, toTileY: 7, label: 'ngôi nhà' }),
     }),
+    // Spec 15: the southern ring road runs on east to the phố, the way the
+    // northern lane runs to the village. After the scatter for the reason the
+    // door above is, and it needs no keep-clear from it: the scatter never
+    // touches a tile beside a path or beside the map's edge.
+    rectObject(id++, 'to-plaza', 'portal', 39, 20, 1, 5, {
+      properties: props({ toArea: 'plaza', toTileX: 1, toTileY: 13, label: 'Phố Việt' }),
+    }),
+  );
+
+  // Road signs at the two eastern doors, one on each lane, so the way to the
+  // phố and the way to the village are both written down before either door.
+  // After the scatter for the reason the doors are, and beside a path, which
+  // the scatter never touches.
+  objects.push(
+    signpost(id++, 'signpost-plaza', 36, 21, ['Khu phố', 'PHỐ VIỆT'], 'right'),
+    signpost(id++, 'signpost-village', 36, 13, ['Làng', 'MOONBERRY'], 'right'),
   );
 
   return map({
@@ -502,6 +543,20 @@ function villageMap() {
   // as tended rather than as scrubland.
   const scattered = scatterProps(ground, VILLAGE_W, VILLAGE_H, [...objects, ...portals].map(clearance), id, 9);
   id = scattered.nextId;
+
+  // Spec 15: the south lane carries on down to the phố. Added after the
+  // scatter so every object above keeps its id, and safe to: the scatter never
+  // places anything beside a path or on the map's edge, and this is both.
+  portals.push(
+    rectObject(id++, 'to-plaza', 'portal', 17, 23, 3, 1, {
+      properties: props({ toArea: 'plaza', toTileX: 22, toTileY: 13, label: 'Phố Việt' }),
+    }),
+  );
+  // And a road sign at each of the village's two ways out.
+  objects.push(
+    signpost(id++, 'signpost-plaza', 20, 21, ['Khu phố', 'PHỐ VIỆT'], 'down'),
+    signpost(id++, 'signpost-farm', 2, 13, ['Nông trại', 'AMBERFALL'], 'left'),
+  );
 
   return map({
     displayName: 'Moonberry Village',
@@ -675,6 +730,110 @@ function farmhouseMap() {
   });
 }
 
+// --- the phố ------------------------------------------------------------------
+// Spec 15's street, and a cul-de-sac between the farm and the village: in
+// from the farm's southern ring road on the west, out to the village's south
+// lane on the east, and nowhere else.
+//
+// Built from what is already here. The pavement is a tile, the three shops
+// are plain fronts with a board left blank — what the board says is the
+// prop's `sign`, drawn by the client in a system font, so the diacritics are
+// right and renaming a shop is an edit here rather than a drawing — and the
+// only interactive thing on the street is Bà Xoan's xôi cart.
+
+const PLAZA_W = 24;
+const PLAZA_H = 18;
+
+/** The bottom row of the shop fronts. North of the pavement is back gardens. */
+const PLAZA_FRONT_ROW = 8;
+
+function plazaMap() {
+  const ground = buildLayer(PLAZA_W, PLAZA_H, (x, y) =>
+    y >= PLAZA_FRONT_ROW - 2 ? GID['tile-plaza'] : grassGid(x, y),
+  );
+
+  let id = 1;
+  const shop = (name, x, texture, sign) =>
+    rectObject(id++, name, 'prop', x, PLAZA_FRONT_ROW - 1, 5, 2, {
+      properties: props({ texture, solid: true, depth: PLAZA_FRONT_ROW, sign }),
+    });
+
+  const objects = [
+    shop('shopfront-banh-bao', 1, 'shopfront', 'BÁNH BAO'),
+    shop('shopfront-tap-hoa', 9, 'shopfront-green', 'TẠP HOÁ'),
+    shop('shopfront-che', 17, 'shopfront-blue', 'CHÈ'),
+
+    // The one counter on the street. Not solid, like the market stall it is
+    // recoloured from: a counter you cannot walk up to is not a counter.
+    rectObject(id++, 'xoi-cart', 'prop', 3, PLAZA_FRONT_ROW + 1, 3, 1, {
+      properties: props({ texture: 'xoi-cart', solid: false, depth: PLAZA_FRONT_ROW + 1, interact: 'xoi-stall' }),
+    }),
+    rectObject(id++, 'street-cabinet', 'prop', 11, PLAZA_FRONT_ROW + 1, 1, 1, {
+      properties: props({ texture: 'street-cabinet', solid: true, depth: PLAZA_FRONT_ROW + 1 }),
+    }),
+
+    // Two poles in the gaps between the shops, and the wire strung from them
+    // above everybody's heads.
+    rectObject(id++, 'street-pole-west', 'prop', 7, PLAZA_FRONT_ROW + 1, 1, 1, {
+      properties: props({ texture: 'street-pole', solid: true, depth: PLAZA_FRONT_ROW + 1 }),
+    }),
+    rectObject(id++, 'street-pole-east', 'prop', 15, PLAZA_FRONT_ROW + 1, 1, 1, {
+      properties: props({ texture: 'street-pole', solid: true, depth: PLAZA_FRONT_ROW + 1 }),
+    }),
+    ...[8, 9, 10, 11, 12, 13, 14, 16, 17, 18, 19, 20, 21, 22, 23].map((x) =>
+      rectObject(id++, 'street-wire', 'prop', x, PLAZA_FRONT_ROW - 2, 1, 1, {
+        properties: props({ texture: 'street-wire', solid: false, depth: 60 }),
+      }),
+    ),
+
+    // A road sign at each end, pointing out the way it goes, and a cột mốc at
+    // the farm end: this is kilometre nought of the phố.
+    signpost(id++, 'signpost-farm', 2, 16, ['Nông trại', 'AMBERFALL'], 'left'),
+    signpost(id++, 'signpost-village', 21, 16, ['Làng', 'MOONBERRY'], 'right'),
+    milestone(id++, 'milestone', 1, PLAZA_FRONT_ROW + 2, ['PV', '0 km']),
+
+    // Stone benches and potted flowers along the pavement. Underfoot, all of
+    // them: a street is somewhere to walk through.
+    ...[
+      ['bench', 9, 14, 'log'],
+      ['bench', 13, 14, 'log'],
+      ['pot', 8, PLAZA_FRONT_ROW + 1, 'flowers-red'],
+      ['pot', 16, PLAZA_FRONT_ROW + 1, 'flowers-gold'],
+      ['pot', 6, 16, 'flowers-white'],
+      ['pot', 17, 16, 'flowers-red'],
+    ].map(([name, x, y, texture]) =>
+      rectObject(id++, name, 'prop', x, y, 1, 1, {
+        properties: props({ texture, solid: false, depth: y }),
+      }),
+    ),
+  ];
+
+  const portals = [
+    rectObject(id++, 'to-farm', 'portal', 0, 11, 1, 5, {
+      properties: props({ toArea: 'farm', toTileX: 37, toTileY: 22, label: 'Amberfall Farm' }),
+    }),
+    rectObject(id++, 'to-village', 'portal', PLAZA_W - 1, 11, 1, 5, {
+      properties: props({ toArea: 'village', toTileX: 18, toTileY: 21, label: 'Moonberry Village' }),
+    }),
+  ];
+
+  const scattered = scatterProps(ground, PLAZA_W, PLAZA_H, [...objects, ...portals].map(clearance), id, 15);
+  id = scattered.nextId;
+
+  return map({
+    displayName: 'Phố Việt',
+    music: 'day-village-loop',
+    width: PLAZA_W,
+    height: PLAZA_H,
+    nextobjectid: id,
+    layers: [
+      tileLayer(1, 'ground', PLAZA_W, PLAZA_H, ground),
+      objectLayer(2, 'props', [...objects, ...scattered.objects]),
+      objectLayer(3, 'portals', portals),
+    ],
+  });
+}
+
 fs.mkdirSync(outDir, { recursive: true });
 
 const files = {
@@ -683,9 +842,21 @@ const files = {
   'village.json': villageMap(),
   'forest.json': forestMap(),
   'farmhouse.json': farmhouseMap(),
+  'plaza.json': plazaMap(),
 };
 
+// Named files only, when any are named: `npm run maps:seed -- plaza.json`
+// writes the phố without overwriting hand edits made to the others in Tiled.
+const only = process.argv.slice(2);
+for (const name of only) {
+  if (!(name in files)) {
+    console.error(`No map called ${name}. Known: ${Object.keys(files).join(', ')}.`);
+    process.exit(1);
+  }
+}
+
 for (const [name, contents] of Object.entries(files)) {
+  if (only.length > 0 && !only.includes(name)) continue;
   fs.writeFileSync(path.join(outDir, name), `${JSON.stringify(contents, null, 2)}\n`);
   console.log(`wrote ${path.join(outDir, name)}`);
 }

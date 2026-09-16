@@ -1,4 +1,4 @@
-import { AREAS, TILE_SIZE, isWalkable, type AreaId } from '../world/areas';
+import { TILE_SIZE, areaMap, isWalkable, type AreaId } from '../world/areas';
 
 /**
  * How a villager gets round the things in their way.
@@ -49,7 +49,7 @@ const fields = new Map<string, Int32Array>();
 function walkGrid(area: AreaId): Uint8Array {
   let grid = grids.get(area);
   if (grid) return grid;
-  const { width, height } = AREAS[area];
+  const { width, height } = areaMap(area);
   grid = new Uint8Array(width * height);
   for (let y = 0; y < height; y += 1) {
     for (let x = 0; x < width; x += 1) {
@@ -65,7 +65,7 @@ function tileOf(value: number): number {
 }
 
 function standable(area: AreaId, tileX: number, tileY: number): boolean {
-  const { width, height } = AREAS[area];
+  const { width, height } = areaMap(area);
   if (tileX < 0 || tileY < 0 || tileX >= width || tileY >= height) return false;
   return walkGrid(area)[tileY * width + tileX] === 1;
 }
@@ -84,7 +84,7 @@ function distanceField(area: AreaId, targetX: number, targetY: number): Int32Arr
   let field = fields.get(key);
   if (field) return field;
 
-  const { width, height } = AREAS[area];
+  const { width, height } = areaMap(area);
   field = new Int32Array(width * height).fill(-1);
   if (targetX >= 0 && targetY >= 0 && targetX < width && targetY < height) {
     const queue = [targetY * width + targetX];
@@ -139,7 +139,7 @@ function clearLine(area: AreaId, a: Point, b: Point): boolean {
 export function waypointToward(area: AreaId, from: Point, to: Point): Point {
   if (clearLine(area, from, to)) return to;
 
-  const { width } = AREAS[area];
+  const { width } = areaMap(area);
   const field = distanceField(area, tileOf(to.x), tileOf(to.y));
   let tileX = tileOf(from.x);
   let tileY = tileOf(from.y);

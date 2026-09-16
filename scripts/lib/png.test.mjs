@@ -23,10 +23,13 @@ import {
   encodePng,
   flip,
   raster,
+  scale3x,
   sliceRect,
+  smoothScale,
   upscale,
 } from './png.mjs';
 import {
+  ACTION,
   ANIMAL,
   WALK,
   animalcycle,
@@ -189,7 +192,16 @@ test('the free-size props have no empty rows to float them off the ground', () =
 function peopleSheets() {
   return fs
     .readdirSync(ART_DIR)
-    .filter((file) => file.endsWith('-sheet.png') && !file.startsWith('animal-'));
+    .filter((file) => file.endsWith('-sheet.png') && !file.startsWith('animal-') && !isActionSheet(file));
+}
+
+/** A monster's walk, attack or death, or a player's swing: eight frames by four. See `ACTION`. */
+function isActionSheet(file) {
+  return /^(monster|attack)-/.test(file) && file.endsWith('-sheet.png');
+}
+
+function actionSheets() {
+  return fs.readdirSync(ART_DIR).filter(isActionSheet);
 }
 
 function animalSheets() {
@@ -231,6 +243,33 @@ test('every animal sheet divides into sixteen frames with an animal in each', ()
           for (let x = 0; x < frameWidth; x += 1) {
             const at = ((row * frameHeight + y) * image.width + col * frameWidth + x) * 4 + 3;
             if (image.pixels[at] > 8) ink += 1;
+          }
+        }
+        assert.ok(ink > 0, `${file} frame ${col} of row ${row} is empty`);
+      }
+    }
+  }
+});
+
+test('every action sheet divides into eight frames by four, with something drawn in each', () => {
+  // Every one of the eight is played — a swing or a death that ran through an
+  // empty frame would blink out of existence for an eighth of the action.
+  for (const file of actionSheets()) {
+    const image = decodePng(fs.readFileSync(path.join(ART_DIR, file)));
+    assert.equal(image.width % ACTION.cols, 0, `${file} width does not divide ${ACTION.cols}`);
+    assert.equal(image.height % ACTION.rows, 0, `${file} height does not divide ${ACTION.rows}`);
+    const frameWidth = image.width / ACTION.cols;
+    const frameHeight = image.height / ACTION.rows;
+    for (let row = 0; row < ACTION.rows; row += 1) {
+      for (let col = 0; col < ACTION.cols; col += 1) {
+        let ink = 0;
+        for (let y = 0; y < frameHeight && ink === 0; y += 1) {
+          for (let x = 0; x < frameWidth; x += 1) {
+            const at = ((row * frameHeight + y) * image.width + col * frameWidth + x) * 4 + 3;
+            if (image.pixels[at] > 8) {
+              ink += 1;
+              break;
+            }
           }
         }
         assert.ok(ink > 0, `${file} frame ${col} of row ${row} is empty`);
@@ -556,6 +595,42 @@ test('upscaling by one is the image itself, and fractions are refused', () => {
   assert.equal(upscale(image, 1), image);
   assert.throws(() => upscale(image, 1.5), /whole number/);
   assert.throws(() => upscale(image, 0), /whole number/);
+});
+
+/** Every distinct RGBA colour in an image, as strings. */
+function colours(image) {
+  const seen = new Set();
+  for (let i = 0; i < image.pixels.length; i += 4) seen.add(image.pixels.subarray(i, i + 4).join(','));
+  return seen;
+}
+
+/** A one-pixel diagonal from top-left to bottom-right, the shape of a tool handle. */
+function diagonal() {
+  const sheet = raster(4, 4);
+  for (let i = 0; i < 4; i += 1) sheet.set(i, i, '#8a5a2b');
+  return { width: 4, height: 4, pixels: sheet.pixels };
+}
+
+test('scale3x triples the size and keeps a diagonal a diagonal', () => {
+  const image = scale3x(diagonal());
+  assert.deepEqual([image.width, image.height], [12, 12]);
+  // Plain tripling would leave the pixel beside the join empty, a staircase of
+  // squares; Scale3x fills it, so the line stays joined.
+  assert.deepEqual(at(image, 3, 2), [0x8a, 0x5a, 0x2b, 255]);
+  assert.deepEqual(at(image, 0, 11), [0, 0, 0, 0]);
+});
+
+test('scale3x never invents a colour', () => {
+  const image = scale3x(corners());
+  for (const colour of colours(image)) assert.ok(colours(corners()).has(colour), colour);
+});
+
+test('a smooth scale lands on the rounded size and only uses source colours', () => {
+  const image = smoothScale(diagonal(), 1.4);
+  assert.deepEqual([image.width, image.height], [6, 6]);
+  for (const colour of colours(image)) assert.ok(colours(diagonal()).has(colour), colour);
+  assert.throws(() => smoothScale(diagonal(), 1), /above 1/);
+  assert.throws(() => smoothScale(diagonal(), 4), /at most 3/);
 });
 
 test('the encoder still rejects a pixel buffer of the wrong length', () => {

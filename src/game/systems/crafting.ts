@@ -141,6 +141,17 @@ const RECIPES: readonly Recipe[] = [
     yields: 6,
     unlock: { by: 'day', day: 25 },
   },
+
+  // --- the phố ---------------------------------------------------------------
+  //
+  // Spec 15's three dishes, known from the first morning like the torch: the
+  // gate is the summer that grows the nếp and the đậu, and a second gate on
+  // top of that would only be a wait. The fibre in the bánh chưng is the lá
+  // dong and the lạt, which is what a week of scything already makes too much
+  // of. Two bowls of chè to a pot, because nobody cooks one bowl of chè.
+  { id: 'banh-chung', needs: { nep: 4, fiber: 2 }, yields: 1, unlock: { by: 'start' } },
+  { id: 'xoi-dau', needs: { nep: 3, 'dau-xanh': 2 }, yields: 1, unlock: { by: 'start' } },
+  { id: 'che-dau', needs: { 'dau-xanh': 3, strawberry: 2 }, yields: 2, unlock: { by: 'start' } },
 ];
 
 /**

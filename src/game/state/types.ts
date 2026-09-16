@@ -1,5 +1,6 @@
 import type { Animal } from '../systems/animals';
 import type { FishingState } from '../systems/fishing';
+import type { Monster } from '../systems/mine';
 import type { Building } from '../systems/buildings';
 import type { Placeable } from '../systems/placeables';
 import type { Relationships } from '../npcs/relationships';
@@ -25,6 +26,14 @@ export const STARTING_MAX_ENERGY = 270;
 
 /** How fast a player on empty walks, as a fraction of normal speed. */
 export const EXHAUSTED_SPEED_SCALE = 0.5;
+
+/**
+ * Health on the first morning, and every morning after. Separate from energy
+ * on purpose (spec 13): energy drains evenly over a day of work, health drops
+ * in lumps in the mine, and merging them would let ten rocks and one slime
+ * kill a farmhand.
+ */
+export const STARTING_MAX_HEALTH = 100;
 
 /**
  * What collapsing at 02:00 costs: a tenth of the shared wallet, capped, and
@@ -72,6 +81,9 @@ export const CHEST_COLUMNS = 6;
  */
 export const PANEL_FOR_INTERACT: Record<string, PanelId> = {
   market: 'market',
+  // Spec 15. The xôi cart is the market panel with a stock of its own; which
+  // of the two a player is at is `stallAt`, read off the same prop.
+  'xoi-stall': 'market',
   blacksmith: 'workshop',
   rancher: 'ranch',
 };
@@ -92,6 +104,16 @@ export interface PlayerState {
   energy: number;
   /** The ceiling energy returns to each morning. */
   maxEnergy: number;
+  /**
+   * What the mine can take away. Only monsters touch it, and only in the mine;
+   * at nought the player faints, which ends their day and nobody else's.
+   * A fainted player is `asleep` with `health` 0 until the morning.
+   */
+  health: number;
+  /** What health returns to each morning. */
+  maxHealth: number;
+  /** Minute of the day before which a monster's strike does nothing. */
+  invulnerableUntil: number;
   /** Whether this player has turned in for the night; the day ends when all have. */
   asleep: boolean;
   /** Which place-bound panel is open for this player, if any. See `PanelId`. */
@@ -220,6 +242,27 @@ export interface FarmState {
    * plus the same night is the same morning" a thing a test can assert.
    */
   spawnSeed: number;
+  /**
+   * The farm's own seed, drawn once when the farm is made and never changed.
+   *
+   * Separate from `spawnSeed`, which every farm shares by design so that day
+   * one is reproducible; the mine should differ between two farms.
+   */
+  worldSeed: number;
+  /**
+   * `mineSeedFor(worldSeed, day)`, and so redrawn every morning: floor 5
+   * today is not floor 5 tomorrow. Derived, but kept on the state so the
+   * reducer and the renderer read the same number without recomputing it.
+   */
+  mineSeed: number;
+  /** Deepest floor anyone on the farm has reached. Shared: one opens the way for all four. */
+  deepestFloor: number;
+  /**
+   * The monsters on every mine floor an online player is standing on, and on
+   * no other. Woken from the seed when a floor gains its first player, dropped
+   * when it loses its last, so none of this is ever saved.
+   */
+  monsters: Monster[];
   /**
    * Where every villager is standing, simulated once by the server.
    *

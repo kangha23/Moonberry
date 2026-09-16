@@ -107,7 +107,21 @@ const ACTIVITY_LABELS: Record<string, string> = {
   ranch: 'đang ở bãi quây gia súc',
   green: 'đang ngoài bãi cỏ',
   'stuck-in': 'đang bị nhốt trong nhà',
+  'xoi-stall': 'đang bán xôi đầu phố',
 };
+
+/**
+ * Whether anybody's schedule has them doing this right now.
+ *
+ * What keeps a counter with a keeper honest: Bà Xoan's cart trades while
+ * somebody is on `xoi-stall`, and asking the schedule rather than her position
+ * means the cart shuts at noon on the dot rather than when she has walked far
+ * enough away from it.
+ */
+export function isStaffed(activity: string, season: Season, weather: Weather, time: TimeState): boolean {
+  const hour = scheduleHour(time);
+  return NPC_IDS.some((id) => scheduleEntryAt(NPCS[id], season, weather, hour)?.activity === activity);
+}
 
 /** What a villager is doing right now, in words the prompt bar can use. */
 export function activityLabel(activity: string | null): string | null {

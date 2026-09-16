@@ -37,7 +37,9 @@ export type CropId =
   | 'cranberry'
   | 'pumpkin'
   | 'frostcap'
-  | 'winterberry';
+  | 'winterberry'
+  | 'nep'
+  | 'dau-xanh';
 
 /**
  * What a tool *is*, not what it does.
@@ -46,7 +48,7 @@ export type CropId =
  * steel hoe are two items with the same `tool`, and only the reducer cares
  * that both of them till.
  */
-export type Tool = 'hoe' | 'can' | 'basket' | 'axe' | 'pickaxe' | 'scythe' | 'rod';
+export type Tool = 'hoe' | 'can' | 'basket' | 'axe' | 'pickaxe' | 'scythe' | 'rod' | 'sword';
 
 /**
  * How far up the blacksmith's ladder a tool is.
@@ -106,6 +108,11 @@ export interface ItemDef {
    * an upgrade opens the table up instead of shortening what is already won.
    */
   barWidth?: number;
+  /**
+   * What one swing takes off a monster, for a weapon. Spec 13: before the
+   * monster's defence, which `strikeDamage` never lets fall below 1.
+   */
+  damage?: number;
   /** What the market pays for one. Zero for anything it will not take. */
   sellPrice: number;
   /**
@@ -464,6 +471,12 @@ const MATERIALS: ReadonlyArray<{ id: ItemId; label: string; price: number; blurb
     price: 12,
     blurb: 'Dính, hăng, và hữu dụng hơn vẻ ngoài của nó.',
   },
+  // What the mine gives up, band by band (spec 13). The ore is sold raw for
+  // little because the bar it smelts into is where the value is.
+  { id: 'copper-ore', label: 'Quặng đồng', price: 5, blurb: 'Đào ở những tầng mỏ nông. Nấu thành đồng thỏi.' },
+  { id: 'iron-ore', label: 'Quặng sắt', price: 10, blurb: 'Từ tầng 10 trở xuống. Nặng tay và lạnh.' },
+  { id: 'gold-ore', label: 'Quặng vàng', price: 25, blurb: 'Từ tầng 20 trở xuống, lấp lánh trong đá tối.' },
+  { id: 'gem', label: 'Ngọc thô', price: 120, blurb: 'Chỉ đáy mỏ mới có. Chưa mài mà đã sáng.' },
   {
     id: 'copper-bar',
     label: 'Đồng thỏi',
@@ -1094,6 +1107,9 @@ export const CROP_ORDER: readonly CropId[] = [
   'pumpkin',
   'frostcap',
   'winterberry',
+  // Spec 15's. At the end, for the reason above.
+  'nep',
+  'dau-xanh',
 ];
 
 /**
@@ -1267,6 +1283,8 @@ const CROP_CLASS: Record<CropId, ArtisanClass> = {
   pumpkin: 'vegetable',
   frostcap: 'vegetable',
   winterberry: 'fruit',
+  nep: 'grain',
+  'dau-xanh': 'vegetable',
 };
 
 /** The word that goes in front, and what it multiplies the input price by. */
@@ -1383,8 +1401,30 @@ export function artisanOutputFor(input: ItemId, machine: MachineKind): ItemId | 
   return product ? `${product.prefix}-${input}` : null;
 }
 
+/**
+ * The one weapon, for now.
+ *
+ * Not a row in `TOOL_BASES`, because the blacksmith's ladder buys reach and
+ * energy and a sword has neither: it hits a fan in front of you and costs
+ * nothing to swing (spec 13, the same reason the scythe is free). Better
+ * swords are a column of `damage`, not a tier.
+ */
+const WEAPON_ROWS: Record<ItemId, ItemDef> = {
+  'rusty-sword': {
+    id: 'rusty-sword',
+    label: 'Kiếm gỉ',
+    texture: 'item-rusty-sword',
+    stackSize: 1,
+    tool: 'sword',
+    damage: 10,
+    sellPrice: 0,
+    blurb: 'Cùn, nhưng vẫn đủ để một con sên nghĩ lại.',
+  },
+};
+
 const BASE_ITEMS: Record<ItemId, ItemDef> = {
   ...toolRows(),
+  ...WEAPON_ROWS,
   ...produceRows(),
   'turnip-seeds': {
     id: 'turnip-seeds',
@@ -1632,6 +1672,82 @@ const BASE_ITEMS: Record<ItemId, ItemDef> = {
     sellPrice: 38,
     produce: true,
     blurb: 'Đông cứng trên cành. Tan ra thành thứ đáng kinh ngạc.',
+  },
+  // Spec 15's two. Priced to be cooked rather than sold: over a summer each
+  // earns about what a strawberry earns over a spring, and turned into a dish
+  // at the phố they are worth three times that. The dishes are what the crops
+  // are for, the way clover is for the barn.
+  'nep-seeds': {
+    id: 'nep-seeds',
+    label: 'Hạt nếp',
+    texture: 'item-nep-seeds',
+    stackSize: DEFAULT_STACK_SIZE,
+    plants: 'nep',
+    sellPrice: 0,
+    buyPrice: 60,
+    blurb: 'Năm ngày thì trổ bông, rồi cứ ba ngày lại một lứa cho đến hết hạ.',
+  },
+  nep: {
+    id: 'nep',
+    label: 'Nếp',
+    texture: 'item-nep',
+    stackSize: DEFAULT_STACK_SIZE,
+    sellPrice: 26,
+    produce: true,
+    blurb: 'Hạt tròn, dẻo, thơm. Bán thì phí, gói bánh thì vừa.',
+  },
+  'dau-xanh-seeds': {
+    id: 'dau-xanh-seeds',
+    label: 'Hạt đậu xanh',
+    texture: 'item-dau-xanh-seeds',
+    stackSize: DEFAULT_STACK_SIZE,
+    plants: 'dau-xanh',
+    sellPrice: 0,
+    buyPrice: 50,
+    blurb: 'Bốn ngày ra quả, rồi cách ngày lại hái. Nắng càng gắt càng sai.',
+  },
+  'dau-xanh': {
+    id: 'dau-xanh',
+    label: 'Đậu xanh',
+    texture: 'item-dau-xanh',
+    stackSize: DEFAULT_STACK_SIZE,
+    sellPrice: 16,
+    produce: true,
+    blurb: 'Một vốc hạt xanh. Chẳng đáng bao nhiêu cho tới khi vào nồi chè.',
+  },
+  /**
+   * The three dishes of the phố.
+   *
+   * Ordinary produce rather than food: nothing in the game eats yet, and this
+   * spec does not quietly start. They stack, sell and give like a melon does,
+   * and the only thing that makes them dishes is the recipe that makes them.
+   */
+  'banh-chung': {
+    id: 'banh-chung',
+    label: 'Bánh chưng',
+    texture: 'item-banh-chung',
+    stackSize: DEFAULT_STACK_SIZE,
+    sellPrice: 380,
+    produce: true,
+    blurb: 'Nếp, đậu, lá dong buộc lạt. Vuông như đất, và ai cũng quý.',
+  },
+  'xoi-dau': {
+    id: 'xoi-dau',
+    label: 'Xôi đậu',
+    texture: 'item-xoi-dau',
+    stackSize: DEFAULT_STACK_SIZE,
+    sellPrice: 240,
+    produce: true,
+    blurb: 'Đồ hai lửa, rắc muối vừng. Bà Xoan nhìn là biết ai đồ.',
+  },
+  'che-dau': {
+    id: 'che-dau',
+    label: 'Chè đậu',
+    texture: 'item-che-dau',
+    stackSize: DEFAULT_STACK_SIZE,
+    sellPrice: 200,
+    produce: true,
+    blurb: 'Đậu xanh đánh nhuyễn, dâu tây thả lên trên. Ngọt vừa, mát lâu.',
   },
   /**
    * Bait, which is the whole of what spec 12 takes from spec 11.

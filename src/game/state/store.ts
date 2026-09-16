@@ -500,6 +500,18 @@ export function sendAction(command: Exclude<ClientCommand, { type: 'move' }>): v
     case 'reel':
       dispatch({ type: 'player/reel', playerId: localPlayerId, down: command.down });
       return;
+    case 'attack':
+      dispatch({ type: 'player/attack', playerId: localPlayerId, target: command.target });
+      return;
+    case 'descend':
+      dispatch({ type: 'player/descend', playerId: localPlayerId });
+      return;
+    case 'useElevator':
+      dispatch({ type: 'player/useElevator', playerId: localPlayerId, depth: command.depth });
+      return;
+    case 'exitMine':
+      dispatch({ type: 'player/exitMine', playerId: localPlayerId });
+      return;
     case 'cancelCast':
       dispatch({ type: 'player/cancelCast', playerId: localPlayerId });
   }
@@ -520,7 +532,14 @@ export function applyServerSync(farm: FarmState): void {
 export function applyServerClock(clock: ClockMessage): void {
   const { farm } = farmStore.getState();
   farmStore.setState({
-    farm: { ...farm, time: clock.time, season: clock.season, weather: clock.weather },
+    farm: {
+      ...farm,
+      time: clock.time,
+      season: clock.season,
+      weather: clock.weather,
+      // Older servers send no monsters; keeping what we had is the safe reading.
+      monsters: clock.monsters ?? farm.monsters,
+    },
   });
 }
 

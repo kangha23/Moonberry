@@ -3,7 +3,7 @@
 import type { TiledMap, TiledTileset } from './tiled';
 
 export const TILESET: TiledTileset = {
-  "tilecount": 29,
+  "tilecount": 30,
   "tilewidth": 32,
   "tileheight": 32,
   "tiles": [
@@ -673,11 +673,34 @@ export const TILESET: TiledTileset = {
           "value": true
         }
       ]
+    },
+    {
+      "id": 29,
+      "image": "../public/assets/lpc/tile-plaza.png",
+      "imagewidth": 32,
+      "imageheight": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-plaza"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "path"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
+        }
+      ]
     }
   ]
 };
 
-export const AREA_IDS = ["farm","village","forest","farmhouse"] as const;
+export const AREA_IDS = ["farm","village","forest","farmhouse","plaza"] as const;
 
 export type AreaId = (typeof AREA_IDS)[number];
 
@@ -2043,6 +2066,78 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             ]
           },
           {
+            "id": 51,
+            "name": "signpost-plaza",
+            "type": "prop",
+            "x": 1152,
+            "y": 672,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "signpost"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 21
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "Khu phố\nPHỐ VIỆT"
+              },
+              {
+                "name": "arrow",
+                "type": "string",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "id": 52,
+            "name": "signpost-village",
+            "type": "prop",
+            "x": 1152,
+            "y": 416,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "signpost"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 13
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "Làng\nMOONBERRY"
+              },
+              {
+                "name": "arrow",
+                "type": "string",
+                "value": "right"
+              }
+            ]
+          },
+          {
             "id": 12,
             "name": "stump",
             "type": "prop",
@@ -3064,6 +3159,37 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
                 "name": "label",
                 "type": "string",
                 "value": "ngôi nhà"
+              }
+            ]
+          },
+          {
+            "id": 50,
+            "name": "to-plaza",
+            "type": "portal",
+            "x": 1248,
+            "y": 640,
+            "width": 32,
+            "height": 160,
+            "properties": [
+              {
+                "name": "toArea",
+                "type": "string",
+                "value": "plaza"
+              },
+              {
+                "name": "toTileX",
+                "type": "int",
+                "value": 1
+              },
+              {
+                "name": "toTileY",
+                "type": "int",
+                "value": 13
+              },
+              {
+                "name": "label",
+                "type": "string",
+                "value": "Phố Việt"
               }
             ]
           }
@@ -4156,6 +4282,78 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             ]
           },
           {
+            "id": 25,
+            "name": "signpost-plaza",
+            "type": "prop",
+            "x": 640,
+            "y": 672,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "signpost"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 21
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "Khu phố\nPHỐ VIỆT"
+              },
+              {
+                "name": "arrow",
+                "type": "string",
+                "value": "down"
+              }
+            ]
+          },
+          {
+            "id": 26,
+            "name": "signpost-farm",
+            "type": "prop",
+            "x": 64,
+            "y": 416,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "signpost"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 13
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "Nông trại\nAMBERFALL"
+              },
+              {
+                "name": "arrow",
+                "type": "string",
+                "value": "left"
+              }
+            ]
+          },
+          {
             "id": 13,
             "name": "tuft-tall",
             "type": "prop",
@@ -4475,6 +4673,37 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
                 "name": "label",
                 "type": "string",
                 "value": "Amberfall Farm"
+              }
+            ]
+          },
+          {
+            "id": 24,
+            "name": "to-plaza",
+            "type": "portal",
+            "x": 544,
+            "y": 736,
+            "width": 96,
+            "height": 32,
+            "properties": [
+              {
+                "name": "toArea",
+                "type": "string",
+                "value": "plaza"
+              },
+              {
+                "name": "toTileX",
+                "type": "int",
+                "value": 22
+              },
+              {
+                "name": "toTileY",
+                "type": "int",
+                "value": 13
+              },
+              {
+                "name": "label",
+                "type": "string",
+                "value": "Phố Việt"
               }
             ]
           }
@@ -5577,6 +5806,37 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
                 "value": 21
               }
             ]
+          },
+          {
+            "id": 9,
+            "name": "mine-entrance",
+            "type": "prop",
+            "x": 160,
+            "y": 640,
+            "width": 64,
+            "height": 64,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "mine-entrance"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 21
+              },
+              {
+                "name": "interact",
+                "type": "string",
+                "value": "mine"
+              }
+            ]
           }
         ]
       },
@@ -5983,6 +6243,1443 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
                 "name": "label",
                 "type": "string",
                 "value": "sân nông trại"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "plaza": {
+    "width": 24,
+    "height": 18,
+    "tilewidth": 32,
+    "tileheight": 32,
+    "properties": [
+      {
+        "name": "displayName",
+        "type": "string",
+        "value": "Phố Việt"
+      },
+      {
+        "name": "music",
+        "type": "string",
+        "value": "day-village-loop"
+      }
+    ],
+    "layers": [
+      {
+        "type": "tilelayer",
+        "name": "ground",
+        "width": 24,
+        "height": 18,
+        "data": [
+          12,
+          4,
+          4,
+          3,
+          12,
+          7,
+          9,
+          11,
+          12,
+          12,
+          6,
+          3,
+          5,
+          4,
+          5,
+          6,
+          4,
+          11,
+          2,
+          6,
+          9,
+          10,
+          6,
+          10,
+          1,
+          9,
+          5,
+          9,
+          5,
+          2,
+          1,
+          1,
+          3,
+          12,
+          10,
+          3,
+          11,
+          1,
+          4,
+          12,
+          1,
+          4,
+          10,
+          2,
+          7,
+          4,
+          7,
+          4,
+          9,
+          8,
+          6,
+          3,
+          9,
+          6,
+          10,
+          8,
+          8,
+          8,
+          2,
+          12,
+          5,
+          8,
+          8,
+          12,
+          5,
+          10,
+          6,
+          10,
+          9,
+          7,
+          1,
+          8,
+          6,
+          7,
+          3,
+          4,
+          2,
+          3,
+          6,
+          5,
+          5,
+          2,
+          10,
+          12,
+          10,
+          3,
+          5,
+          10,
+          3,
+          10,
+          3,
+          12,
+          11,
+          5,
+          3,
+          9,
+          7,
+          9,
+          5,
+          11,
+          8,
+          6,
+          9,
+          2,
+          12,
+          3,
+          7,
+          4,
+          7,
+          3,
+          4,
+          12,
+          11,
+          10,
+          8,
+          1,
+          4,
+          11,
+          1,
+          11,
+          4,
+          1,
+          5,
+          10,
+          1,
+          10,
+          9,
+          3,
+          3,
+          10,
+          6,
+          9,
+          1,
+          1,
+          5,
+          4,
+          9,
+          3,
+          1,
+          5,
+          1,
+          10,
+          3,
+          12,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30,
+          30
+        ]
+      },
+      {
+        "type": "objectgroup",
+        "name": "props",
+        "objects": [
+          {
+            "id": 1,
+            "name": "shopfront-banh-bao",
+            "type": "prop",
+            "x": 32,
+            "y": 224,
+            "width": 160,
+            "height": 64,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "shopfront"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 8
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "BÁNH BAO"
+              }
+            ]
+          },
+          {
+            "id": 2,
+            "name": "shopfront-tap-hoa",
+            "type": "prop",
+            "x": 288,
+            "y": 224,
+            "width": 160,
+            "height": 64,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "shopfront-green"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 8
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "TẠP HOÁ"
+              }
+            ]
+          },
+          {
+            "id": 3,
+            "name": "shopfront-che",
+            "type": "prop",
+            "x": 544,
+            "y": 224,
+            "width": 160,
+            "height": 64,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "shopfront-blue"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 8
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "CHÈ"
+              }
+            ]
+          },
+          {
+            "id": 4,
+            "name": "xoi-cart",
+            "type": "prop",
+            "x": 96,
+            "y": 288,
+            "width": 96,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "xoi-cart"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 9
+              },
+              {
+                "name": "interact",
+                "type": "string",
+                "value": "xoi-stall"
+              }
+            ]
+          },
+          {
+            "id": 5,
+            "name": "street-cabinet",
+            "type": "prop",
+            "x": 352,
+            "y": 288,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-cabinet"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 9
+              }
+            ]
+          },
+          {
+            "id": 6,
+            "name": "street-pole-west",
+            "type": "prop",
+            "x": 224,
+            "y": 288,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-pole"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 9
+              }
+            ]
+          },
+          {
+            "id": 7,
+            "name": "street-pole-east",
+            "type": "prop",
+            "x": 480,
+            "y": 288,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-pole"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 9
+              }
+            ]
+          },
+          {
+            "id": 8,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 256,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 9,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 288,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 10,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 320,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 11,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 352,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 12,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 384,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 13,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 416,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 14,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 448,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 15,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 512,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 16,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 544,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 17,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 576,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 18,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 608,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 19,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 640,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 20,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 672,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 21,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 704,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 22,
+            "name": "street-wire",
+            "type": "prop",
+            "x": 736,
+            "y": 192,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "street-wire"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 60
+              }
+            ]
+          },
+          {
+            "id": 23,
+            "name": "signpost-farm",
+            "type": "prop",
+            "x": 64,
+            "y": 512,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "signpost"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 16
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "Nông trại\nAMBERFALL"
+              },
+              {
+                "name": "arrow",
+                "type": "string",
+                "value": "left"
+              }
+            ]
+          },
+          {
+            "id": 24,
+            "name": "signpost-village",
+            "type": "prop",
+            "x": 672,
+            "y": 512,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "signpost"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 16
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "Làng\nMOONBERRY"
+              },
+              {
+                "name": "arrow",
+                "type": "string",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "id": 25,
+            "name": "milestone",
+            "type": "prop",
+            "x": 32,
+            "y": 320,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "milestone"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 10
+              },
+              {
+                "name": "sign",
+                "type": "string",
+                "value": "PV\n0 km"
+              }
+            ]
+          },
+          {
+            "id": 26,
+            "name": "bench",
+            "type": "prop",
+            "x": 288,
+            "y": 448,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "log"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 14
+              }
+            ]
+          },
+          {
+            "id": 27,
+            "name": "bench",
+            "type": "prop",
+            "x": 416,
+            "y": 448,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "log"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 14
+              }
+            ]
+          },
+          {
+            "id": 28,
+            "name": "pot",
+            "type": "prop",
+            "x": 256,
+            "y": 288,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "flowers-red"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 9
+              }
+            ]
+          },
+          {
+            "id": 29,
+            "name": "pot",
+            "type": "prop",
+            "x": 512,
+            "y": 288,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "flowers-gold"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 9
+              }
+            ]
+          },
+          {
+            "id": 30,
+            "name": "pot",
+            "type": "prop",
+            "x": 192,
+            "y": 512,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "flowers-white"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 16
+              }
+            ]
+          },
+          {
+            "id": 31,
+            "name": "pot",
+            "type": "prop",
+            "x": 544,
+            "y": 512,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "flowers-red"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 16
+              }
+            ]
+          },
+          {
+            "id": 34,
+            "name": "flowers-red",
+            "type": "prop",
+            "x": 128,
+            "y": 32,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "flowers-red"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "id": 35,
+            "name": "tuft-tall",
+            "type": "prop",
+            "x": 32,
+            "y": 64,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "tuft-tall"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 2
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "type": "objectgroup",
+        "name": "portals",
+        "objects": [
+          {
+            "id": 32,
+            "name": "to-farm",
+            "type": "portal",
+            "x": 0,
+            "y": 352,
+            "width": 32,
+            "height": 160,
+            "properties": [
+              {
+                "name": "toArea",
+                "type": "string",
+                "value": "farm"
+              },
+              {
+                "name": "toTileX",
+                "type": "int",
+                "value": 37
+              },
+              {
+                "name": "toTileY",
+                "type": "int",
+                "value": 22
+              },
+              {
+                "name": "label",
+                "type": "string",
+                "value": "Amberfall Farm"
+              }
+            ]
+          },
+          {
+            "id": 33,
+            "name": "to-village",
+            "type": "portal",
+            "x": 736,
+            "y": 352,
+            "width": 32,
+            "height": 160,
+            "properties": [
+              {
+                "name": "toArea",
+                "type": "string",
+                "value": "village"
+              },
+              {
+                "name": "toTileX",
+                "type": "int",
+                "value": 18
+              },
+              {
+                "name": "toTileY",
+                "type": "int",
+                "value": 21
+              },
+              {
+                "name": "label",
+                "type": "string",
+                "value": "Moonberry Village"
               }
             ]
           }

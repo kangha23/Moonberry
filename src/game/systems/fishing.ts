@@ -262,7 +262,7 @@ const TRASH_CHANCE = 0.17;
 export function isAvailable(def: FishDef, draw: Omit<FishDraw, 'seed' | 'tile' | 'totalMinutes'>): boolean {
   if (!def.seasons.includes(draw.season)) return false;
   if (def.weather && !def.weather.includes(draw.weather)) return false;
-  if (!def.areas.includes(draw.area)) return false;
+  if (!(def.areas as readonly string[]).includes(draw.area)) return false;
   // `toHour` is exclusive, so a row reading 6 to 19 is the working day and a
   // row reading 20 to 26 is the evening, with no hour belonging to both.
   return draw.hour >= def.fromHour && draw.hour < def.toHour;

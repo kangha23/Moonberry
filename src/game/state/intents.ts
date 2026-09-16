@@ -6,6 +6,7 @@ import type { FarmAction } from '../systems/farming';
 import type { CropId, ItemId, ProduceGrade, ToolTier } from '../systems/items';
 import type { MachineKind, PlaceableKind } from '../systems/items';
 import type { RecipeUnlock } from '../systems/crafting';
+import type { MonsterKind } from '../systems/mine';
 import type { NodeKind } from '../systems/resources';
 import type { Season } from '../systems/time';
 import type { AreaId, Point } from '../world/areas';
@@ -153,6 +154,17 @@ export type Intent =
   | { type: 'machine/load'; playerId: PlayerId; machineId: string }
   /** Take out what it finished. */
   | { type: 'machine/collect'; playerId: PlayerId; machineId: string }
+  /**
+   * Swing the sword in hand, in a fan towards `target` (a tile) or the way
+   * the player faces. Ignored outright when what is in hand is not a sword.
+   */
+  | { type: 'player/attack'; playerId: PlayerId; target?: Point }
+  /** Down the ladder the player is standing on, or into the mine from its mouth. */
+  | { type: 'player/descend'; playerId: PlayerId }
+  /** Ride to an elevator floor. Refused past `deepestFloor`. */
+  | { type: 'player/useElevator'; playerId: PlayerId; depth: number }
+  /** Climb out of the mine, back to the farm. */
+  | { type: 'player/exitMine'; playerId: PlayerId }
   | { type: 'world/tick'; deltaMs: number };
 
 /**
@@ -338,6 +350,25 @@ export type GameEvent =
   | { kind: 'fishEscaped'; playerId: PlayerId; fish: ItemId; struck: boolean }
   /** How many plots the sprinklers watered before the night's growth. */
   | { kind: 'sprinklersRan'; watered: number }
+  /** A monster landed a strike. */
+  | { kind: 'damaged'; playerId: PlayerId; amount: number }
+  /**
+   * A monster died to this player's sword. `monster` rather than the spec's
+   * second `kind`, which would collide with the discriminant. `drops` is what
+   * reached the satchel.
+   */
+  | {
+      kind: 'monsterKilled';
+      playerId: PlayerId;
+      id: string;
+      monster: MonsterKind;
+      drops: Array<{ item: ItemId; count: number }>;
+    }
+  | { kind: 'descended'; playerId: PlayerId; depth: number }
+  /** Health ran out. Their day is over; nobody else's is. */
+  | { kind: 'faint'; playerId: PlayerId; coinsLost: number }
+  /** Somebody reached a floor nobody on the farm had reached before. */
+  | { kind: 'newDepthRecord'; depth: number }
   /** The whole farm was swapped out: start a new farm now, a server resync later. */
   | { kind: 'farmReplaced' };
 

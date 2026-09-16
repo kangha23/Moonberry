@@ -1362,6 +1362,82 @@
           ]
         },
         {
+          "id": 51,
+          "name": "signpost-plaza",
+          "type": "prop",
+          "x": 1152,
+          "y": 672,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "texture",
+              "type": "string",
+              "value": "signpost"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "depth",
+              "type": "int",
+              "value": 21
+            },
+            {
+              "name": "sign",
+              "type": "string",
+              "value": "Khu phố\nPHỐ VIỆT"
+            },
+            {
+              "name": "arrow",
+              "type": "string",
+              "value": "right"
+            }
+          ]
+        },
+        {
+          "id": 52,
+          "name": "signpost-village",
+          "type": "prop",
+          "x": 1152,
+          "y": 416,
+          "width": 32,
+          "height": 32,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "texture",
+              "type": "string",
+              "value": "signpost"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": false
+            },
+            {
+              "name": "depth",
+              "type": "int",
+              "value": 13
+            },
+            {
+              "name": "sign",
+              "type": "string",
+              "value": "Làng\nMOONBERRY"
+            },
+            {
+              "name": "arrow",
+              "type": "string",
+              "value": "right"
+            }
+          ]
+        },
+        {
           "id": 12,
           "name": "stump",
           "type": "prop",
@@ -2479,6 +2555,39 @@
               "value": "ngôi nhà"
             }
           ]
+        },
+        {
+          "id": 50,
+          "name": "to-plaza",
+          "type": "portal",
+          "x": 1248,
+          "y": 640,
+          "width": 32,
+          "height": 160,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "toArea",
+              "type": "string",
+              "value": "plaza"
+            },
+            {
+              "name": "toTileX",
+              "type": "int",
+              "value": 1
+            },
+            {
+              "name": "toTileY",
+              "type": "int",
+              "value": 13
+            },
+            {
+              "name": "label",
+              "type": "string",
+              "value": "Phố Việt"
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -2534,7 +2643,7 @@
     }
   ],
   "nextlayerid": 6,
-  "nextobjectid": 50,
+  "nextobjectid": 53,
   "orientation": "orthogonal",
   "properties": [
     {

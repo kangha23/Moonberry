@@ -5,6 +5,7 @@ import { CROP_PALETTES, ICON_SIZE, foragePalette, iconFor } from './itemIcons';
 import { PLACEABLE_KINDS } from '../systems/items';
 import { FORAGE_DEFS } from '../systems/items';
 import { TREE_STAGES } from '../systems/resources';
+import { MILESTONE, SIGNBOARD, SIGNPOST } from '../ui/hudLayout';
 
 const TILE = 32;
 
@@ -187,12 +188,18 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
   withTexture(scene, 'plot-tilled', TILE, TILE, (ctx) => drawSoil(ctx, false));
   withTexture(scene, 'plot-watered', TILE, TILE, (ctx) => drawSoil(ctx, true));
 
+  // Fallback only: `crop-seeded.png` from [LPC] Crops is drawn when it loads.
+  // A sown bed is a little heap of turned earth in soil tones, not pale blocks
+  // lying on top of it, which on brown soil read as pebbles.
   withTexture(scene, 'crop-seeded', TILE, TILE, (ctx) => {
     ctx.clearRect(0, 0, TILE, TILE);
-    rect(ctx, PALETTE['soil.5'], 12, 20, 8, 3);
-    rect(ctx, PALETTE['light.7'], 13, 16, 3, 4);
-    rect(ctx, PALETTE['light.5'], 16, 17, 3, 3);
-    px(ctx, PALETTE['light.7'], 14, 17);
+    rect(ctx, PALETTE['soil.1'], 10, 20, 12, 3);
+    rect(ctx, PALETTE['soil.1'], 12, 17, 8, 3);
+    rect(ctx, PALETTE['soil.3'], 11, 19, 10, 2);
+    rect(ctx, PALETTE['soil.5'], 13, 17, 6, 2);
+    rect(ctx, PALETTE['soil.6'], 14, 17, 3, 1);
+    px(ctx, PALETTE['light.5'], 15, 18);
+    px(ctx, PALETTE['light.5'], 18, 19);
   });
 
   withTexture(scene, 'crop-sprout', TILE, TILE, (ctx) => {
@@ -665,6 +672,8 @@ export function createPixelArtTextures(scene: Phaser.Scene) {
   createEdgeTextures(scene);
   createDialTextures(scene);
   createHudIcons(scene);
+  createMineTextures(scene);
+  createPlazaTextures(scene);
 }
 
 /**
@@ -1442,6 +1451,20 @@ const VILLAGER_PALETTES: VillagerPalette[] = [
     accent: PALETTE['building.3'],
     child: true,
   },
+  // Bà Xoan, spec 15: grey hair, a brown áo bà ba and black trousers. Only
+  // ever seen if Tobias's walk sheet fails to load, since she borrows it.
+  {
+    key: 'npc-xoan',
+    hair: PALETTE['light.6'],
+    hairLight: PALETTE['light.7'],
+    skin: PALETTE['light.5'],
+    cloth: PALETTE['clothWarm.1'],
+    clothLight: PALETTE['clothWarm.3'],
+    clothDark: PALETTE['soil.1'],
+    legs: PALETTE['shadow.0'],
+    boots: PALETTE['soil.0'],
+    accent: PALETTE['light.7'],
+  },
 ];
 
 function drawVillager(ctx: CanvasRenderingContext2D, palette: VillagerPalette) {
@@ -1674,6 +1697,16 @@ function createEdgeTextures(scene: Phaser.Scene) {
         drawFringe(ctx, mask, index * 17 + 3, tile),
       );
     }
+  }
+
+  // Grass over a worked bed. Not one of the boundaries above, because those
+  // are read off the map and never change: whether a plot is soil or still
+  // lawn is save state, so `GroundView` asks for these as beds are dug.
+  const grass = scene.textures.get('tile-grass').getSourceImage() as CanvasImageSource;
+  for (let mask = 1; mask <= 15; mask += 1) {
+    withTexture(scene, fringeTexture('grass', 'soil', mask), TILE, TILE, (ctx) =>
+      drawFringe(ctx, mask, FRINGE_BOUNDARIES.length * 17 + 3, grass),
+    );
   }
 }
 
@@ -1912,3 +1945,428 @@ export const WEATHER_ICONS: Record<string, string> = {
   Breezy: 'icon-weather-breezy',
   'Firefly Shower': 'icon-weather-firefly',
 };
+
+/**
+ * The mine (spec 13): three looks of rock, the three fixtures a floor has,
+ * the mouth of the mine in the wood, six monsters, and the darkness.
+ *
+ * Placeholders in the same sense as everything else in this file, generated
+ * from the palette so every pixel is ours to license. A tileset dropped in
+ * through `lpc:import` under the same keys wins over all of it.
+ */
+interface MineBandPalette {
+  band: 'shallow' | 'middle' | 'deep';
+  /** The floor: its fill, the grit on it, and the crack across it. */
+  floor: string;
+  grit: string;
+  crack: string;
+  /** The rock face: its fill, its lit top edge, and the ore flecked in it. */
+  wall: string;
+  wallTop: string;
+  wallDark: string;
+  ore: string;
+}
+
+/**
+ * Brown copper rock near the top, cold grey iron rock in the middle, and a
+ * dark violet with gold in it at the bottom — so a screenshot of floor 35
+ * could not be mistaken for one of floor 3.
+ */
+const MINE_BANDS: readonly MineBandPalette[] = [
+  {
+    band: 'shallow',
+    floor: PALETTE['soil.2'],
+    grit: PALETTE['soil.4'],
+    crack: PALETTE['soil.0'],
+    wall: PALETTE['soil.3'],
+    wallTop: PALETTE['soil.5'],
+    wallDark: PALETTE['soil.0'],
+    ore: PALETTE['light.3'],
+  },
+  {
+    band: 'middle',
+    floor: PALETTE['foliage.4'],
+    grit: PALETTE['building.0'],
+    crack: PALETTE['outline.2'],
+    wall: PALETTE['building.0'],
+    wallTop: PALETTE['building.2'],
+    wallDark: PALETTE['shadow.2'],
+    ore: PALETTE['light.6'],
+  },
+  {
+    band: 'deep',
+    floor: PALETTE['shadow.2'],
+    grit: PALETTE['shadow.3'],
+    crack: PALETTE['outline.0'],
+    wall: PALETTE['shadow.0'],
+    wallTop: PALETTE['berry.0'],
+    wallDark: PALETTE['outline.1'],
+    ore: PALETTE['gold.0'],
+  },
+];
+
+interface MonsterPalette {
+  kind: string;
+  size: number;
+  body: string;
+  light: string;
+  dark: string;
+  eye: string;
+  shape: 'slime' | 'bat' | 'bug' | 'ghost';
+}
+
+const MONSTER_ART: readonly MonsterPalette[] = [
+  { kind: 'green-slime', size: 32, body: PALETTE['leaf.2'], light: PALETTE['light.0'], dark: PALETTE['leaf.0'], eye: PALETTE['outline.2'], shape: 'slime' },
+  { kind: 'slime', size: 32, body: PALETTE['water.3'], light: PALETTE['light.6'], dark: PALETTE['water.2'], eye: PALETTE['outline.2'], shape: 'slime' },
+  { kind: 'bat', size: 32, body: PALETTE['shadow.0'], light: PALETTE['berry.0'], dark: PALETTE['outline.1'], eye: PALETTE['building.3'], shape: 'bat' },
+  { kind: 'rock-bug', size: 32, body: PALETTE['building.0'], light: PALETTE['building.2'], dark: PALETTE['soil.1'], eye: PALETTE['light.4'], shape: 'bug' },
+  { kind: 'ghost', size: 32, body: PALETTE['light.6'], light: PALETTE['light.7'], dark: PALETTE['building.0'], eye: PALETTE['shadow.3'], shape: 'ghost' },
+  // The floor-40 boss is "a bigger monster, not a system" (spec 13's own
+  // words), so it is a slime twice the size in the colours of a warning.
+  { kind: 'floor-boss', size: 64, body: PALETTE['clothWarm.2'], light: PALETTE['building.1'], dark: PALETTE['clothDeep.0'], eye: PALETTE['gold.0'], shape: 'slime' },
+];
+
+function drawMonster(ctx: CanvasRenderingContext2D, art: MonsterPalette) {
+  const u = art.size / 32;
+  const r = (color: string, x: number, y: number, w: number, h: number) => rect(ctx, color, x * u, y * u, w * u, h * u);
+  if (art.shape === 'slime') {
+    r(withAlpha(PALETTE['outline.2'], 0.35), 5, 27, 22, 3);
+    r(art.dark, 5, 16, 22, 11);
+    r(art.body, 7, 11, 18, 14);
+    r(art.body, 10, 8, 12, 4);
+    r(art.light, 10, 11, 5, 3);
+    r(art.light, 9, 14, 2, 4);
+    r(art.eye, 12, 17, 2, 3);
+    r(art.eye, 18, 17, 2, 3);
+    if (art.kind === 'floor-boss') {
+      r(art.eye, 11, 4, 10, 3);
+      r(art.eye, 11, 2, 2, 2);
+      r(art.eye, 15, 1, 2, 3);
+      r(art.eye, 19, 2, 2, 2);
+    }
+  } else if (art.shape === 'bat') {
+    r(art.dark, 2, 12, 10, 4);
+    r(art.dark, 20, 12, 10, 4);
+    r(art.light, 4, 11, 7, 2);
+    r(art.light, 21, 11, 7, 2);
+    r(art.body, 12, 10, 8, 10);
+    r(art.body, 13, 8, 2, 2);
+    r(art.body, 17, 8, 2, 2);
+    r(art.eye, 13, 13, 2, 2);
+    r(art.eye, 17, 13, 2, 2);
+  } else if (art.shape === 'bug') {
+    r(art.dark, 5, 22, 3, 4);
+    r(art.dark, 24, 22, 3, 4);
+    r(art.dark, 10, 24, 3, 3);
+    r(art.dark, 19, 24, 3, 3);
+    r(art.body, 6, 12, 20, 12);
+    r(art.light, 8, 12, 14, 3);
+    r(art.light, 11, 17, 3, 3);
+    r(art.light, 18, 18, 3, 2);
+    r(art.dark, 12, 9, 8, 4);
+    r(art.eye, 13, 10, 2, 2);
+    r(art.eye, 17, 10, 2, 2);
+  } else {
+    r(withAlpha(art.body, 0.9), 8, 6, 16, 18);
+    r(withAlpha(art.body, 0.9), 6, 10, 20, 12);
+    r(withAlpha(art.light, 0.9), 10, 7, 6, 4);
+    r(withAlpha(art.body, 0.7), 6, 22, 4, 4);
+    r(withAlpha(art.body, 0.7), 14, 22, 4, 5);
+    r(withAlpha(art.body, 0.7), 22, 22, 4, 4);
+    r(art.eye, 11, 13, 3, 4);
+    r(art.eye, 18, 13, 3, 4);
+  }
+}
+
+function createMineTextures(scene: Phaser.Scene) {
+  for (const art of MINE_BANDS) {
+    withTexture(scene, `mine-floor-${art.band}`, TILE, TILE, (ctx) => {
+      rect(ctx, art.floor, 0, 0, TILE, TILE);
+      for (let i = 0; i < 14; i += 1) {
+        px(ctx, art.grit, Math.floor(hash(i, 5, 31) * 31), Math.floor(hash(i, 9, 31) * 31));
+      }
+      rect(ctx, art.crack, 6, 20, 7, 1);
+      rect(ctx, art.crack, 12, 21, 5, 1);
+      rect(ctx, art.grit, 22, 8, 4, 2);
+      outline(ctx, TILE, TILE, withAlpha(art.crack, 0.25));
+    });
+    withTexture(scene, `mine-wall-${art.band}`, TILE, TILE, (ctx) => {
+      rect(ctx, art.wall, 0, 0, TILE, TILE);
+      rect(ctx, art.wallTop, 0, 0, TILE, 4);
+      rect(ctx, art.wallDark, 0, 26, TILE, 6);
+      // A few courses of rock, so a wall reads as stone rather than a fill.
+      rect(ctx, art.wallDark, 0, 12, 14, 1);
+      rect(ctx, art.wallDark, 16, 18, 16, 1);
+      rect(ctx, art.wallTop, 3, 6, 8, 2);
+      rect(ctx, art.wallTop, 19, 10, 9, 2);
+      rect(ctx, art.ore, 9, 16, 2, 2);
+      rect(ctx, art.ore, 24, 21, 2, 1);
+      outline(ctx, TILE, TILE, withAlpha(art.wallDark, 0.5));
+    });
+  }
+
+  // The ladder down: a black shaft with rungs going into it.
+  withTexture(scene, 'mine-ladder', TILE, TILE, (ctx) => {
+    rect(ctx, PALETTE['outline.0'], 5, 5, 22, 22);
+    rect(ctx, PALETTE['shadow.0'], 7, 7, 18, 18);
+    rect(ctx, PALETTE['soil.5'], 10, 4, 2, 22);
+    rect(ctx, PALETTE['soil.5'], 20, 4, 2, 22);
+    for (let y = 8; y < 26; y += 5) rect(ctx, PALETTE['soil.6'], 10, y, 12, 2);
+  });
+
+  // The way up: a ladder standing against a patch of daylight.
+  withTexture(scene, 'mine-exit', TILE, TILE, (ctx) => {
+    rect(ctx, withAlpha(PALETTE['light.7'], 0.35), 4, 2, 24, 28);
+    rect(ctx, PALETTE['soil.4'], 9, 0, 2, 32);
+    rect(ctx, PALETTE['soil.4'], 21, 0, 2, 32);
+    for (let y = 4; y < 32; y += 6) rect(ctx, PALETTE['soil.6'], 9, y, 14, 2);
+  });
+
+  // The elevator: an iron cage with a lamp over it.
+  withTexture(scene, 'mine-elevator', TILE, TILE, (ctx) => {
+    rect(ctx, PALETTE['outline.2'], 3, 5, 26, 25);
+    rect(ctx, PALETTE['building.0'], 5, 7, 22, 21);
+    for (let x = 8; x < 27; x += 5) rect(ctx, PALETTE['building.2'], x, 7, 1, 21);
+    rect(ctx, PALETTE['gold.1'], 3, 3, 26, 3);
+    rect(ctx, PALETTE['light.5'], 14, 0, 4, 3);
+  });
+
+  // The mouth of the mine in Hollowpine Wood: a dark arch in a heap of rock,
+  // timbered like every mine entrance anybody has ever drawn.
+  withTexture(scene, 'mine-entrance', 64, 64, (ctx) => {
+    rect(ctx, PALETTE['building.0'], 2, 14, 60, 50);
+    rect(ctx, PALETTE['building.2'], 8, 8, 48, 10);
+    rect(ctx, PALETTE['building.2'], 4, 18, 8, 8);
+    rect(ctx, PALETTE['building.2'], 50, 22, 10, 6);
+    rect(ctx, PALETTE['outline.0'], 18, 26, 28, 38);
+    rect(ctx, PALETTE['shadow.0'], 21, 30, 22, 34);
+    rect(ctx, PALETTE['soil.3'], 15, 22, 5, 42);
+    rect(ctx, PALETTE['soil.3'], 44, 22, 5, 42);
+    rect(ctx, PALETTE['soil.4'], 13, 20, 38, 6);
+    rect(ctx, PALETTE['soil.6'], 13, 20, 38, 2);
+    rect(ctx, PALETTE['light.5'], 30, 36, 4, 4);
+    outline(ctx, 64, 64, withAlpha(PALETTE['outline.2'], 0.4));
+  });
+
+  for (const art of MONSTER_ART) {
+    withTexture(scene, `monster-${art.kind}`, art.size, art.size, (ctx) => drawMonster(ctx, art));
+  }
+
+  // The dark, with a hole in it. Transparent in the middle and fully opaque
+  // from `MINE_LIGHT_EDGE` out, so the scene can scale the hole to whatever a
+  // torch buys and fill the rest of the screen with the opaque colour.
+  withTexture(scene, 'mine-light', MINE_LIGHT_SIZE, MINE_LIGHT_SIZE, (ctx) => {
+    const half = MINE_LIGHT_SIZE / 2;
+    const g = ctx.createRadialGradient(half, half, half * 0.2, half, half, half * MINE_LIGHT_EDGE);
+    g.addColorStop(0, withAlpha(PALETTE['outline.2'], 0));
+    g.addColorStop(0.55, withAlpha(PALETTE['outline.2'], 0.45));
+    g.addColorStop(1, withAlpha(PALETTE['outline.2'], 1));
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, MINE_LIGHT_SIZE, MINE_LIGHT_SIZE);
+  });
+
+  // The cap on the health tube, the way the bolt caps the energy one.
+  icon(scene, 'icon-health', (ctx) => {
+    rect(ctx, PALETTE['building.3'], 2, 3, 5, 6);
+    rect(ctx, PALETTE['building.3'], 9, 3, 5, 6);
+    rect(ctx, PALETTE['building.3'], 3, 8, 10, 3);
+    rect(ctx, PALETTE['building.3'], 5, 11, 6, 2);
+    rect(ctx, PALETTE['building.3'], 7, 13, 2, 2);
+    rect(ctx, PALETTE['light.7'], 4, 4, 2, 2);
+    rect(ctx, PALETTE['clothWarm.0'], 11, 7, 2, 3);
+  });
+
+  // One mote of a monster coming apart.
+  withTexture(scene, 'mine-mote', 4, 4, (ctx) => {
+    rect(ctx, PALETTE['light.7'], 0, 0, 4, 4);
+  });
+}
+
+/** How big the darkness texture is, and how far out from its centre it is fully dark. */
+export const MINE_LIGHT_SIZE = 256;
+export const MINE_LIGHT_EDGE = 1;
+
+/**
+ * The phố's stand-ins, spec 15.
+ *
+ * Every one of these is a placeholder in the sense `itemIcons.ts` means it:
+ * drawn in code from the palette so the street is playable, and replaced the
+ * moment a PNG under the same name is in the art folder — `withTexture` never
+ * draws over a texture that loaded. The table at the end of the spec says
+ * which tool and which import command each one wants.
+ */
+
+/** The three fronts: one drawing, three wall colours. */
+const SHOPFRONTS: ReadonlyArray<{ key: string; wall: string; wallLight: string; awning: string }> = [
+  { key: 'shopfront', wall: PALETTE['light.5'], wallLight: PALETTE['light.7'], awning: PALETTE['clothWarm.2'] },
+  { key: 'shopfront-green', wall: PALETTE['light.0'], wallLight: PALETTE['light.1'], awning: PALETTE['leaf.0'] },
+  { key: 'shopfront-blue', wall: PALETTE['water.3'], wallLight: PALETTE['light.6'], awning: PALETTE['water.0'] },
+];
+
+const SIGNPOST_W = TILE;
+const SIGNPOST_H = TILE;
+const MILESTONE_H = 48;
+
+const SHOPFRONT_W = 5 * TILE;
+const SHOPFRONT_H = 4 * TILE;
+
+function createPlazaTextures(scene: Phaser.Scene) {
+  // Brick pavement, running bond. Red for the phố, and the mortar the path's
+  // own sand so the two read as the same town.
+  withTexture(scene, 'tile-plaza', TILE, TILE, (ctx) => {
+    rect(ctx, PALETTE['building.1'], 0, 0, TILE, TILE);
+    for (let row = 0; row < 4; row += 1) {
+      const y = row * 8;
+      rect(ctx, PALETTE['light.2'], 0, y + 7, TILE, 1);
+      const offset = row % 2 === 0 ? 0 : 8;
+      for (let x = offset; x < TILE; x += 16) rect(ctx, PALETTE['light.2'], x, y, 1, 7);
+      for (let x = offset + 2; x < TILE; x += 16) rect(ctx, PALETTE['building.3'], x, y + 1, 5, 1);
+    }
+    for (let i = 0; i < 6; i += 1) {
+      px(ctx, PALETTE['clothWarm.0'], Math.floor(hash(i, 4, 17) * 31), Math.floor(hash(i, 8, 17) * 31));
+    }
+  });
+
+  for (const front of SHOPFRONTS) {
+    withTexture(scene, front.key, SHOPFRONT_W, SHOPFRONT_H, (ctx) => {
+      const w = SHOPFRONT_W;
+      const h = SHOPFRONT_H;
+      ctx.clearRect(0, 0, w, h);
+      // The wall, and a tin roof along the top: the silo's slate.
+      rect(ctx, front.wall, 0, 8, w, h - 8);
+      rect(ctx, front.wallLight, 0, 8, w, 2);
+      rect(ctx, PALETTE['building.0'], 0, 0, w, 8);
+      for (let x = 2; x < w; x += 6) rect(ctx, PALETTE['building.2'], x, 0, 2, 8);
+      rect(ctx, PALETTE['shadow.2'], 0, 7, w, 1);
+
+      // The board, blank, exactly where `signLayout` letters it.
+      const bx = Math.round(w * SIGNBOARD.left);
+      const by = Math.round(h * SIGNBOARD.top);
+      const bw = Math.round(w * (SIGNBOARD.right - SIGNBOARD.left));
+      const bh = Math.round(h * (SIGNBOARD.bottom - SIGNBOARD.top));
+      rect(ctx, PALETTE['soil.3'], bx - 2, by - 2, bw + 4, bh + 4);
+      rect(ctx, PALETTE['light.7'], bx, by, bw, bh);
+      rect(ctx, PALETTE['light.5'], bx, by + bh - 2, bw, 2);
+
+      // A striped awning under the board, scalloped along its edge.
+      const ay = by + bh + 6;
+      for (let x = 4; x < w - 4; x += 8) {
+        const stripe = (x - 4) % 16 === 0 ? front.awning : PALETTE['light.7'];
+        rect(ctx, stripe, x, ay, 8, 10);
+        rect(ctx, stripe, x + 2, ay + 10, 4, 2);
+      }
+      rect(ctx, withAlpha(PALETTE['shadow.0'], 0.35), 4, ay + 12, w - 8, 3);
+
+      // The shop's mouth: a rolled-up shutter over a dark room, between posts.
+      const my = ay + 16;
+      rect(ctx, PALETTE['shadow.2'], 14, my, w - 28, h - my - 4);
+      rect(ctx, PALETTE['building.0'], 14, my, w - 28, 6);
+      for (let x = 16; x < w - 16; x += 4) rect(ctx, PALETTE['building.2'], x, my + 1, 1, 4);
+      rect(ctx, PALETTE['soil.4'], 8, my - 2, 6, h - my - 2);
+      rect(ctx, PALETTE['soil.4'], w - 14, my - 2, 6, h - my - 2);
+      // Shelves glimpsed inside, so it reads as a shop rather than a garage.
+      for (let y = my + 12; y < h - 10; y += 10) rect(ctx, PALETTE['soil.2'], 20, y, w - 40, 2);
+      rect(ctx, PALETTE['building.2'], 0, h - 4, w, 4);
+    });
+  }
+
+  // Bà Xoan's cart: a wooden counter on two wheels under a striped canopy,
+  // with the steamer on top.
+  withTexture(scene, 'xoi-cart', 3 * TILE, 2 * TILE, (ctx) => {
+    const w = 3 * TILE;
+    ctx.clearRect(0, 0, w, 2 * TILE);
+    for (let x = 0; x < w; x += 12) {
+      rect(ctx, x % 24 === 0 ? PALETTE['building.3'] : PALETTE['light.7'], x, 0, 12, 8);
+    }
+    rect(ctx, PALETTE['soil.4'], 6, 8, 3, 26);
+    rect(ctx, PALETTE['soil.4'], w - 9, 8, 3, 26);
+    rect(ctx, PALETTE['light.6'], 34, 18, 28, 14);
+    rect(ctx, PALETTE['light.7'], 36, 18, 24, 3);
+    rect(ctx, PALETTE['building.2'], 34, 30, 28, 2);
+    rect(ctx, PALETTE['light.2'], 2, 32, w - 4, 18);
+    rect(ctx, PALETTE['light.5'], 2, 32, w - 4, 3);
+    rect(ctx, PALETTE['soil.4'], 2, 48, w - 4, 2);
+    rect(ctx, PALETTE['light.7'], 30, 37, 36, 8);
+    rect(ctx, PALETTE['shadow.2'], 12, 50, 12, 12);
+    rect(ctx, PALETTE['building.0'], 15, 53, 6, 6);
+    rect(ctx, PALETTE['shadow.2'], w - 24, 50, 12, 12);
+    rect(ctx, PALETTE['building.0'], w - 21, 53, 6, 6);
+  });
+
+  // A glass-fronted cabinet on legs, twice as tall as it is wide.
+  withTexture(scene, 'street-cabinet', TILE, 2 * TILE, (ctx) => {
+    ctx.clearRect(0, 0, TILE, 2 * TILE);
+    rect(ctx, PALETTE['soil.4'], 4, 8, 24, 48);
+    rect(ctx, PALETTE['light.6'], 7, 11, 18, 36);
+    rect(ctx, PALETTE['light.7'], 8, 12, 3, 20);
+    rect(ctx, PALETTE['soil.3'], 7, 23, 18, 2);
+    rect(ctx, PALETTE['soil.3'], 7, 35, 18, 2);
+    rect(ctx, PALETTE['light.5'], 10, 19, 5, 4);
+    rect(ctx, PALETTE['building.3'], 16, 31, 6, 4);
+    rect(ctx, PALETTE['soil.2'], 6, 56, 3, 8);
+    rect(ctx, PALETTE['soil.2'], 23, 56, 3, 8);
+  });
+
+  // A concrete pole with a crossarm, and the knot of wire every pole in the
+  // phố has. One tile wide and three and a half tall.
+  withTexture(scene, 'street-pole', TILE, 112, (ctx) => {
+    ctx.clearRect(0, 0, TILE, 112);
+    rect(ctx, PALETTE['building.2'], 13, 4, 6, 108);
+    rect(ctx, PALETTE['light.6'], 13, 4, 2, 108);
+    rect(ctx, PALETTE['soil.3'], 3, 10, 26, 3);
+    for (const x of [5, 15, 25]) rect(ctx, PALETTE['light.7'], x, 7, 2, 3);
+    rect(ctx, PALETTE['shadow.2'], 8, 18, 16, 6);
+    rect(ctx, PALETTE['outline.2'], 10, 20, 12, 2);
+    rect(ctx, PALETTE['building.0'], 12, 40, 8, 10);
+  });
+
+  // A road sign, after the blue ones on Quốc lộ 1: a white-edged blue board on
+  // two white poles banded in red. One tile, drawn at its own size rather than
+  // shrunk from a bigger picture, which is what pixel art does badly. The
+  // lettering and the arrow are drawn over it by the scene, inside `SIGNPOST`.
+  withTexture(scene, 'signpost', SIGNPOST_W, SIGNPOST_H, (ctx) => {
+    const w = SIGNPOST_W;
+    const h = SIGNPOST_H;
+    ctx.clearRect(0, 0, w, h);
+    const bx = Math.round(w * SIGNPOST.board.left);
+    const by = Math.round(h * SIGNPOST.board.top);
+    const bw = Math.round(w * (SIGNPOST.board.right - SIGNPOST.board.left));
+    const bh = Math.round(h * (SIGNPOST.board.bottom - SIGNPOST.board.top));
+    for (const px0 of [Math.round(w * 0.25), Math.round(w * 0.75) - 1]) {
+      rect(ctx, PALETTE['light.7'], px0, by + bh, 1, h - by - bh - 1);
+      for (let y = by + bh + 2; y < h - 2; y += 4) rect(ctx, PALETTE['building.1'], px0, y, 1, 2);
+    }
+    rect(ctx, PALETTE['light.7'], bx, by, bw, bh);
+    rect(ctx, PALETTE['water.0'], bx + 1, by + 1, bw - 2, bh - 2);
+    rect(ctx, PALETTE['shadow.3'], bx + 1, by + bh - 2, bw - 2, 1);
+    rect(ctx, withAlpha(PALETTE['shadow.0'], 0.35), Math.round(w * 0.2), h - 1, Math.round(w * 0.6), 1);
+  });
+
+  // A cột mốc: a white stone with a red cap and a rounded top, one tile wide.
+  withTexture(scene, 'milestone', TILE, MILESTONE_H, (ctx) => {
+    const h = MILESTONE_H;
+    ctx.clearRect(0, 0, TILE, h);
+    const capBottom = Math.round(h * ((MILESTONE.cap.bottom + MILESTONE.stone.top) / 2));
+    rect(ctx, withAlpha(PALETTE['shadow.0'], 0.35), 3, h - 4, 26, 4);
+    rect(ctx, PALETTE['light.6'], 3, capBottom, 26, h - capBottom - 3);
+    rect(ctx, PALETTE['light.7'], 4, capBottom, 22, h - capBottom - 4);
+    rect(ctx, PALETTE['building.1'], 6, 1, 20, 3);
+    rect(ctx, PALETTE['building.1'], 4, 3, 24, capBottom - 3);
+    rect(ctx, PALETTE['building.3'], 6, 3, 4, capBottom - 5);
+    rect(ctx, PALETTE['building.2'], 3, h - 6, 26, 2);
+  });
+
+  // The wire strung between poles, sagging.
+  withTexture(scene, 'street-wire', TILE, TILE, (ctx) => {
+    ctx.clearRect(0, 0, TILE, TILE);
+    for (const [y, sag] of [
+      [12, 2],
+      [15, 3],
+      [19, 2],
+    ] as const) {
+      rect(ctx, PALETTE['outline.2'], 0, y, 8, 1);
+      rect(ctx, PALETTE['outline.2'], 8, y + sag - 1, 16, 1);
+      rect(ctx, PALETTE['outline.2'], 24, y, 8, 1);
+    }
+  });
+}

@@ -4,6 +4,7 @@ import {
   NPC_SPEED_PER_MINUTE,
   advanceNpcs,
   entryPosition,
+  isStaffed,
   npcsOn,
   scheduleEntryAt,
   scheduleIndexAt,
@@ -12,7 +13,7 @@ import {
 } from './schedule';
 import { scheduleHour } from './types';
 import { createTimeState } from '../systems/time';
-import { TILE_SIZE } from '../world/areas';
+import { INTERACT_RADIUS, TILE_SIZE, areaMap, isWalkable, tileAt } from '../world/areas';
 
 /** The clock at a given hour of the day. */
 function at(hour: number) {
@@ -170,5 +171,57 @@ describe('walking a villager toward where they should be', () => {
       x: entryPosition(entry).x,
       y: entryPosition(entry).y,
     });
+  });
+});
+
+describe('Bà Xoan, spec 15', () => {
+  const XOAN = NPCS.xoan;
+
+  it('is at home at five, at the cart through the morning and the afternoon, and at the well between', () => {
+    const where = (hour: number) => scheduleEntryAt(XOAN, 'Summer', 'Sunny', hour);
+    expect(where(5)?.activity).toBe('home');
+    expect(where(6)?.activity).toBe('home');
+    for (const hour of [7, 8, 9, 10, 11, 14, 15, 16]) {
+      expect(where(hour)?.activity, `${hour}:00`).toBe('xoi-stall');
+      expect(where(hour)?.area, `${hour}:00`).toBe('plaza');
+    }
+    expect(where(12)?.activity).toBe('well');
+    expect(where(13)?.activity).toBe('well');
+    for (const hour of [17, 20, 25]) expect(where(hour)?.activity, `${hour}:00`).toBe('home');
+  });
+
+  it('never stands on anything solid or in the water, at any stop', () => {
+    for (const entry of XOAN.schedule) {
+      const spot = entryPosition(entry);
+      expect(isWalkable(entry.area, spot.x, spot.y), `${entry.activity} at ${entry.x},${entry.y}`).toBe(true);
+      expect(tileAt(entry.area, entry.x, entry.y)?.kind).not.toBe('water');
+    }
+  });
+
+  it('keeps the cart and not her own elbow as the thing a player at the counter is nearest', () => {
+    // Stood in front of the cart, the cart is in reach and she is not, so the
+    // key sells and opens the stall rather than starting a conversation.
+    const cart = areaMap('plaza').props.find((prop) => prop.interact === 'xoi-stall')!;
+    const stall = entryPosition(XOAN.schedule.find((entry) => entry.activity === 'xoi-stall')!);
+    const front = { x: cart.x + cart.width / 2, y: cart.y + cart.height + TILE_SIZE / 2 };
+    expect(Math.hypot(stall.x - front.x, stall.y - front.y)).toBeGreaterThanOrEqual(INTERACT_RADIUS);
+  });
+});
+
+describe('whether a counter is kept', () => {
+  it('follows the schedule of whoever keeps it, to the hour', () => {
+    const open = (hour: number) => isStaffed('xoi-stall', 'Summer', 'Sunny', at(hour));
+    expect(open(6)).toBe(false);
+    expect(open(7)).toBe(true);
+    expect(open(11)).toBe(true);
+    expect(open(12)).toBe(false);
+    expect(open(13)).toBe(false);
+    expect(open(14)).toBe(true);
+    expect(open(16)).toBe(true);
+    expect(open(17)).toBe(false);
+  });
+
+  it('is never kept by an activity nobody has', () => {
+    expect(isStaffed('juggling', 'Summer', 'Sunny', at(10))).toBe(false);
   });
 });

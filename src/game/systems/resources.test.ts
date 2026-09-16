@@ -99,6 +99,15 @@ describe('the ground a world starts with', () => {
     expect(nodesOn(nodes, 'village').every((row) => row.kind === 'forage')).toBe(true);
   });
 
+  it('leaves the phố paved, on the first morning and a month of mornings later', () => {
+    // Spec 15. The seeding used to fall through to the village's hedgerow for
+    // any map it had no rule for, which would have put berries between bricks.
+    expect(nodesOn(nodes, 'plaza')).toEqual([]);
+    let later = nodes;
+    for (let day = 2; day <= SEASON_DAYS; day += 1) later = startNodeDay(later, world(), 'Spring', day, SEED).nodes;
+    expect(nodesOn(later, 'plaza')).toEqual([]);
+  });
+
   it('grows nothing indoors, on the first morning or any after', () => {
     expect(nodesOn(nodes, 'farmhouse')).toEqual([]);
     // A whole season of nights, because growth has its own spawners.

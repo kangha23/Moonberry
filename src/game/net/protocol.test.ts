@@ -446,3 +446,28 @@ describe('the fishing commands off the wire', () => {
     expect(parseClientCommand({ type: 'cancelCast' })).toEqual({ type: 'cancelCast' });
   });
 });
+
+describe('the mine commands', () => {
+  it('takes a swing with or without a tile, and nothing about damage', () => {
+    expect(parseClientCommand({ type: 'attack' })).toEqual({ type: 'attack' });
+    expect(parseClientCommand({ type: 'attack', target: { x: 3, y: 4 } })).toEqual({
+      type: 'attack',
+      target: { x: 3, y: 4 },
+    });
+    expect(parseClientCommand({ type: 'attack', damage: 999, monsterId: 'm1-0' })).toEqual({ type: 'attack' });
+    expect(parseClientCommand({ type: 'attack', target: { x: 'far', y: 1 } })).toBeNull();
+  });
+
+  it('takes the ladder and the way out, which carry nothing', () => {
+    expect(parseClientCommand({ type: 'descend', depth: 40 })).toEqual({ type: 'descend' });
+    expect(parseClientCommand({ type: 'exitMine' })).toEqual({ type: 'exitMine' });
+  });
+
+  it('takes only elevator stops that could exist', () => {
+    expect(parseClientCommand({ type: 'useElevator', depth: 10 })).toEqual({ type: 'useElevator', depth: 10 });
+    expect(parseClientCommand({ type: 'useElevator', depth: 7 })).toBeNull();
+    expect(parseClientCommand({ type: 'useElevator', depth: 45 })).toBeNull();
+    expect(parseClientCommand({ type: 'useElevator', depth: 0 })).toBeNull();
+    expect(parseClientCommand({ type: 'useElevator', depth: '10' })).toBeNull();
+  });
+});

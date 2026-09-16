@@ -200,3 +200,52 @@ describe('unlocks', () => {
     expect(hearted.from.npc).toBeTruthy();
   });
 });
+
+describe('the phố’s three dishes, spec 15', () => {
+  const DISHES: ItemId[] = ['banh-chung', 'xoi-dau', 'che-dau'];
+
+  it('are known from the first morning', () => {
+    for (const dish of DISHES) expect(STARTING_RECIPES).toContain(dish);
+  });
+
+  it('ask for what the spec says, and make what it says', () => {
+    expect(recipeFor('banh-chung')).toMatchObject({ needs: { nep: 4, fiber: 2 }, yields: 1 });
+    expect(recipeFor('xoi-dau')).toMatchObject({ needs: { nep: 3, 'dau-xanh': 2 }, yields: 1 });
+    expect(recipeFor('che-dau')).toMatchObject({ needs: { 'dau-xanh': 3, strawberry: 2 }, yields: 2 });
+  });
+
+  it('make the dish and take the ingredients when there are enough', () => {
+    for (const dish of DISHES) {
+      const recipe = recipeFor(dish)!;
+      const before = bag({ ...recipe.needs });
+      const result = craft(before, [...STARTING_RECIPES], dish, 1);
+      expect(result.ok, dish).toBe(true);
+      if (!result.ok) continue;
+      expect(countItem(result.inventory, dish)).toBe(recipe.yields);
+      for (const item of Object.keys(recipe.needs)) expect(countItem(result.inventory, item), `${dish} left ${item}`).toBe(0);
+    }
+  });
+
+  it('refuse when one ingredient is short, and leave the satchel exactly as it was', () => {
+    for (const dish of DISHES) {
+      const recipe = recipeFor(dish)!;
+      const [first, ...rest] = Object.entries(recipe.needs);
+      const short = bag({ [first[0]]: (first[1] ?? 1) - 1, ...Object.fromEntries(rest) });
+      const result = craft(short, [...STARTING_RECIPES], dish, 1);
+      expect(result.ok, dish).toBe(false);
+      if (result.ok) continue;
+      expect(result.reason).toContain('thiếu');
+      expect(countItem(short, dish)).toBe(0);
+      expect(countItem(short, first[0])).toBe((first[1] ?? 1) - 1);
+    }
+  });
+
+  it('pay more as a dish than the ingredients do as produce', () => {
+    // The point of cooking at all. Fibre is counted at its own price.
+    for (const dish of DISHES) {
+      const recipe = recipeFor(dish)!;
+      const raw = Object.entries(recipe.needs).reduce((sum, [item, n]) => sum + ITEMS[item].sellPrice * (n ?? 0), 0);
+      expect(ITEMS[dish].sellPrice * recipe.yields, dish).toBeGreaterThan(raw);
+    }
+  });
+});

@@ -19,6 +19,9 @@ export const JUNIPER: NpcDef = {
   birthday: { season: 'Autumn', day: 26 },
   defaultGiftReaction: 'neutral',
   gifts: {
+    // Spec 15. Chè is the one sweet thing she will admit to.
+    'che-dau': 'loved',
+    'banh-chung': 'liked',
     // What she has talked about since spec 07 and could not be handed until
     // spec 10: the things that grow at the edges, which she says are the only
     // things worth finding.

@@ -9,6 +9,7 @@ import type { ApplyResult, GameEvent } from '../intents';
 import type { FarmState } from '../types';
 import { stillAwake, startNewDay, collapse, rollIfEveryoneAsleep } from './day';
 import { advanceFishing } from './fishing';
+import { advanceMonsters } from './mine';
 
 /**
  * Real milliseconds per in-game clock step.
@@ -96,6 +97,13 @@ export function applyTick(state: FarmState, deltaMs: number): ApplyResult {
       CLOCK_STEP_MINUTES,
     );
     if (grazed !== next.animals) next = { ...next, animals: grazed };
+
+    // The mine, on the same beat. Only floors somebody is standing on have
+    // anything in this list, so an empty mine costs nothing. A faint here puts
+    // a player to bed, which the vote just below then counts.
+    const fought = advanceMonsters(next);
+    next = fought.state;
+    events.push(...fought.events);
 
     const slept = rollIfEveryoneAsleep(next);
     if (slept) {

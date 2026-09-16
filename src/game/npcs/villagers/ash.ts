@@ -21,6 +21,9 @@ export const ASH: NpcDef = {
   birthday: { season: 'Winter', day: 8 },
   defaultGiftReaction: 'disliked',
   gifts: {
+    // Spec 15. Ash would cross the valley for a glass of chè.
+    'che-dau': 'loved',
+    'banh-chung': 'liked',
     strawberry: 'loved',
     melon: 'loved',
     sunflower: 'liked',

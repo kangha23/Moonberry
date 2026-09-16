@@ -19,6 +19,8 @@ export const TOBIAS: NpcDef = {
   birthday: { season: 'Summer', day: 21 },
   defaultGiftReaction: 'liked',
   gifts: {
+    // Spec 15. He prices it before he thanks you for it, and then he eats it.
+    'banh-chung': 'loved',
     melon: 'loved',
     strawberry: 'loved',
     tomato: 'liked',

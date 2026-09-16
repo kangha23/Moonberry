@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { cropsForSeason } from './farming';
 import { countItem, createInventory, emptyInventory, newStack, type Inventory } from './inventory';
 import { ITEMS, itemDef } from './items';
-import { MAX_BUY, buyFromStall, shopStock, stocks } from './shop';
+import { MAX_BUY, buyFromStall, sellAtStall, shopStock, stallFor, stocks } from './shop';
 
 /** A satchel with no room at all, for the refusal paths. */
 function fullSatchel(): Inventory {
@@ -118,5 +118,62 @@ describe('buying seed', () => {
     expect(result.spent).toBe(ITEMS['strawberry-seeds'].buyPrice! * 4);
     expect(result.spent).toBeLessThanOrEqual(wallet);
     expect(result.message).toContain(`${result.spent}g`);
+  });
+});
+
+describe('Bà Xoan’s cart, spec 15', () => {
+  it('sells the nếp and đậu xanh seed in summer, and nothing else', () => {
+    const stock = shopStock('Summer', 'xoi-stall');
+    expect(stock.map((entry) => entry.item).sort()).toEqual(['dau-xanh-seeds', 'nep-seeds']);
+    expect(stock.find((entry) => entry.item === 'nep-seeds')?.price).toBe(60);
+    expect(stock.find((entry) => entry.item === 'dau-xanh-seeds')?.price).toBe(50);
+  });
+
+  it('has no seed out of season and no tools ever', () => {
+    for (const season of ['Spring', 'Autumn', 'Winter'] as const) {
+      expect(shopStock(season, 'xoi-stall')).toEqual([]);
+    }
+    expect(stocks('Summer', 'fishing-rod', 'xoi-stall')).toBe(false);
+    expect(stocks('Summer', 'melon-seeds', 'xoi-stall')).toBe(false);
+  });
+
+  it('leaves the market stocking the new seed too, because stock follows the crop table', () => {
+    expect(stocks('Summer', 'nep-seeds')).toBe(true);
+    expect(stocks('Summer', 'dau-xanh-seeds')).toBe(true);
+  });
+
+  it('refuses to sell at the cart what only the market stocks', () => {
+    const result = buyFromStall(createInventory(), 10_000, 'Summer', 'melon-seeds', 1, 'xoi-stall');
+    expect(result.changed).toBe(false);
+    expect(result.spent).toBe(0);
+  });
+
+  it('buys only the three dishes, and leaves every other crop in the basket', () => {
+    const inventory: Inventory = emptyInventory();
+    inventory[0] = newStack('xoi-dau', 2);
+    inventory[1] = newStack('melon', 3);
+    inventory[2] = newStack('che-dau', 1);
+
+    const sale = sellAtStall(inventory, 'xoi-stall');
+    expect(sale.changed).toBe(true);
+    expect(sale.soldCount).toBe(3);
+    expect(sale.coinsEarned).toBe(2 * itemDef('xoi-dau').sellPrice + itemDef('che-dau').sellPrice);
+    expect(countItem(sale.inventory, 'melon')).toBe(3);
+    expect(countItem(sale.inventory, 'xoi-dau')).toBe(0);
+  });
+
+  it('says what it buys when the basket has none of it', () => {
+    const inventory = emptyInventory();
+    inventory[0] = newStack('melon', 3);
+    const sale = sellAtStall(inventory, 'xoi-stall');
+    expect(sale.changed).toBe(false);
+    expect(sale.message).toContain('bánh chưng');
+  });
+
+  it('is found from the prop it is, and nothing else is a stall', () => {
+    expect(stallFor('xoi-stall')).toBe('xoi-stall');
+    expect(stallFor('market')).toBe('market');
+    expect(stallFor('blacksmith')).toBeNull();
+    expect(stallFor(null)).toBeNull();
   });
 });

@@ -13,7 +13,15 @@ import { GAME_HEIGHT, GAME_WIDTH } from '../../constants';
 import { DIAL_SWEEP, SEASON_ICONS, WEATHER_ICONS } from '../../assets/createPixelArtTextures';
 import { PALETTE, tint } from '../../assets/palette.generated';
 import { HUD, hotbarIconSize, hudLayout, type HudLayout } from '../../ui/hudLayout';
-import { energyRatio, formatClock, hotbarSlots, promptFor, waitingOnLabel } from '../../state/selectors';
+import {
+  energyRatio,
+  formatClock,
+  healthRatio,
+  hotbarSlots,
+  promptFor,
+  showHealthBar,
+  waitingOnLabel,
+} from '../../state/selectors';
 import { farmStore, sendAction, toggleInventory } from '../../state/store';
 import type { PlayerState } from '../../state/types';
 import { HOTBAR_SIZE } from '../../systems/inventory';
@@ -43,6 +51,14 @@ interface HotbarCell {
 const ENERGY_COLOURS = { full: tint('light.0'), low: tint('light.5'), spent: tint('building.3') };
 const ENERGY_LOW = 1 / 3;
 const ENERGY_SPENT = 1 / 10;
+
+/**
+ * Health is red all the way down, because it is a warning at any level; it
+ * darkens as it drains, and below a quarter it pulses so a fight going badly
+ * is noticed without looking away from the fight.
+ */
+const HEALTH_COLOURS = { full: tint('building.3'), low: tint('clothWarm.2') };
+const HEALTH_LOW = 1 / 4;
 
 /** How grey the world goes on empty. */
 const EXHAUSTED_TINT_ALPHA = 0.34;
@@ -91,6 +107,12 @@ export class Hud {
   private energyHit!: Phaser.GameObjects.Rectangle;
   private energyText!: Phaser.GameObjects.Text;
 
+  private healthPanel!: Phaser.GameObjects.Container;
+  private healthFrame!: Phaser.GameObjects.NineSlice;
+  private healthFill!: Phaser.GameObjects.Rectangle;
+  private healthIcon!: Phaser.GameObjects.Image;
+  private healthText!: Phaser.GameObjects.Text;
+
   private waitingPanel!: Phaser.GameObjects.Container;
   private waitingBackdrop!: Phaser.GameObjects.Rectangle;
   private waitingText!: Phaser.GameObjects.Text;
@@ -127,6 +149,7 @@ export class Hud {
     this.createAreaPlate();
     this.createQuestTracker();
     this.createEnergyTube();
+    this.createHealthTube();
     this.createHotbar();
 
     this.dayNightOverlay = this.scene.add.rectangle(0, 0, 1, 1, tint('outline.2'), 0).setDepth(DEPTH.overlay);
@@ -169,7 +192,9 @@ export class Hud {
     this.seasonIcon = this.scene.add.image(78, 70, 'icon-season-spring');
     this.seasonText = this.screen.pixelText(90, 60, 16, PALETTE['light.7']);
     this.weatherIcon = this.scene.add.image(width - 22, 20, 'icon-weather-sunny');
-    this.coinIcon = this.scene.add.image(148, 70, 'icon-coin');
+    // Sized rather than left at the texture's own size: the drawn coin is 32px
+    // and the procedural stand-in 16, and the plate has room for 16.
+    this.coinIcon = this.scene.add.image(148, 70, 'icon-coin').setDisplaySize(16, 16);
     this.coinText = this.screen.pixelText(158, 60, 18, PALETTE['light.7']);
 
     this.clockPanel = this.scene.add
@@ -373,6 +398,48 @@ export class Hud {
   }
 
   /**
+   * Health, as a second tube beside the energy one (spec 13).
+   *
+   * The same object as the energy tube, on purpose: the two numbers are read
+   * the same way — how much is left — and a second visual language for the
+   * second one would be a thing to learn for no reason. It is only on screen
+   * underground or when hurt; see `showHealthBar`. Canvas, not React, because
+   * it is read mid-fight with the eyes on the slime.
+   */
+  private createHealthTube() {
+    const { width, height } = HUD.energy;
+    this.healthFrame = this.screen.frame('plate', 0, 0, width, height);
+    this.healthFill = this.scene.add
+      .rectangle(width / 2, height - 5, width - 10, 1, HEALTH_COLOURS.full, 0.95)
+      .setOrigin(0.5, 1);
+    this.healthIcon = this.scene.add.image(width / 2, -12, 'icon-health');
+    this.healthText = this.screen.pixelText(0, 0, 16).setOrigin(1, 0.5).setVisible(false);
+    const hit = this.scene.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0);
+    this.healthPanel = this.scene.add
+      .container(0, 0, [hit, this.healthFrame, this.healthFill, this.healthIcon, this.healthText])
+      .setDepth(DEPTH.hud + 1)
+      .setVisible(false);
+    this.healthPanel.on('pointerover', () => this.healthText.setVisible(true));
+    this.healthPanel.on('pointerout', () => this.healthText.setVisible(false));
+    this.screen.add(this.healthPanel);
+  }
+
+  private refreshHealth(player: PlayerState) {
+    const visible = showHealthBar(player);
+    this.healthPanel.setVisible(visible);
+    if (!visible) return;
+    const ratio = healthRatio(player);
+    const { width, height } = this.layout.health;
+    const low = ratio <= HEALTH_LOW;
+    this.healthFill.setPosition(width / 2, height - 5);
+    this.healthFill.setSize(width - 10, Math.max(1, (height - 10) * ratio));
+    this.healthFill.setFillStyle(low ? HEALTH_COLOURS.low : HEALTH_COLOURS.full, 0.95);
+    this.healthFill.setVisible(player.health > 0);
+    this.healthIcon.setAlpha(low ? 0.6 + Math.sin(this.scene.time.now / 120) * 0.4 : 1);
+    this.healthText.setText(`${player.health}/${player.maxHealth}`);
+  }
+
+  /**
    * Why nothing is happening when you have gone to bed and somebody else has
    * not. Without it, a shared night is the most likely thing in the game to
    * feel broken.
@@ -397,7 +464,7 @@ export class Hud {
 
   /** Puts every piece of the HUD where this canvas size says it goes. */
   layoutHud() {
-    const { width, height, prompt, hotbar, clock, quest, area, energy } = this.layout;
+    const { width, height, prompt, hotbar, clock, quest, area, energy, health } = this.layout;
 
     this.promptFrame.setPosition(prompt.x, prompt.y).setSize(prompt.width, prompt.height);
     this.heldText.setPosition(prompt.x + 14, prompt.y + 7);
@@ -420,6 +487,15 @@ export class Hud {
     this.energyHit.setSize(energy.width + 16, energy.height + 24);
     this.energyPanel.setInteractive(
       new Phaser.Geom.Rectangle(-8, -20, energy.width + 16, energy.height + 28),
+      Phaser.Geom.Rectangle.Contains,
+    );
+
+    this.healthPanel.setPosition(health.x, health.y);
+    this.healthFrame.setSize(health.width, health.height);
+    this.healthIcon.setPosition(health.width / 2, -12);
+    this.healthText.setPosition(-10, health.height / 2);
+    this.healthPanel.setInteractive(
+      new Phaser.Geom.Rectangle(-8, -20, health.width + 16, health.height + 28),
       Phaser.Geom.Rectangle.Contains,
     );
 
@@ -473,6 +549,7 @@ export class Hud {
     );
     this.refreshQuestTracker();
     this.refreshEnergy(player);
+    this.refreshHealth(player);
 
     // Eased rather than switched, so the colour draining out reads as the
     // player tiring rather than as a rendering glitch.

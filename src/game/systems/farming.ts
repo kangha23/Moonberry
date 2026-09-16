@@ -72,6 +72,10 @@ const CROPS: ReadonlyArray<Omit<CropDefinition, 'seed' | 'produce'>> = [
   { id: 'sunflower', seasons: ['Summer'], growDays: 5, regrowDays: null },
   { id: 'tomato', seasons: ['Summer'], growDays: 6, regrowDays: 2 },
   { id: 'melon', seasons: ['Summer'], growDays: 7, regrowDays: null },
+  // Spec 15's pair, which grow for the phố rather than for the stall: sold
+  // raw they are a strawberry's worth, and their real price is in a dish.
+  { id: 'nep', seasons: ['Summer'], growDays: 5, regrowDays: 3 },
+  { id: 'dau-xanh', seasons: ['Summer'], growDays: 4, regrowDays: 2 },
 
   // Autumn. The richest season, and the one with the least room for error:
   // a pumpkin planted after the twentieth never ripens.
@@ -222,12 +226,20 @@ function produceIds(): ItemId[] {
   return Object.keys(ITEMS).filter((id) => ITEMS[id].produce);
 }
 
-export function sellAllCrops(inventory: Inventory): SellResult {
+/**
+ * Empties the basket onto a counter.
+ *
+ * `accepts` is which of the produce this counter takes, and everything by
+ * default: Tobias buys whatever grows. Bà Xoan's cart only buys the three
+ * dishes, and says so — see `sellAtStall` in `shop.ts`.
+ */
+export function sellAllCrops(inventory: Inventory, accepts: (item: ItemId) => boolean = () => true): SellResult {
   let next = inventory;
   let coinsEarned = 0;
   let soldCount = 0;
 
   for (const id of produceIds()) {
+    if (!accepts(id)) continue;
     const cleared = clearItem(next, id);
     if (cleared.removed === 0) continue;
     next = cleared.inventory;

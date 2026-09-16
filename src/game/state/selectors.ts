@@ -37,7 +37,8 @@ import {
   type Machine,
 } from '../systems/placeables';
 import { checkTool, nodeAt, nodeDef, type ResourceNode } from '../systems/resources';
-import { shopStock, type ShopEntry } from '../systems/shop';
+import { ELEVATOR_EVERY, floorFor } from '../systems/mine';
+import { PHO_DISHES, STALLS, shopStock, type ShopEntry, type StallId } from '../systems/shop';
 import { npcDef } from '../npcs/definitions';
 import { GIFTS_PER_WEEK, heartsWith, isGiftable, relationshipWith } from '../npcs/relationships';
 import { activityAt, activityLabel, type NpcActor } from '../npcs/schedule';
@@ -47,8 +48,12 @@ import {
   isNear,
   isWithinReach,
   propGap,
+  mineDepth,
   targetTile,
+  worldToTile,
 } from '../world/areas';
+import { mineFixtureAt } from '../world/mineMap';
+import { closedStallMessage, stallAt, stallOpen } from './rules/counters';
 import type { FarmStoreState } from './store';
 import type { FarmState, PanelId, PlayerId, PlayerState } from './types';
 
@@ -139,6 +144,25 @@ function marketHint(player: PlayerState): string {
   const basket = countProduce(player.inventory);
   if (basket <= 0) return 'Sạp chợ: nhấn Space/Enter để xem sạp đang có hạt giống gì.';
   return `Sạp chợ: nhấn Space/Enter để bán ${basket} nông sản và mở sạp.`;
+}
+
+/**
+ * Bà Xoan's cart, which is the market's hint with two differences: it can be
+ * shut, and it only buys the three dishes — so the count it promises to sell
+ * is of those, not of everything in the basket.
+ */
+function xoiStallHint(farm: FarmState, player: PlayerState): string {
+  const { label } = STALLS['xoi-stall'];
+  if (!stallOpen(farm, 'xoi-stall')) return closedStallMessage('xoi-stall');
+  if (player.panel === 'market') {
+    return `${label}: mua hạt nếp, hạt đậu xanh, hoặc nhấn Escape để rời đi.`;
+  }
+  const dishes = player.inventory.reduce(
+    (total, slot) => (slot && PHO_DISHES.includes(slot.item) ? total + slot.count : total),
+    0,
+  );
+  if (dishes <= 0) return `${label}: nhấn Space/Enter để xem bà có hạt gì.`;
+  return `${label}: nhấn Space/Enter để bán ${dishes} món cho bà Xoan.`;
 }
 
 function blacksmithHint(player: PlayerState, day: number): string {
@@ -313,6 +337,9 @@ export function promptFor(store: FarmStoreState): string {
   const player = localPlayer(store);
   if (!player) return store.message;
 
+  const mine = mineHint(store.farm, player);
+  if (mine) return mine;
+
   const nearby = interactableAt(player.area, player);
   // Nearest wins between a person and a counter, exactly as it does in the
   // reducer — the prompt has to promise what the key will actually do.
@@ -322,6 +349,7 @@ export function promptFor(store: FarmStoreState): string {
   }
 
   if (nearby?.interact === 'market') return marketHint(player);
+  if (nearby?.interact === 'xoi-stall') return xoiStallHint(store.farm, player);
   if (nearby?.interact === 'blacksmith') return blacksmithHint(player, store.farm.time.day);
   if (nearby?.interact === 'rancher') return ranchHint(store.farm, player);
   if (nearby?.interact === 'bed') return bedHint(player);
@@ -428,6 +456,84 @@ export function waitingOnLabel(farm: FarmState, localPlayerId: PlayerId | null):
 }
 
 /** How full the energy bar is, from 0 to 1. */
+// --- the mine ----------------------------------------------------------------
+
+/** True when the player's hand holds a sword. */
+export function holdingSword(player: PlayerState | null): boolean {
+  const held = player ? slotAt(player.inventory, player.selectedSlot) : null;
+  return Boolean(held && ITEMS[held.item]?.tool === 'sword');
+}
+
+/**
+ * What the action key does in or at the mouth of the mine, or null when it
+ * does whatever it does everywhere else.
+ *
+ * The client picks which intent to send and the reducer decides whether it
+ * happens — the fishing reel's bargain. `aimed` is a click on a tile: with a
+ * sword in hand a click is always a swing, while the bare key on a ladder is
+ * always the ladder, so nobody has to put the sword away to go down.
+ */
+export type MineAction = 'attack' | 'descend' | 'exitMine' | 'elevator';
+
+export function mineActionFor(farm: FarmState, player: PlayerState, aimed: boolean): MineAction | null {
+  const sword = holdingSword(player);
+  const depth = mineDepth(player.area);
+  if (depth === null) {
+    // Above ground a sword is just something in hand: there is nothing to
+    // hit, and a swing must not take the key from the market or a villager.
+    return interactableAt(player.area, player)?.interact === 'mine' ? 'descend' : null;
+  }
+  if (sword && aimed) return 'attack';
+  const fixture = mineFixtureAt(floorFor(farm.mineSeed, depth), {
+    x: worldToTile(player.x),
+    y: worldToTile(player.y),
+  });
+  if (fixture === 'ladder') return 'descend';
+  if (fixture === 'exit') return 'exitMine';
+  if (fixture === 'elevator') return 'elevator';
+  return sword ? 'attack' : null;
+}
+
+/** The elevator's stops this farm has opened, shallowest first. */
+export function elevatorStops(farm: FarmState): number[] {
+  const stops: number[] = [];
+  for (let depth = ELEVATOR_EVERY; depth <= farm.deepestFloor; depth += ELEVATOR_EVERY) stops.push(depth);
+  return stops;
+}
+
+function mineHint(farm: FarmState, player: PlayerState): string {
+  const action = mineActionFor(farm, player, false);
+  const depth = mineDepth(player.area);
+  if (action === 'descend') {
+    return depth === null ? 'Space: xuống mỏ.' : `Space: xuống tầng ${depth + 1}.`;
+  }
+  if (action === 'exitMine') return 'Space: leo lên khỏi mỏ.';
+  if (action === 'elevator') {
+    return elevatorStops(farm).length > 0 ? 'Space: gọi thang máy.' : 'Thang máy. Chưa mở tầng nào để tới.';
+  }
+  if (depth !== null) {
+    return holdingSword(player)
+      ? `Tầng ${depth}. Space hoặc bấm chuột để vung kiếm.`
+      : `Tầng ${depth}. Cầm kiếm để đánh quái; tìm thang để xuống sâu hơn.`;
+  }
+  return '';
+}
+
+/** Health as a fraction of its ceiling, for the tube. */
+export function healthRatio(player: PlayerState | null): number {
+  if (!player || player.maxHealth <= 0) return 0;
+  return Math.max(0, Math.min(1, player.health / player.maxHealth));
+}
+
+/**
+ * Whether the health tube is on screen: underground, or hurt. Spec 13 — a
+ * bar that sat at full on the farm all day would be a number nobody reads.
+ */
+export function showHealthBar(player: PlayerState | null): boolean {
+  if (!player) return false;
+  return player.health < player.maxHealth || mineDepth(player.area) !== null;
+}
+
 export function energyRatio(player: PlayerState | null): number {
   if (!player || player.maxEnergy <= 0) return 0;
   return Math.max(0, Math.min(1, player.energy / player.maxEnergy));
@@ -579,13 +685,23 @@ const NO_STOCK: ShopEntry[] = [];
  * `NO_INVENTORY` exists: zustand compares by identity, and a fresh array on
  * every read is a re-render on every read.
  */
-let stockCache: { season: string; stock: ShopEntry[] } | null = null;
+let stockCache: { season: string; stall: StallId; stock: ShopEntry[] } | null = null;
+
+/**
+ * Which stall the local player is at, for the panel's heading. The market when
+ * they are at neither, which is only ever read while no panel is open.
+ */
+export function stallFor(store: FarmStoreState): StallId {
+  const player = localPlayer(store);
+  return (player && stallAt(player)) ?? 'market';
+}
 
 export function stockFor(store: FarmStoreState): ShopEntry[] {
   const season = store.farm.season;
-  if (stockCache?.season !== season) {
-    const stock = shopStock(season);
-    stockCache = { season, stock: stock.length > 0 ? stock : NO_STOCK };
+  const stall = stallFor(store);
+  if (stockCache?.season !== season || stockCache.stall !== stall) {
+    const stock = shopStock(season, stall);
+    stockCache = { season, stall, stock: stock.length > 0 ? stock : NO_STOCK };
   }
   return stockCache.stock;
 }

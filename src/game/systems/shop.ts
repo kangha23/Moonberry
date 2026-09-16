@@ -1,6 +1,6 @@
-import { cropsForSeason } from './farming';
+import { cropsForSeason, sellAllCrops, type SellResult } from './farming';
 import { addItem, countItem, type Inventory } from './inventory';
-import { ITEMS, itemDef, type ItemId } from './items';
+import { ITEMS, itemDef, type CropId, type ItemId } from './items';
 import { seasonLabel, type Season } from './time';
 
 /**
@@ -48,9 +48,84 @@ export interface ShopEntry {
  */
 const TOOL_STOCK: readonly ItemId[] = ['gold-scythe', 'fishing-rod'];
 
-/** What the stall is selling today. Empty for a season that grows nothing. */
-export function shopStock(season: Season): ShopEntry[] {
-  const seeds: ShopEntry[] = cropsForSeason(season).map((crop) => {
+/**
+ * The counters that sell over the market panel.
+ *
+ * Two since spec 15, and one panel between them: Bà Xoan's xôi cart is the
+ * market stall with a stock of its own, not a second shop. The key is the
+ * prop's `interact`, so which stall a player is at is read off the map exactly
+ * as which counter they are at already was.
+ */
+export type StallId = 'market' | 'xoi-stall';
+
+export interface StallDef {
+  /** What the counter is called, in the panel's heading and in refusals. */
+  label: string;
+  /** Whose seed it sells. Every crop in season, or only these. */
+  crops: 'all' | readonly CropId[];
+  /** What it sells that is not a seed, all year. */
+  tools: readonly ItemId[];
+  /** Which produce one press at the counter sells. */
+  buys: 'all' | readonly ItemId[];
+  /**
+   * The schedule activity somebody has to be doing for the counter to trade,
+   * or null for a stall that is simply open.
+   *
+   * A word rather than a villager, so a stall is kept by whoever is on shift:
+   * the reducer asks whether anybody's schedule says `xoi-stall` right now,
+   * and never whether Bà Xoan specifically is awake.
+   */
+  keptBy: string | null;
+}
+
+/** The three dishes of the phố, which are the only things Bà Xoan buys. */
+export const PHO_DISHES: readonly ItemId[] = ['banh-chung', 'xoi-dau', 'che-dau'];
+
+export const STALLS: Record<StallId, StallDef> = {
+  market: { label: 'Sạp chợ', crops: 'all', tools: TOOL_STOCK, buys: 'all', keptBy: null },
+  // The seed that the phố's dishes are made of, and the dishes bought back.
+  // Nothing else: the cart is a cart, and Tobias sells nếp too.
+  'xoi-stall': {
+    label: 'Xe xôi bà Xoan',
+    crops: ['nep', 'dau-xanh'],
+    tools: [],
+    buys: PHO_DISHES,
+    keptBy: 'xoi-stall',
+  },
+};
+
+export function isStallId(value: unknown): value is StallId {
+  return typeof value === 'string' && Object.hasOwn(STALLS, value);
+}
+
+/** Which stall a prop's `interact` is, or null for anything that is not one. */
+export function stallFor(interact: string | null | undefined): StallId | null {
+  return isStallId(interact) ? interact : null;
+}
+
+/**
+ * One press at a stall's counter: everything it buys, sold.
+ *
+ * The market's own messages for the market, so a trip to Tobias reads exactly
+ * as it always has; the cart's for the cart, which also says what it wants
+ * when the basket has none of it.
+ */
+export function sellAtStall(inventory: Inventory, stall: StallId): SellResult {
+  const { buys, label } = STALLS[stall];
+  if (buys === 'all') return sellAllCrops(inventory);
+  const sale = sellAllCrops(inventory, (item) => buys.includes(item));
+  if (!sale.changed) {
+    const wanted = buys.map((item) => itemDef(item).label.toLowerCase()).join(', ');
+    return { ...sale, message: `${label} chỉ mua ${wanted}. Giỏ của bạn chưa có món nào.` };
+  }
+  return { ...sale, message: `Bà Xoan mua ${sale.soldCount} món, trả ${sale.coinsEarned}g.` };
+}
+
+/** What a stall is selling today. Empty for a season that grows nothing. */
+export function shopStock(season: Season, stall: StallId = 'market'): ShopEntry[] {
+  const { crops, tools: toolStock } = STALLS[stall];
+  const growing = cropsForSeason(season).filter((crop) => crops === 'all' || crops.includes(crop.id));
+  const seeds: ShopEntry[] = growing.map((crop) => {
     const def = itemDef(crop.seed);
     return {
       item: def.id,
@@ -65,7 +140,7 @@ export function shopStock(season: Season): ShopEntry[] {
 
   // Tools last, and stocked all year: a scythe is not a season's crop, and
   // somebody who has saved up for one should not have to wait for spring.
-  const tools: ShopEntry[] = TOOL_STOCK.map((id) => {
+  const tools: ShopEntry[] = toolStock.map((id) => {
     const def = itemDef(id);
     return {
       item: def.id,
@@ -80,8 +155,8 @@ export function shopStock(season: Season): ShopEntry[] {
 }
 
 /** Whether the stall would sell this item at all, this season. */
-export function stocks(season: Season, item: ItemId): boolean {
-  return shopStock(season).some((entry) => entry.item === item);
+export function stocks(season: Season, item: ItemId, stall: StallId = 'market'): boolean {
+  return shopStock(season, stall).some((entry) => entry.item === item);
 }
 
 export interface BuyResult {
@@ -112,6 +187,7 @@ export function buyFromStall(
   season: Season,
   item: ItemId,
   count: number,
+  stall: StallId = 'market',
 ): BuyResult {
   const refuse = (message: string): BuyResult => ({ inventory, spent: 0, changed: false, message });
 
@@ -119,9 +195,9 @@ export function buyFromStall(
     return refuse('Bà chủ sạp đếm lại một lượt rồi lắc đầu.');
   }
 
-  const entry = shopStock(season).find((stocked) => stocked.item === item);
+  const entry = shopStock(season, stall).find((stocked) => stocked.item === item);
   if (!entry) {
-    return refuse(`Mùa ${seasonLabel(season)} sạp không bán thứ đó.`);
+    return refuse(`Mùa ${seasonLabel(season)} ${STALLS[stall].label.toLowerCase()} không bán thứ đó.`);
   }
 
   // A tool is a tool: one to a farmhand, and never a stack of them. Refused

@@ -5,7 +5,8 @@ import { CROP_DEFINITIONS, listSeasons } from '../game/systems/farming';
 import { countItem, hasRoomFor } from '../game/systems/inventory';
 import { ITEMS } from '../game/systems/items';
 import { daysLeftInSeason } from '../game/systems/time';
-import { localPlayer, openPanel, stockFor } from '../game/state/selectors';
+import { localPlayer, openPanel, stallFor, stockFor } from '../game/state/selectors';
+import { STALLS } from '../game/systems/shop';
 import { seasonLabel } from '../game/systems/time';
 import { farmStore, sendAction } from '../game/state/store';
 
@@ -31,6 +32,8 @@ export default function ShopPanel() {
   const season = useStore(farmStore, (store) => store.farm.season);
   const day = useStore(farmStore, (store) => store.farm.time.day);
   const stock = useStore(farmStore, stockFor);
+  // Spec 15: the same panel over Bà Xoan's cart, with her stock and her name.
+  const stall = useStore(farmStore, stallFor);
   const panel = useRef<HTMLDivElement>(null);
 
   // Escape steps away from the counter, but it is not read here: it means
@@ -48,6 +51,7 @@ export default function ShopPanel() {
   // `stock.length` stopped being the same question as "is there anything to
   // plant" the moment the golden scythe went on the counter.
   const seeds = stock.filter((entry) => entry.kind === 'seed');
+  const { label } = STALLS[stall];
 
   return (
     <div
@@ -60,12 +64,14 @@ export default function ShopPanel() {
         className="inventory-panel shop-panel"
         role="dialog"
         aria-modal="true"
-        aria-label={`Sạp chợ, mùa ${seasonLabel(season)}`}
+        aria-label={`${label}, mùa ${seasonLabel(season)}`}
         tabIndex={-1}
         onClick={(event) => event.stopPropagation()}
       >
         <header className="inventory-header">
-          <h2>Sạp chợ — mùa {seasonLabel(season)}</h2>
+          <h2>
+            {label} — mùa {seasonLabel(season)}
+          </h2>
           <span className="inventory-free">Ví chung của nông trại: {coins}g</span>
           <button
             type="button"
@@ -76,7 +82,13 @@ export default function ShopPanel() {
           </button>
         </header>
 
-        {seeds.length === 0 ? (
+        {seeds.length === 0 && stall === 'xoi-stall' ? (
+          <p className="shop-empty">
+            Nếp với đậu xanh chỉ gieo được mùa Hạ. Mùa {seasonLabel(season)} bà chỉ mua bánh chưng, xôi đậu
+            và chè đậu.
+          </p>
+        ) : null}
+        {seeds.length === 0 && stall === 'market' ? (
           <p className="shop-empty">
             Mùa {seasonLabel(season)} gieo gì cũng không sống đến ngày thu hoạch. Chỉ còn nông cụ trên quầy.
           </p>

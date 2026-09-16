@@ -42,6 +42,7 @@ import {
   plotKey,
   spawnPoints,
   tileAt,
+  type AreaId,
 } from '../world/areas';
 import { nodeAt, nodeDef, type NodeKind, type ResourceNode } from '../systems/resources';
 import { CAST_ENERGY } from '../systems/fishing';
@@ -91,7 +92,7 @@ function join(state: FarmState, ...ids: PlayerId[]): FarmState {
 }
 
 /** Places a player at a world position without going through movement. */
-function place(state: FarmState, id: PlayerId, x: number, y: number, area = START_AREA): FarmState {
+function place(state: FarmState, id: PlayerId, x: number, y: number, area: AreaId = START_AREA): FarmState {
   return { ...state, players: { ...state.players, [id]: { ...state.players[id], area, x, y } } };
 }
 
@@ -1076,6 +1077,77 @@ describe('the market stall', () => {
 
     expect(morning.state.time.day).toBe(2);
     expect(morning.state.players.a.panel).toBeNull();
+  });
+});
+
+/**
+ * Bà Xoan's cart, spec 15.
+ *
+ * The market's own rules — sell on the keypress, open the panel, check the
+ * counter on every purchase — with the two things that make it her cart: it
+ * only trades while she is keeping it, and it only buys the phố's dishes.
+ */
+describe('the xôi cart', () => {
+  const CART = (() => {
+    const prop = areaMap('plaza').props.find((candidate) => candidate.interact === 'xoi-stall');
+    if (!prop) throw new Error('the phố has no xôi cart');
+    // In front of the counter, which is where a player walks up to it from.
+    return { x: prop.x + prop.width / 2, y: prop.y + prop.height + TILE_SIZE / 2 };
+  })();
+
+  /** A summer morning, or whatever hour is asked for, with a player at the cart. */
+  function atCart(hour = 9): FarmState {
+    const state = join(createFarmState(), 'a');
+    const summer = { ...state, coins: 1000, season: 'Summer' as const, time: createTimeState(1, hour * 60) };
+    return place(summer, 'a', CART.x, CART.y, 'plaza');
+  }
+
+  it('sells the dishes in the basket, keeps the rest, and opens the stall', () => {
+    let state = give(give(atCart(), 'a', 'banh-chung', 2), 'a', 'melon', 1);
+    const walletBefore = state.coins;
+    state = applyIntent(state, { type: 'player/act', playerId: 'a' }).state;
+
+    expect(state.players.a.panel).toBe('market');
+    expect(state.coins).toBe(walletBefore + 2 * ITEMS['banh-chung'].sellPrice);
+    expect(countItem(state.players.a.inventory, 'banh-chung')).toBe(0);
+    expect(countItem(state.players.a.inventory, 'melon')).toBe(1);
+  });
+
+  it('sells her seed and not the market\'s', () => {
+    const open = applyIntent(atCart(), { type: 'player/act', playerId: 'a' }).state;
+    const walletBefore = open.coins;
+
+    const nep = applyIntent(open, { type: 'shop/buy', playerId: 'a', item: 'nep-seeds', count: 1 });
+    expect(countItem(nep.state.players.a.inventory, 'nep-seeds')).toBe(1);
+    expect(nep.state.coins).toBe(walletBefore - ITEMS['nep-seeds'].buyPrice!);
+
+    const melon = applyIntent(open, { type: 'shop/buy', playerId: 'a', item: 'melon-seeds', count: 1 });
+    expect(melon.state).toBe(open);
+  });
+
+  it('is shut outside her hours: nothing sold, nothing opened, and it says when to come back', () => {
+    for (const hour of [6, 12, 13, 18]) {
+      const state = give(atCart(hour), 'a', 'xoi-dau', 1);
+      const after = applyIntent(state, { type: 'player/act', playerId: 'a' });
+      expect(after.state, `${hour}:00`).toBe(state);
+      expect(after.events.some((event) => event.kind === 'message' && event.text.includes('dọn hàng'))).toBe(true);
+    }
+  });
+
+  it('refuses a purchase once she has gone, even with the panel still open', () => {
+    // A panel opened at 11:58 is still open at noon; the server asks the clock.
+    const open = applyIntent(atCart(11), { type: 'player/act', playerId: 'a' }).state;
+    const noon = { ...open, time: createTimeState(1, 12 * 60) };
+    const after = applyIntent(noon, { type: 'shop/buy', playerId: 'a', item: 'nep-seeds', count: 1 });
+    expect(after.state).toBe(noon);
+    expect(countItem(after.state.players.a.inventory, 'nep-seeds')).toBe(0);
+  });
+
+  it('is somewhere Bà Xoan actually is while it is open', () => {
+    const morning = atCart(9);
+    const entry = scheduleEntryAt(NPCS.xoan, morning.season, morning.weather, 9)!;
+    expect(entry.area).toBe('plaza');
+    expect(entry.activity).toBe('xoi-stall');
   });
 });
 

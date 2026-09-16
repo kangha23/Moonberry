@@ -257,6 +257,9 @@ export function validateSources(json) {
     if (cut.rect !== undefined) wantWholeNumberArray(target, 'rect', cut.rect, 4);
     if (cut.grid !== undefined) wantWholeNumber(target, 'grid', cut.grid);
     if (cut.scale !== undefined) wantWholeNumber(target, 'scale', cut.scale);
+    if (cut.smooth !== undefined && !(typeof cut.smooth === 'number' && cut.smooth > 1 && cut.smooth <= 3)) {
+      throw new Error(`Cut "${target}" has an invalid "smooth": expected a number above 1 and at most 3, got ${JSON.stringify(cut.smooth)}.`);
+    }
     if (cut.frame !== undefined) wantWholeNumber(target, 'frame', cut.frame);
     if (cut.row !== undefined) wantWholeNumber(target, 'row', cut.row);
     if (cut.box !== undefined) wantWholeNumberArray(target, 'box', cut.box, 2);
@@ -288,6 +291,7 @@ export function cutFlags(cut) {
   if (cut.cell !== undefined) flags.cell = cut.cell.join(',');
   if (cut.rect !== undefined) flags.rect = cut.rect.join(',');
   if (cut.scale !== undefined) flags.scale = String(cut.scale);
+  if (cut.smooth !== undefined) flags.smooth = String(cut.smooth);
   if (cut.flip !== undefined) flags.flip = String(cut.flip);
   if (cut.recolour !== undefined) {
     flags.recolour = Object.entries(cut.recolour)

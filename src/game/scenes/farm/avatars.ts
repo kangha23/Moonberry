@@ -10,14 +10,30 @@ import { tint } from '../../assets/palette.generated';
 import { farmStore } from '../../state/store';
 import type { PlayerId, PlayerState } from '../../state/types';
 import { TILE_SIZE, type Direction } from '../../world/areas';
-import { AVATAR_DEPTH_BASE, WALK_FRAMES, standFrame, type SceneContext } from './shared';
+import { AVATAR_DEPTH_BASE, WALK_FRAMES, WALK_ROW, standFrame, type SceneContext } from './shared';
 
 export interface Avatar {
   sprite: Phaser.GameObjects.Sprite;
   shadow: Phaser.GameObjects.Image;
   lastX: number;
   lastY: number;
+  /** `scene.time.now` until which the swing owns the sprite, and walking waits. */
+  swingingUntil: number;
 }
+
+/**
+ * How big the player's sheet is drawn.
+ *
+ * 1, because the sheet is the Emberfield swordsman now, drawn at this game's
+ * own scale: about a tile and a bit tall in a 64px frame. The LPC people are
+ * drawn in the same size of frame at nearly twice the height, which is why
+ * the villagers keep their own 0.62.
+ */
+const PLAYER_SHEET_SCALE = 1;
+
+/** The swing's eight frames, played once. */
+const SWING_FRAME_RATE = 24;
+const SWING_FRAMES = 8;
 
 /** The players standing on the built area, drawn. */
 export class AvatarView {
@@ -42,6 +58,7 @@ export class AvatarView {
   }
 
   createWalkAnimations() {
+    this.createSwingAnimations();
     if (!this.scene.textures.exists('player-sheet')) return;
     (['up', 'left', 'down', 'right'] as Direction[]).forEach((dir) => {
       const key = `player-walk-${dir}`;
@@ -58,12 +75,42 @@ export class AvatarView {
     });
   }
 
+  /** The sword swing, one row a direction, in the same row order as the walk. */
+  private createSwingAnimations() {
+    if (!this.scene.textures.exists('attack-player-sheet')) return;
+    (['up', 'left', 'down', 'right'] as Direction[]).forEach((dir) => {
+      const key = `player-swing-${dir}`;
+      if (this.scene.anims.exists(key)) return;
+      const start = WALK_ROW[dir] * SWING_FRAMES;
+      this.scene.anims.create({
+        key,
+        frames: this.scene.anims.generateFrameNumbers('attack-player-sheet', { start, end: start + SWING_FRAMES - 1 }),
+        frameRate: SWING_FRAME_RATE,
+        repeat: 0,
+      });
+    });
+  }
+
+  /**
+   * Plays the swing on this player's avatar, facing the way they face.
+   *
+   * A picture of the key press, like the fan: whether the blow landed is the
+   * server's answer. Walking takes the sprite back when the swing is done.
+   */
+  swing(id: PlayerId, facing: Direction) {
+    const avatar = this.avatars.get(id);
+    const key = `player-swing-${facing}`;
+    if (!avatar || !this.scene.anims.exists(key)) return;
+    avatar.sprite.anims.play(key, true);
+    avatar.swingingUntil = this.scene.time.now + (SWING_FRAMES / SWING_FRAME_RATE) * 1000;
+  }
+
   private createAvatar(player: PlayerState): Avatar {
     const hasSheet = this.scene.textures.exists('player-sheet');
     const shadow = this.scene.add.image(player.x, player.y + 16, 'shadow');
     const sprite = this.scene.add
       .sprite(player.x, player.y, hasSheet ? 'player-sheet' : 'player', hasSheet ? standFrame('down') : undefined)
-      .setScale(hasSheet ? 0.62 : 1.2);
+      .setScale(hasSheet ? PLAYER_SHEET_SCALE : 1.2);
     // Remote players are tinted so they read as somebody else at a glance.
     // Was the source literal `bfd8ff`, a pale blue this palette has no match for at all (every
     // blue it owns is dark and saturated - `water.0-3`). Between the two
@@ -76,7 +123,7 @@ export class AvatarView {
     // rather than lightly recolour it - the wrong trade for a legibility tint.
     if (player.id !== farmStore.getState().localPlayerId) sprite.setTint(tint('light.6'));
     this.context.areaLayer?.addMultiple([shadow, sprite]);
-    return { sprite, shadow, lastX: player.x, lastY: player.y };
+    return { sprite, shadow, lastX: player.x, lastY: player.y, swingingUntil: 0 };
   }
 
   /**
@@ -107,7 +154,9 @@ export class AvatarView {
       avatar.shadow.setDepth(avatar.sprite.depth - 1);
 
       const walkKey = `player-walk-${player.facing}`;
-      if (this.scene.anims.exists(walkKey)) {
+      if (this.scene.time.now < avatar.swingingUntil) {
+        // Mid-swing: the swing plays out, whatever the feet are doing.
+      } else if (this.scene.anims.exists(walkKey)) {
         if (moved) avatar.sprite.anims.play(walkKey, true);
         else {
           avatar.sprite.anims.stop();

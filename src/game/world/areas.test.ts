@@ -19,7 +19,7 @@ import {
   worldToTile,
   type AreaId,
 } from './areas';
-import { parseTiledMap, type TiledMap, type TiledTileset } from './tiled';
+import { MAX_SIGN_LENGTH, hasSignboard, parseTiledMap, type TiledMap, type TiledProperty, type TiledTileset } from './tiled';
 
 const AREA_LIST = Object.keys(AREAS) as AreaId[];
 
@@ -130,6 +130,90 @@ describe('portals', () => {
 
     expect(out).toBeDefined();
     expect(back).toBeDefined();
+  });
+
+  /**
+   * Every door has a way back, and the way back lands beside the door.
+   *
+   * Spec 15 asked for this as a sweep rather than as one pair at a time,
+   * because the pairs were written one at a time and that is how the
+   * farmhouse's came to be a tile out. A portal whose return trip lands on
+   * the far side of the map is not a bug a pair test finds; this is.
+   */
+  it('gives every portal a return portal that lands beside it, on ground that can be stood on', () => {
+    /** How far from a door its return trip may land, in tiles, edge to centre. */
+    const NEAR = 2;
+    for (const area of AREA_LIST) {
+      for (const portal of areaMap(area).portals) {
+        const target = portal.toArea as AreaId;
+        const label = `${area} "${portal.name}" -> ${target}`;
+        expect(isWalkable(target, portal.toX, portal.toY), `${label} lands somewhere nobody can stand`).toBe(true);
+
+        const returns = areaMap(target).portals.filter((back) => back.toArea === area);
+        expect(returns.length, `${label} has no way back`).toBeGreaterThan(0);
+        const beside = returns.some((back) => {
+          const tileX = worldToTile(back.toX);
+          const tileY = worldToTile(back.toY);
+          const left = worldToTile(portal.x);
+          const top = worldToTile(portal.y);
+          const right = worldToTile(portal.x + portal.width - 1);
+          const bottom = worldToTile(portal.y + portal.height - 1);
+          const dx = Math.max(left - tileX, 0, tileX - right);
+          const dy = Math.max(top - tileY, 0, tileY - bottom);
+          return Math.max(dx, dy) <= NEAR && portalAt(area, { x: back.toX, y: back.toY }) === null;
+        });
+        expect(beside, `${label}: the way back does not land beside this door`).toBe(true);
+      }
+    }
+  });
+
+  it('puts the phố between the farm and the village, and nowhere else', () => {
+    const doors = areaMap('plaza').portals.map((portal) => portal.toArea).sort();
+    expect(doors).toEqual(['farm', 'village']);
+    // West to the farm, east to the village.
+    const west = areaMap('plaza').portals.find((portal) => portal.toArea === 'farm')!;
+    const east = areaMap('plaza').portals.find((portal) => portal.toArea === 'village')!;
+    expect(west.x).toBe(0);
+    expect(east.x + east.width).toBe(areaMap('plaza').pixelWidth);
+  });
+});
+
+describe('the phố', () => {
+  const plaza = () => areaMap('plaza');
+
+  it('is 24 by 18, outdoors, and grows nothing', () => {
+    expect([plaza().width, plaza().height]).toEqual([24, 18]);
+    expect(plaza().indoor).toBe(false);
+    expect(plotTiles('plaza')).toHaveLength(0);
+  });
+
+  it('paves its street in the brick tile', () => {
+    const paved = plaza().tiles.filter((tile) => tile?.texture === 'tile-plaza');
+    expect(paved.length).toBeGreaterThan(plaza().width * 10);
+    for (const tile of paved) expect(tile?.kind).toBe('path');
+  });
+
+  it('has three solid shop fronts, each with a sign', () => {
+    const fronts = plaza().props.filter((prop) => prop.texture.startsWith('shopfront'));
+    expect(fronts).toHaveLength(3);
+    for (const front of fronts) {
+      expect(front.solid).toBe(true);
+      expect(front.sign).toBeTruthy();
+    }
+    // And nothing without a board carries one: the road signs and the cột mốc
+    // have boards of their own.
+    for (const prop of plaza().props.filter((prop) => !hasSignboard(prop.texture))) {
+      expect(prop.sign, prop.name).toBeNull();
+    }
+  });
+
+  it('keeps the xôi cart reachable, and the only counter on the street', () => {
+    const counters = plaza().props.filter((prop) => prop.interact !== null);
+    expect(counters.map((prop) => prop.interact)).toEqual(['xoi-stall']);
+    const cart = counters[0];
+    const front = { x: cart.x + cart.width / 2, y: cart.y + cart.height + TILE_SIZE / 2 };
+    expect(isWalkable('plaza', front.x, front.y)).toBe(true);
+    expect(interactableAt('plaza', front)).toBe(cart);
   });
 });
 
@@ -430,6 +514,107 @@ describe('parseTiledMap', () => {
     expect(portal.toX).toBe(3 * 32 + 16);
     expect(portal.toY).toBe(4 * 32 + 16);
     expect(portal.label).toBe('door');
+  });
+});
+
+describe('signs', () => {
+  /** A one-prop map, with whatever properties the test hands the prop. */
+  function withProp(properties: TiledProperty[]): TiledMap {
+    return {
+      ...tinyMap([1, 1, 1, 1]),
+      layers: [
+        ...tinyMap([1, 1, 1, 1]).layers,
+        {
+          type: 'objectgroup',
+          name: 'props',
+          objects: [{ id: 1, name: 'shop', type: 'prop', x: 0, y: 0, width: 64, height: 32, properties }],
+        },
+      ],
+    };
+  }
+
+  const texture = (value: string): TiledProperty => ({ name: 'texture', type: 'string', value });
+  const sign = (value: string | number): TiledProperty => ({
+    name: 'sign',
+    type: typeof value === 'number' ? 'int' : 'string',
+    value,
+  });
+
+  it('reads a sign off a shop front, trimmed', () => {
+    const [prop] = parseTiledMap('street', withProp([texture('shopfront'), sign('  BÁNH BAO ')]), TINY_TILESET).props;
+    expect(prop.sign).toBe('BÁNH BAO');
+  });
+
+  it('reads no sign off anything without a board', () => {
+    const [prop] = parseTiledMap('street', withProp([texture('bush')]), TINY_TILESET).props;
+    expect(prop.sign).toBeNull();
+  });
+
+  it('refuses a shop front with no sign, naming the map and the prop', () => {
+    expect(() => parseTiledMap('street', withProp([texture('shopfront-green')]), TINY_TILESET)).toThrow(
+      /street.*shop.*no "sign"/,
+    );
+  });
+
+  it('refuses a sign on something with no board to write it on', () => {
+    expect(() => parseTiledMap('street', withProp([texture('bush'), sign('CHÈ')]), TINY_TILESET)).toThrow(
+      /no board/,
+    );
+  });
+
+  it('refuses an empty sign, a sign that is not text, and one too long for the board', () => {
+    for (const bad of [sign('   '), sign(7), sign('X'.repeat(MAX_SIGN_LENGTH + 1))]) {
+      expect(() => parseTiledMap('street', withProp([texture('shopfront'), bad]), TINY_TILESET)).toThrow(/sign/);
+    }
+    // Counted in characters, not bytes: every diacritic is one letter on the board.
+    const full = 'Ơ'.repeat(MAX_SIGN_LENGTH);
+    expect(parseTiledMap('street', withProp([texture('shopfront'), sign(full)]), TINY_TILESET).props[0].sign).toBe(full);
+  });
+
+  const arrow = (value: string): TiledProperty => ({ name: 'arrow', type: 'string', value });
+
+  it('reads a road sign of several lines and the way its arrow points', () => {
+    const [prop] = parseTiledMap(
+      'street',
+      withProp([texture('signpost'), sign('Khu phố\nPHỐ VIỆT\n 300 m '), arrow('right')]),
+      TINY_TILESET,
+    ).props;
+    expect(prop.sign).toBe('Khu phố\nPHỐ VIỆT\n300 m');
+    expect(prop.arrow).toBe('right');
+  });
+
+  it('refuses a road sign with no arrow, or one pointing nowhere', () => {
+    expect(() => parseTiledMap('street', withProp([texture('signpost'), sign('PHỐ')]), TINY_TILESET)).toThrow(/arrow/);
+    expect(() =>
+      parseTiledMap('street', withProp([texture('signpost'), sign('PHỐ'), arrow('sideways')]), TINY_TILESET),
+    ).toThrow(/arrow/);
+  });
+
+  it('refuses an arrow on a board that has nowhere to draw one', () => {
+    expect(() =>
+      parseTiledMap('street', withProp([texture('shopfront'), sign('CHÈ'), arrow('left')]), TINY_TILESET),
+    ).toThrow(/nowhere to draw/);
+  });
+
+  it('refuses more lines than the board has room for, and a blank line between them', () => {
+    expect(() => parseTiledMap('street', withProp([texture('shopfront'), sign('CHÈ\nĐẬU')]), TINY_TILESET)).toThrow(
+      /room for 1/,
+    );
+    expect(() =>
+      parseTiledMap('street', withProp([texture('signpost'), sign('A\nB\nC\nD'), arrow('up')]), TINY_TILESET),
+    ).toThrow(/room for 3/);
+    expect(() =>
+      parseTiledMap('street', withProp([texture('milestone'), sign('PV\n\n0 km')]), TINY_TILESET),
+    ).toThrow(/empty line/);
+  });
+
+  it('refuses a misspelt property rather than ignoring it', () => {
+    // The quiet failure this exists for: `sigm` read as no sign at all, and a
+    // board that is blank in the game with nothing to say why.
+    const misspelt: TiledProperty = { name: 'sigm', type: 'string', value: 'CHÈ' };
+    expect(() => parseTiledMap('street', withProp([texture('shopfront'), misspelt]), TINY_TILESET)).toThrow(
+      /unknown property "sigm"/,
+    );
   });
 });
 

@@ -166,7 +166,8 @@ export class FarmRoom {
       this.farm.hay !== before.hay ||
       this.farm.season !== before.season ||
       this.farm.weather !== before.weather;
-    const clockChanged = this.farm.time !== before.time;
+    // The monsters walk on the clock step, so they ride the compact frame too.
+    const clockChanged = this.farm.time !== before.time || this.farm.monsters !== before.monsters;
 
     for (const [playerId, input] of this.moveInputs) {
       if (input.dx === 0 && input.dy === 0) continue;
@@ -181,7 +182,12 @@ export class FarmRoom {
       // Far cheaper than resending the whole farm every 1.2s to move the hands.
       this.broadcast({
         t: MSG.clock,
-        d: { time: this.farm.time, season: this.farm.season, weather: this.farm.weather },
+        d: {
+          time: this.farm.time,
+          season: this.farm.season,
+          weather: this.farm.weather,
+          monsters: this.farm.monsters,
+        },
       });
     }
 
@@ -300,5 +306,13 @@ function toIntent(playerId: PlayerId, command: ActionCommand): Parameters<typeof
       return { type: 'player/reel', playerId, down: command.down };
     case 'cancelCast':
       return { type: 'player/cancelCast', playerId };
+    case 'attack':
+      return { type: 'player/attack', playerId, target: command.target };
+    case 'descend':
+      return { type: 'player/descend', playerId };
+    case 'useElevator':
+      return { type: 'player/useElevator', playerId, depth: command.depth };
+    case 'exitMine':
+      return { type: 'player/exitMine', playerId };
   }
 }

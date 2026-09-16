@@ -8,7 +8,7 @@
   "margin": 0,
   "name": "moonberry",
   "spacing": 0,
-  "tilecount": 29,
+  "tilecount": 30,
   "tiledversion": "1.10.2",
   "tileheight": 32,
   "tilewidth": 32,
@@ -679,6 +679,29 @@
           "name": "solid",
           "type": "bool",
           "value": true
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "image": "../public/assets/lpc/tile-plaza.png",
+      "imageheight": 32,
+      "imagewidth": 32,
+      "properties": [
+        {
+          "name": "texture",
+          "type": "string",
+          "value": "tile-plaza"
+        },
+        {
+          "name": "kind",
+          "type": "string",
+          "value": "path"
+        },
+        {
+          "name": "solid",
+          "type": "bool",
+          "value": false
         }
       ]
     }

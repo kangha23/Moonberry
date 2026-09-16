@@ -157,6 +157,25 @@ test('passes a rect, a scale, a flip and a recolour straight through', () => {
   );
 });
 
+test('passes a smooth scale through, and refuses one out of range', () => {
+  assert.deepEqual(cutFlags({ target: 'item-hoe', grid: 24, cell: [1, 7], smooth: 1.4 }), {
+    grid: '24',
+    cell: '1,7',
+    smooth: '1.4',
+  });
+  const pack = {
+    title: 'T',
+    page: 'https://example.com',
+    licence: 'CC0',
+    authors: ['a'],
+    files: { 's.png': { from: 'https://example.com/s.png', sha256: 'a'.repeat(64) } },
+  };
+  const json = (smooth) => ({ packs: { p: pack }, cuts: [{ target: 'item-hoe', pack: 'p', file: 's.png', smooth }] });
+  assert.throws(() => validateSources(json(5)), /smooth/);
+  assert.throws(() => validateSources(json('1.4')), /smooth/);
+  assert.doesNotThrow(() => validateSources(json(1.4)));
+});
+
 test('turns a walk cycle and an animal cycle into their own flags', () => {
   assert.deepEqual(cutFlags({ target: 'maeve-sheet', walkcycle: true, row: 0 }), {
     walkcycle: true,

@@ -9,7 +9,7 @@
  */
 import Phaser from 'phaser';
 import { PALETTE } from '../../assets/palette.generated';
-import { areaMap } from '../../world/areas';
+import { areaMap, mineDepth } from '../../world/areas';
 import type { AreaView } from './area';
 import type { Hud } from './hud';
 import type { ScreenLayer } from './screen';
@@ -267,8 +267,17 @@ export class AtmosphereView {
     // look identical. `shadow.3` (#332f66, H244) is the second-nearest for
     // rainy (d=0.0738) and a closer hue match to its blue (H210) than
     // `shadow.2`'s blue-purple (H286) is, so rainy moves there instead.
+    // Underground, past the edge of the rock is more rock: the same dark the
+    // floor's overlay is drawn in, not the sky.
+    const underground = this.context.builtArea !== null && mineDepth(this.context.builtArea) !== null;
     this.scene.cameras.main.setBackgroundColor(
-      rainy ? PALETTE['shadow.3'] : fireflyWeather ? PALETTE['shadow.2'] : PALETTE['shadow.1'],
+      underground
+        ? PALETTE['outline.2']
+        : rainy
+          ? PALETTE['shadow.3']
+          : fireflyWeather
+            ? PALETTE['shadow.2']
+            : PALETTE['shadow.1'],
     );
   }
 }

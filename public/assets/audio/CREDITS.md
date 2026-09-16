@@ -37,6 +37,7 @@ is never an unreviewable diff.
 | `music/day-village-loop.wav` | D-major pad, busier figure |
 | `music/night-loop.wav` | Low pad, sparse plucks, rolled off at 2.2 kHz |
 | `music/home-loop.wav` | C-major pad an octave down, slow low plucks, rolled off at 2.8 kHz |
+| `music/mine-loop.wav` | A-minor pad two octaves down, sparse high "drip" plucks, rolled off at 1.8 kHz |
 | `music/rain-loop.wav` | Filtered noise rain with gusts over a quiet pad |
 
 Every music bed is exactly 8 seconds and loops seamlessly: partial frequencies

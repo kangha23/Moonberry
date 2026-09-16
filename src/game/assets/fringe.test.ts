@@ -67,9 +67,11 @@ describe('edge textures', () => {
     expect(fake.drawImageCalls).toBeGreaterThanOrEqual(45);
   });
 
-  it('still builds all 45 overlays', () => {
+  it('still builds all 45 overlays, plus 15 for grass over a dug bed', () => {
     const fake = fakeScene();
     createPixelArtTextures(fake.scene);
-    expect(fake.keys.filter((key) => key.startsWith('edge-')).length).toBe(45);
+    const edges = fake.keys.filter((key) => key.startsWith('edge-'));
+    expect(edges.length).toBe(60);
+    expect(edges.filter((key) => key.startsWith('edge-grass-on-soil-')).length).toBe(15);
   });
 });

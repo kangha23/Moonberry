@@ -330,6 +330,80 @@ export function upscale(image, factor) {
   return { width, height, pixels };
 }
 
+/**
+ * Scale3x (AdvMAME3x): triples an image, rounding diagonal edges instead of
+ * turning each pixel into a 3x3 block.
+ *
+ * Like `upscale`, it never blends: every output pixel is a copy of one of the
+ * source pixel's neighbours, so no colour appears that the artist did not
+ * choose. The difference is that a one-pixel diagonal (a tool handle) stays a
+ * diagonal line rather than becoming a staircase of squares.
+ */
+export function scale3x(image) {
+  const { width, height } = image;
+  const out = { width: width * 3, height: height * 3, pixels: new Uint8Array(width * height * 36) };
+  const at = (x, y) => (Math.min(Math.max(y, 0), height - 1) * width + Math.min(Math.max(x, 0), width - 1)) * 4;
+  const same = (a, b) =>
+    image.pixels[a] === image.pixels[b] &&
+    image.pixels[a + 1] === image.pixels[b + 1] &&
+    image.pixels[a + 2] === image.pixels[b + 2] &&
+    image.pixels[a + 3] === image.pixels[b + 3];
+
+  for (let y = 0; y < height; y += 1) {
+    for (let x = 0; x < width; x += 1) {
+      const [A, B, C, D, E, F, G, H, I] = [
+        at(x - 1, y - 1), at(x, y - 1), at(x + 1, y - 1),
+        at(x - 1, y), at(x, y), at(x + 1, y),
+        at(x - 1, y + 1), at(x, y + 1), at(x + 1, y + 1),
+      ];
+      const cells = [E, E, E, E, E, E, E, E, E];
+      if (!same(B, H) && !same(D, F)) {
+        if (same(D, B)) cells[0] = D;
+        if ((same(D, B) && !same(E, C)) || (same(B, F) && !same(E, A))) cells[1] = B;
+        if (same(B, F)) cells[2] = F;
+        if ((same(D, B) && !same(E, G)) || (same(D, H) && !same(E, A))) cells[3] = D;
+        if ((same(B, F) && !same(E, I)) || (same(H, F) && !same(E, C))) cells[5] = F;
+        if (same(D, H)) cells[6] = D;
+        if ((same(D, H) && !same(E, I)) || (same(H, F) && !same(E, G))) cells[7] = H;
+        if (same(H, F)) cells[8] = F;
+      }
+      for (let i = 0; i < 9; i += 1) {
+        const to = ((y * 3 + Math.floor(i / 3)) * out.width + x * 3 + (i % 3)) * 4;
+        out.pixels.set(image.pixels.subarray(cells[i], cells[i] + 4), to);
+      }
+    }
+  }
+  return out;
+}
+
+/**
+ * Scales by a factor that is not a whole number, for art drawn a size too small.
+ *
+ * `upscale` only takes whole numbers, and a 24px icon in a 32px slot needs
+ * about 1.4. Nearest neighbour straight to 1.4 doubles every second or third
+ * row and column, which shows as uneven lines. Going through `scale3x` first
+ * and then sampling down keeps edges smooth, and still never blends: the
+ * result holds only colours from the source.
+ */
+export function smoothScale(image, factor) {
+  if (!(factor > 1 && factor <= 3)) {
+    throw new Error(`A smooth scale must be above 1 and at most 3, got ${factor}.`);
+  }
+  const big = scale3x(image);
+  const width = Math.round(image.width * factor);
+  const height = Math.round(image.height * factor);
+  const pixels = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    const fromY = Math.min(big.height - 1, Math.floor(((y + 0.5) * big.height) / height));
+    for (let x = 0; x < width; x += 1) {
+      const fromX = Math.min(big.width - 1, Math.floor(((x + 0.5) * big.width) / width));
+      const from = (fromY * big.width + fromX) * 4;
+      pixels.set(big.pixels.subarray(from, from + 4), (y * width + x) * 4);
+    }
+  }
+  return { width, height, pixels };
+}
+
 /** `encodePng`, but taking the image shape everything above passes around. */
 export function encodeImage(image) {
   return encodePng(image.width, image.height, image.pixels);

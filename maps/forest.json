@@ -1100,6 +1100,39 @@
               "value": 21
             }
           ]
+        },
+        {
+          "id": 9,
+          "name": "mine-entrance",
+          "type": "prop",
+          "x": 160,
+          "y": 640,
+          "width": 64,
+          "height": 64,
+          "rotation": 0,
+          "visible": true,
+          "properties": [
+            {
+              "name": "texture",
+              "type": "string",
+              "value": "mine-entrance"
+            },
+            {
+              "name": "solid",
+              "type": "bool",
+              "value": true
+            },
+            {
+              "name": "depth",
+              "type": "int",
+              "value": 21
+            },
+            {
+              "name": "interact",
+              "type": "string",
+              "value": "mine"
+            }
+          ]
         }
       ],
       "opacity": 1,
@@ -1155,7 +1188,7 @@
     }
   ],
   "nextlayerid": 4,
-  "nextobjectid": 9,
+  "nextobjectid": 10,
   "orientation": "orthogonal",
   "properties": [
     {

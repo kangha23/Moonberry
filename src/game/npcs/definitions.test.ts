@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { NPCS, NPC_IDS, isNpcId, npcDef } from './definitions';
 import { entryPosition, scheduleIndexAt } from './schedule';
-import { isGiftable } from './relationships';
+import { isGiftable, reactionTo } from './relationships';
 import { SEASONS, SEASON_DAYS, WEATHERS } from '../systems/time';
 import { INTERACT_RADIUS, isWalkable } from '../world/areas';
 
@@ -151,5 +151,27 @@ describe('every dialogue table', () => {
   it('gives exactly one villager the quest, since there is one quest', () => {
     const givers = NPC_IDS.filter((id) => npcDef(id).questGiver);
     expect(givers).toEqual(['rowan']);
+  });
+});
+
+describe('the phố’s dishes as gifts, spec 15', () => {
+  const RANK = ['hated', 'disliked', 'neutral', 'liked', 'loved'];
+
+  it('has every villager at least like a bánh chưng', () => {
+    for (const id of NPC_IDS) {
+      const reaction = reactionTo(NPCS[id], 'banh-chung');
+      expect(RANK.indexOf(reaction), `${id} is ${reaction} about a bánh chưng`).toBeGreaterThanOrEqual(RANK.indexOf('liked'));
+    }
+  });
+
+  it('has Bà Xoan love her own xôi and a bánh chưng, and Juniper and Ash love chè', () => {
+    expect(reactionTo(NPCS.xoan, 'xoi-dau')).toBe('loved');
+    expect(reactionTo(NPCS.xoan, 'banh-chung')).toBe('loved');
+    expect(reactionTo(NPCS.juniper, 'che-dau')).toBe('loved');
+    expect(reactionTo(NPCS.ash, 'che-dau')).toBe('loved');
+  });
+
+  it('can give all three', () => {
+    for (const dish of ['banh-chung', 'xoi-dau', 'che-dau']) expect(isGiftable(dish)).toBe(true);
   });
 });

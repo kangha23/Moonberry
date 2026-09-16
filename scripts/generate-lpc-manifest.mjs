@@ -19,7 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { decodePng } from './lib/png.mjs';
-import { ANIMAL } from './import-lpc.mjs';
+import { ACTION, ANIMAL } from './import-lpc.mjs';
 
 const ART_DIR = path.join('public', 'assets', 'lpc');
 const OUT_FILE = path.join('src', 'game', 'assets', 'lpc.generated.ts');
@@ -67,8 +67,11 @@ const files = fs
 // frames a row and an animal is four frames of whatever size that animal needs,
 // so loading one with the other's frame size gives a texture of slices. The
 // name is the only thing the folder knows, so the name carries the difference.
-const sheets = files.filter((name) => name.endsWith('-sheet') && !name.startsWith('animal-'));
+const isActionSheet = (name) => /^(monster|attack)-/.test(name) && name.endsWith('-sheet');
+const sheets = files.filter((name) => name.endsWith('-sheet') && !name.startsWith('animal-') && !isActionSheet(name));
 const animalSheets = files.filter((name) => name.startsWith('animal-') && name.endsWith('-sheet'));
+// A fourth shape: eight frames of one action per direction. See ACTION.
+const actionSheets = files.filter(isActionSheet);
 // Portraits are a third shape: four 64px expressions side by side, read as a
 // sheet so the dialogue box can ask for a mood by frame rather than by crop.
 const portraits = files.filter((name) => name.startsWith('portrait-'));
@@ -91,6 +94,18 @@ function animalFrame(name) {
     );
   }
   return { width: image.width / ANIMAL.cols, height: image.height / ANIMAL.rows };
+}
+
+/** One action sheet's frame size, measured the way an animal's is. */
+function actionFrame(name) {
+  const image = decodePng(fs.readFileSync(path.join(ART_DIR, `${name}.png`)));
+  if (image.width % ACTION.cols !== 0 || image.height % ACTION.rows !== 0) {
+    throw new Error(
+      `${name}.png is ${image.width}x${image.height}, which does not divide ` +
+        `${ACTION.cols} by ${ACTION.rows}.`,
+    );
+  }
+  return { width: image.width / ACTION.cols, height: image.height / ACTION.rows };
 }
 
 // A `crop-*.png` that is neither a stage nor a crop is almost always a typo in
@@ -175,6 +190,20 @@ export const LPC_ANIMAL_SHEETS: readonly LpcAnimalSheet[] = [
 ${animalSheets
   .map((name) => {
     const frame = animalFrame(name);
+    return `  { key: '${name}', url: '/assets/lpc/${name}.png', frameWidth: ${frame.width}, frameHeight: ${frame.height} },`;
+  })
+  .join('\n')}
+];
+
+/**
+ * The action sheets: a monster's walk, attack and death, or a player's swing.
+ * Eight frames across and four directions down (up, left, down, right), every
+ * frame played, at whatever size the strip was drawn.
+ */
+export const LPC_ACTION_SHEETS: readonly LpcAnimalSheet[] = [
+${actionSheets
+  .map((name) => {
+    const frame = actionFrame(name);
     return `  { key: '${name}', url: '/assets/lpc/${name}.png', frameWidth: ${frame.width}, frameHeight: ${frame.height} },`;
   })
   .join('\n')}

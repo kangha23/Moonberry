@@ -26,7 +26,7 @@ Applies to: `tile-grass*.png`, `tile-path.png`, `tile-water.png`,
 
 ## [LPC] Crops (CC-BY-SA 3.0+ or GPL 3.0+)
 
-Applies to: `crop-sprout.png` and the ripe crops `crop-turnip`,
+Applies to: `crop-seeded.png`, `crop-sprout.png` and the ripe crops `crop-turnip`,
 `crop-strawberry`, `crop-tomato`, `crop-melon`, `crop-rhubarb`, `crop-pumpkin`,
 `crop-cranberry`, `crop-winterberry`.
 
@@ -664,6 +664,79 @@ tones and hair colours were chosen for how they survive `palette:apply`, not
 for how they look in the kit: two of its seven skins land on the same shade of
 the game palette and a third lands on green.
 
+## [LPC] Monsters (CC-BY-SA 3.0 / GPL 3.0)
+
+- Source: <https://opengameart.org/content/lpc-monsters>
+- By Charles Sanchez (CharlesGabriel), bagzie and bluecarrot16. The bat is
+  bagzie's; the rest build on CharlesGabriel's Liberated Pixel Cup monsters,
+  with attack animations by bluecarrot16.
+- Licence: CC-BY-SA 3.0 or GPL 3.0, at your choice.
+
+Used for the mine's monsters: `monster-slime-*` and `monster-blue-slime-*`
+(the green slime, and the same slime recoloured to the water ramp), `monster-bat-*`,
+`monster-ghost-*` and `monster-worm-*` (the big worm, standing in for the rock
+bug). Each sheet is eight columns picked out of the original's direction rows,
+so frames repeat where the original has fewer than eight; nothing is redrawn.
+
+## Emberfield art (supplied by the project owner — not CC0, not LPC)
+
+Supplied by the Moonberry project owner as `emberfield-art.zip`, who confirmed
+on 2026-09-17 that this project may use all of it. It is **not** under this
+repository's MIT licence and **not** under CC-BY-SA: do not reuse, relicense or
+redistribute it outside Moonberry without asking the owner.
+
+A note for whoever audits this: the tileset files in that archive carry the
+names of Cainos' "Pixel Art Top Down – Basic" pack on itch.io (`TX Tileset
+Stone Ground.png`, `TX Tileset Wall.png`, `TX Struct.png`, `TX Props.png`).
+The owner confirmed the rights; the names are recorded here so the provenance
+question can be answered later without guessing.
+
+The archive is not downloadable, so `art/sources.json` pins every file by
+sha256 and expects it in `art/sources/emberfield/` (not committed). What this
+game takes from it:
+
+- `mine-floor-*`, `mine-wall-*` — a studded stone slab and a brick course, one
+  look per depth band (copper browns, the original grey, deep violets).
+- `mine-entrance` — the stone arch, with a slab of stone floor behind it.
+- `monster-skeleton-walk-sheet`, `-attack-sheet`, `-death-sheet` — the hammer
+  skeleton, eight frames per direction.
+- `player-sheet`, `attack-player-sheet` — the red-cloaked swordsman's run and
+  sword swing.
+- `item-*` — the sword, torch, chests, wood, stone, coal, fibre, sap, bait, eel,
+  strawberry, tomato, gem, quartz, the three ores and the copper bar (ores and
+  bar recoloured from one drawing each).
+- `market-stall` — the merchant cart. `icon-coin` — the coin.
+- `item-basket`, `item-copper-basket`, `item-steel-basket`, `item-gold-basket` —
+  the wicker basket; the higher rungs take their tier's metal across the weave.
+- `item-*-seeds` — the twelve coloured seed piles, one per crop; cranberry,
+  pumpkin and đậu xanh are recoloured from the red, yellow and green piles.
+
+Not used, and why: the two fonts have no Vietnamese tone marks; the blacksmith
+sheet and the fire frames are painted at high resolution on an opaque
+background rather than drawn on a pixel grid; the shop UI frames, the merchant,
+the shadows, the soldier's and skeleton's idle strips, the skeleton's diagonal
+directions, and the plants, grass and remaining props have nothing in this game
+they fit without rescaling.
+
+## Farm Tool Icon 24x24 (CC-BY-SA 4.0)
+
+- **Farm Tool Icon 24x24** by Sandesu (vayasandesu), CC-BY-SA 4.0
+  https://vayasandesu.itch.io/farm-tool-icon-24x24
+
+The free `Spritesheet.png` from that page, cached as
+`art/sources/sandesu-farm-tools/farm-tools.png` (not committed; download it by
+hand from the page — itch.io serves it through a signed link). Each 24px icon is
+centred in a 32px box, not scaled, so its pixels stay the size of the rest of
+the satchel. What this game takes from it:
+
+- `item-hoe`, `item-watering-can`, `item-axe`, `item-pickaxe` and their
+  `copper-`, `steel-` and `gold-` rungs — the sheet's iron, copper, silver and
+  gold columns, in that order.
+- `item-scythe`, `item-gold-scythe` — the iron and gold scythes.
+- `item-fishing-rod` — the rod without a float; `item-copper-fishing-rod`,
+  `-steel-` and `-gold-` — the rod with its float, the reel recoloured to the
+  tier's metal.
+
 ## CC0 (public domain, no attribution required — credited anyway)
 
 - Ground decoration reference: **Kenney Tiny Farm** (CC0)
@@ -689,11 +762,12 @@ and three colours in `src/game/assets/itemIcons.ts`, and the rectangles are
 drawn from those by `createPixelArtTextures.ts` for the field and by
 `ItemIcon.tsx` for the satchel. The same is true of every seed packet.
 
-`crop-seeded` is generated too. The LPC set has no "just sown" frame — its
-earliest frame is already a sprout — and the nearest thing, a bare mound of
-turned soil, sat on top of `plot-tilled` looking like a hole rather than a
-planting. The generated specks are drawn at native 32px, so they cost nothing
-in consistency.
+`crop-seeded` is the pack's own mound of turned soil — row 9, the plant after
+harvest — at band 1 column 10. The set has no dedicated "just sown" frame, and
+this was once passed over as reading like a hole. It was replaced by
+generated specks, which on brown soil read as pale pebbles; a freshly dug
+planting hole is the more honest picture of a sown bed, and it is real art.
+The generated drawing stays behind only as the fallback.
 
 Note that the field sprite and the satchel icon are separate decisions. Turnip
 and strawberry have hand-placed `ITEM_ICONS` entries; the eight crops drawn

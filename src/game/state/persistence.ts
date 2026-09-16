@@ -51,15 +51,21 @@ import {
   type MachineKind,
 } from '../systems/items';
 import { SEASONS, type Weather } from '../systems/time';
-import { areaMap, isAreaId } from '../world/areas';
+import { MAX_DEPTH, mineSeedFor } from '../systems/mine';
+import { areaMap, isAreaId, isMineArea, spawnPoints } from '../world/areas';
 import type { Direction } from '../world/areas';
-import { STARTING_MAX_ENERGY, type FarmState, type PlayerState } from './types';
+import {
+  STARTING_MAX_ENERGY,
+  STARTING_MAX_HEALTH,
+  type FarmState,
+  type PlayerState,
+} from './types';
 
 /**
  * Bumped whenever the shape of FarmState changes in a way an older save
  * cannot satisfy. `migrate` is where upgrades from earlier versions go.
  */
-export const SAVE_VERSION = 10;
+export const SAVE_VERSION = 11;
 
 export const SAVE_KEY = 'moonberry:farm';
 
@@ -599,6 +605,7 @@ function parsePlayer(value: unknown): PlayerState | null {
   const pendingUpgrade = parsePendingUpgrade(value.pendingUpgrade);
   if (pendingUpgrade === 'invalid') return null;
   if (!isCount(value.energy) || !isCount(value.maxEnergy)) return null;
+  if (!isCount(value.health) || !isCount(value.maxHealth) || value.maxHealth < 1) return null;
   // The selected slot indexes an array every frame, so it is checked against
   // the hotbar rather than merely confirmed to be a number.
   if (!Number.isInteger(value.selectedSlot)) return null;
@@ -609,17 +616,27 @@ function parsePlayer(value: unknown): PlayerState | null {
   if (relationships === 'invalid') return null;
   const knownRecipes = parseKnownRecipes(value.knownRecipes);
   if (knownRecipes === 'invalid') return null;
+  // A mine floor is yesterday's seed, or this morning's with its monsters
+  // forgotten, and either way not somewhere to wake up. Spec 13: back to a
+  // spawn on the farm. Relocated rather than refused, unlike an area that no
+  // longer exists above — the mine still exists, just not that floor of it.
+  const spawn = spawnPoints()[0];
+  const surfaced = isMineArea(value.area);
   return {
     id: value.id,
     name: value.name,
-    area: value.area,
-    x: value.x,
-    y: value.y,
+    area: surfaced ? 'farm' : value.area,
+    x: surfaced ? spawn.x : value.x,
+    y: surfaced ? spawn.y : value.y,
     facing: value.facing,
     inventory,
     selectedSlot: value.selectedSlot as number,
     energy: value.energy,
     maxEnergy: value.maxEnergy,
+    health: Math.min(value.health, value.maxHealth),
+    maxHealth: value.maxHealth,
+    // Minutes of a day that may not be the one being loaded into.
+    invulnerableUntil: 0,
     asleep: value.asleep,
     // Nowhere in particular, so certainly not at a counter. A restored save
     // that opened the stall for you would be a panel over a farm you have not
@@ -700,6 +717,10 @@ function parseFarm(value: unknown): FarmState | null {
   // farm carry more hay than it can store — so it is clamped to what the
   // buildings above actually justify rather than believed.
   if (value.hay !== undefined && !isCount(value.hay)) return null;
+  // The world seed is the mine's for ever; a save without one is not a save
+  // this version wrote or migrated, so it is refused rather than reseeded.
+  if (!Number.isInteger(value.worldSeed) || !isCount(value.worldSeed)) return null;
+  if (!Number.isInteger(value.deepestFloor) || !isCount(value.deepestFloor)) return null;
   const hay = Math.min(value.hay ?? 0, hayCapacity(buildings));
 
   const plots: Record<string, PlotState> = {};
@@ -727,6 +748,12 @@ function parseFarm(value: unknown): FarmState | null {
     nodes,
     placeables,
     spawnSeed,
+    worldSeed: value.worldSeed as number,
+    // Derived, so recomputed rather than believed.
+    mineSeed: mineSeedFor(value.worldSeed as number, time.day),
+    deepestFloor: Math.min(value.deepestFloor as number, MAX_DEPTH),
+    // Nobody loads into the mine, so nothing down there is awake.
+    monsters: [],
     npcs: parseNpcs(value.npcs, { season: value.season, weather: value.weather, time }),
     animals,
     hay,
@@ -761,6 +788,7 @@ function migrate(version: number, farm: unknown): unknown {
   if (version <= 7) current = migrateNodes(current);
   if (version <= 8) current = migratePlaceables(current);
   if (version <= 9) current = migrateFishing(current);
+  if (version <= 10) current = migrateMine(current);
   return current;
 }
 
@@ -918,6 +946,27 @@ function migratePlaceables(farm: unknown): unknown {
  */
 function migrateFishing(farm: unknown): unknown {
   return upgradePlayers(farm, (player) => ({ ...player, fishing: null }));
+}
+
+/**
+ * Version 10 had no mine.
+ *
+ * The world seed is the farm's spawn seed, which for every farm written before
+ * now is the one constant — so every upgraded farm shares a mine, exactly as
+ * every upgraded farm already shares its first morning. Nobody has been down,
+ * so the record is nought, and everybody is at full health because nothing
+ * could have hurt them.
+ */
+function migrateMine(farm: unknown): unknown {
+  const withPlayers = upgradePlayers(farm, (player) => ({
+    ...player,
+    health: STARTING_MAX_HEALTH,
+    maxHealth: STARTING_MAX_HEALTH,
+    invulnerableUntil: 0,
+  }));
+  if (!isObject(withPlayers)) return null;
+  const spawnSeed = isCount(withPlayers.spawnSeed) ? withPlayers.spawnSeed : LEGACY_SPAWN_SEED;
+  return { ...withPlayers, worldSeed: spawnSeed, deepestFloor: 0 };
 }
 
 /** Which slot the old tool enum should leave the player holding. */

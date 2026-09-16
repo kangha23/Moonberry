@@ -185,3 +185,42 @@ describe('the face a line is said with', () => {
     expect(GIFT_MOOD.hated).toBe('angry');
   });
 });
+
+describe('Bà Xoan, spec 15', () => {
+  const XOAN = NPCS.xoan;
+  /** Every line of hers that ties at the top for this state. */
+  const heard = (extra: Partial<DialogueContext>) => candidateLines(XOAN, context(extra)).map((entry) => entry.line);
+  const byPriority = (priority: number) =>
+    XOAN.dialogue.filter((entry) => entry.priority === priority).map((entry) => entry.line);
+
+  it('says one of her everyday lines when nothing else applies', () => {
+    const plain = heard({ season: 'Spring', weather: 'Sunny', activity: null });
+    expect(plain.length).toBeGreaterThan(0);
+    for (const line of plain) expect(byPriority(0)).toContain(line);
+  });
+
+  it('talks about the cart at the cart, over the everyday lines', () => {
+    const lines = heard({ activity: 'xoi-stall', season: 'Spring', weather: 'Sunny' });
+    expect(lines).toContain('"Hết xôi gấc thì còn xôi đậu. Hết cả hai thì mai ra sớm."');
+    for (const line of lines) expect(byPriority(0)).not.toContain(line);
+  });
+
+  it('lets the season outrank the cart, friendship outrank the season, and the birthday outrank everything', () => {
+    const atCart = { activity: 'xoi-stall', season: 'Summer' as const };
+    expect(heard(atCart)).toEqual(['"Hạ rồi, gieo nếp đi con. Qua mùa này là lỡ cả năm đấy."']);
+    for (const line of heard({ ...atCart, hearts: 4 })) {
+      expect(XOAN.dialogue.find((entry) => entry.line === line)!.priority).toBeGreaterThanOrEqual(40);
+    }
+    expect(heard({ ...atCart, hearts: 10, birthday: true })).toEqual(byPriority(100));
+  });
+
+  it('keeps to the priorities the other villagers use: 0, 10, 20, then 40 and up for hearts, 100 for the birthday', () => {
+    for (const entry of XOAN.dialogue) {
+      if (entry.when?.birthday) expect(entry.priority).toBe(100);
+      else if (entry.when?.minHearts !== undefined) expect(entry.priority).toBeGreaterThanOrEqual(40);
+      else if (entry.when?.season || entry.when?.weather) expect(entry.priority).toBe(20);
+      else if (entry.when?.activity) expect(entry.priority).toBe(10);
+      else expect(entry.priority).toBe(0);
+    }
+  });
+});

@@ -8,6 +8,7 @@
  * the avatars) and the small moments a swing or a watering can leaves behind.
  */
 import Phaser from 'phaser';
+import { fringeTexture } from '../../assets/createPixelArtTextures';
 import { tint } from '../../assets/palette.generated';
 import type { FarmState } from '../../state/types';
 import { isWithering } from '../../systems/farming';
@@ -22,7 +23,15 @@ import {
   type Placeable,
 } from '../../systems/placeables';
 import { nodesOn, type NodeKind, type ResourceNode } from '../../systems/resources';
-import { START_AREA, TILE_SIZE, plotKey } from '../../world/areas';
+import {
+  START_AREA,
+  TILE_SIZE,
+  areaMap,
+  edgeMask,
+  plotKey,
+  type AreaId,
+  type TileKind,
+} from '../../world/areas';
 import {
   AVATAR_DEPTH_BASE,
   DEPTH,
@@ -73,10 +82,42 @@ const PLOT_VARIANTS = 3;
  * grain depends on which one lands where.
  */
 function plotVariant(base: string, tileX: number, tileY: number): string {
+  const pick = tileHash(tileX, tileY) % PLOT_VARIANTS;
+  return pick === 0 ? base : `${base}-${pick + 1}`;
+}
+
+function tileHash(tileX: number, tileY: number): number {
   let h = (tileX * 374761393 + tileY * 668265263) | 0;
   h = Math.imul(h ^ (h >>> 13), 1274126177);
-  const pick = ((h ^ (h >>> 16)) >>> 0) % PLOT_VARIANTS;
-  return pick === 0 ? base : `${base}-${pick + 1}`;
+  return (h ^ (h >>> 16)) >>> 0;
+}
+
+/**
+ * The lawn's own twelve drawings, as `generate-maps.mjs` lays them.
+ *
+ * An unworked bed is drawn as this lawn rather than as `plot-wild`. The wild
+ * tile was a different grass — striped, speckled yellow — so the whole field
+ * read as a rectangle of noise cut into the meadow before anyone had touched
+ * it. A field is where the hoe has been, and nowhere else.
+ */
+const LAWN_TEXTURES = [
+  'tile-grass',
+  'tile-grass-1x',
+  'tile-grass-1y',
+  'tile-grass-1xy',
+  'tile-grass-2',
+  'tile-grass-2x',
+  'tile-grass-2y',
+  'tile-grass-2xy',
+  'tile-grass-3',
+  'tile-grass-3x',
+  'tile-grass-3y',
+  'tile-grass-3xy',
+];
+
+function lawnVariant(tileX: number, tileY: number): string {
+  // Shifted so the pick is not the plot variant's in disguise.
+  return LAWN_TEXTURES[(tileHash(tileX, tileY) >>> 3) % LAWN_TEXTURES.length];
 }
 
 /**
@@ -129,6 +170,8 @@ const CHIP_TINTS: Record<NodeKind, number> = {
 export class GroundView {
   /** One sprite per bed on the built area, keyed by plot key. Filled as the tiles are laid. */
   readonly plotSprites = new Map<string, Phaser.GameObjects.Image>();
+  /** The grass lip on a dug bed that borders lawn, keyed by plot key. */
+  private soilFringes = new Map<string, Phaser.GameObjects.Image>();
   private cropSprites = new Map<string, Phaser.GameObjects.Image>();
   private sparkles = new Map<string, Phaser.GameObjects.Image>();
   /** One sprite per node on the built area, keyed by node id. */
@@ -168,6 +211,7 @@ export class GroundView {
   /** Forgets every sprite on the ground, which went with the layer it was drawn in. */
   forgetArea() {
     this.plotSprites.clear();
+    this.soilFringes.clear();
     this.cropSprites.clear();
     this.sparkles.clear();
     this.nodeSprites.clear();
@@ -176,6 +220,42 @@ export class GroundView {
     this.drawnNodes = null;
     this.placeableSprites.clear();
     this.drawnPlaceables = null;
+  }
+
+  /**
+   * The grass lip along a dug bed's sides, where it meets lawn.
+   *
+   * The map's own fringes (`AreaView.renderEdges`) are read off the map, and
+   * to the map every bed is `plot` whether it has been dug or not. So a strip
+   * of soil in an unworked field used to be a hard brown rectangle; this draws
+   * the lawn spilling over it the same way it spills over a path.
+   */
+  private refreshSoilFringe(area: AreaId, x: number, y: number) {
+    const key = plotKey(area, x, y);
+    this.soilFringes.get(key)?.destroy();
+    this.soilFringes.delete(key);
+
+    const map = areaMap(area);
+    const { plots } = this.context.farm;
+    // Soil, lawn, or neither — a path or water beside a bed has its own edge.
+    const lookAt = (tx: number, ty: number): TileKind | null => {
+      if (tx < 0 || ty < 0 || tx >= map.width || ty >= map.height) return null;
+      const kind = map.tiles[ty * map.width + tx]?.kind;
+      if (kind === 'grass') return 'grass';
+      if (kind !== 'plot') return null;
+      const plot = plots[plotKey(area, tx, ty)];
+      return plot && (plot.stage !== 'wild' || plot.wateredToday) ? 'plot' : 'grass';
+    };
+    if (lookAt(x, y) !== 'plot') return;
+
+    const mask = edgeMask(lookAt, x, y);
+    if (mask === 0) return;
+    const fringe = this.scene.add
+      .image(x * TILE_SIZE + TILE_SIZE / 2, y * TILE_SIZE + TILE_SIZE / 2, fringeTexture('grass', 'soil', mask))
+      // The same depth as the map's fringes: over the ground, under the crop.
+      .setDepth(0.5);
+    this.context.areaLayer?.add(fringe);
+    this.soilFringes.set(key, fringe);
   }
 
   /** Redraws every plot on this map, which the wilt tint needs once a day. */
@@ -198,8 +278,18 @@ export class GroundView {
     // spent by the growth step in the same roll-over, so `wateredToday` is
     // false again before anybody wakes up. See `sprinkledPlotKeys`.
     const damp = plot.wateredToday || (plot.stage !== 'wild' && this.sprinkledKeys().has(key));
-    const ground = damp ? 'plot-watered' : plot.stage === 'wild' ? 'plot-wild' : 'plot-tilled';
-    base.setTexture(plotVariant(ground, x, y));
+    const lawn = lawnVariant(x, y);
+    base.setTexture(
+      !damp && plot.stage === 'wild'
+        ? this.scene.textures.exists(lawn) ? lawn : 'tile-grass'
+        : plotVariant(damp ? 'plot-watered' : 'plot-tilled', x, y),
+    );
+
+    // Digging or re-wilding a bed changes the edge of the beds beside it too.
+    const area = this.context.builtArea ?? START_AREA;
+    for (const [dx, dy] of [[0, 0], [0, -1], [1, 0], [0, 1], [-1, 0]]) {
+      this.refreshSoilFringe(area, x + dx, y + dy);
+    }
 
     this.cropSprites.get(key)?.destroy();
     this.cropSprites.delete(key);

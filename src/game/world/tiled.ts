@@ -95,6 +95,16 @@ export interface AreaProp {
   depth: number;
   /** Non-null when walking up to it and pressing act does something. */
   interact: string | null;
+  /**
+   * What the board on a shop front says, for a prop drawn with one.
+   *
+   * Text rather than pixels: the client draws it over the blank board in a
+   * system font, so the diacritics are right and renaming a shop is an edit in
+   * Tiled rather than a drawing. Null for every prop that has no board.
+   */
+  sign: string | null;
+  /** Which way a road sign points. Null for everything that is not one. */
+  arrow: SignArrow | null;
 }
 
 /** A doorway: stepping into it moves the player to another area. */
@@ -296,12 +306,130 @@ function objectsOfType(map: TiledMap, type: string): TiledObject[] {
   return found;
 }
 
-function toProp(object: TiledObject): AreaProp {
+/**
+ * The kinds of board a prop can be drawn with, by texture prefix.
+ *
+ * Every prop drawn with one must carry a `sign`, and nothing else may: a board
+ * with nothing on it is a shop somebody forgot to name, and a sign on a bush
+ * would be words floating over nothing.
+ *
+ * - `shopfront` is a shop's name, one line across the board over the awning.
+ * - `signpost` is a road sign, spec 15's second half: a blue board on two
+ *   poles, up to three lines — a small one, the place in capitals, and a small
+ *   one under the arrow — and an `arrow` it must have, pointing the way.
+ * - `milestone` is a cột mốc: a short line on the red cap and one on the stone.
+ */
+export type SignKind = 'shopfront' | 'signpost' | 'milestone';
+
+export const SIGN_KINDS: Record<SignKind, { maxLines: number; arrow: boolean }> = {
+  shopfront: { maxLines: 1, arrow: false },
+  signpost: { maxLines: 3, arrow: true },
+  milestone: { maxLines: 2, arrow: false },
+};
+
+/** The most characters one line of a board has room for. */
+export const MAX_SIGN_LENGTH = 16;
+
+export type SignArrow = 'left' | 'right' | 'up' | 'down';
+
+const SIGN_ARROWS: readonly SignArrow[] = ['left', 'right', 'up', 'down'];
+
+/**
+ * Every property a prop may carry.
+ *
+ * A closed list, so a misspelt `sigm` or `interract` is an error when the map
+ * loads rather than a board that is quietly blank or a counter that quietly
+ * does nothing — the second of which is how a typo in Tiled used to behave.
+ */
+const PROP_PROPERTIES: readonly string[] = ['texture', 'solid', 'depth', 'interact', 'sign', 'arrow'];
+
+/** Which kind of board a texture is drawn with, or null for one with none. */
+export function signKindOf(texture: string): SignKind | null {
+  for (const kind of Object.keys(SIGN_KINDS) as SignKind[]) {
+    if (texture === kind || texture.startsWith(`${kind}-`)) return kind;
+  }
+  return null;
+}
+
+export function hasSignboard(texture: string): boolean {
+  return signKindOf(texture) !== null;
+}
+
+/** A sign's lines. A newline in the Tiled property starts the next one. */
+export function signLines(sign: string): string[] {
+  return sign.split('\n');
+}
+
+/**
+ * A prop's sign and arrow, checked, or a thrown error naming the map and prop.
+ *
+ * Loud on purpose, and at load rather than at draw: a sign that is wrong is a
+ * map that is wrong, and the place to find that out is starting the game, not
+ * walking down the street and noticing a board with nothing on it.
+ */
+function parseSign(
+  mapId: string,
+  object: TiledObject,
+  texture: string,
+  value: unknown,
+  arrowValue: unknown,
+): { sign: string | null; arrow: SignArrow | null } {
+  const where = `Map "${mapId}" prop "${object.name}"`;
+  const kind = signKindOf(texture);
+
+  if (arrowValue !== undefined && !(kind && SIGN_KINDS[kind].arrow)) {
+    throw new Error(`${where} has an "arrow", but "${texture}" has nowhere to draw one.`);
+  }
+  if (value === undefined) {
+    if (kind) throw new Error(`${where} is drawn with a signboard ("${texture}") and has no "sign".`);
+    return { sign: null, arrow: null };
+  }
+  if (!kind) {
+    throw new Error(`${where} has a "sign", but "${texture}" has no board to write it on.`);
+  }
+  if (typeof value !== 'string') throw new Error(`${where} has a "sign" that is not a string.`);
+
+  const lines = value
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map((line) => line.trim());
+  if (lines.every((line) => line === '')) throw new Error(`${where} has an empty "sign".`);
+  if (lines.some((line) => line === '')) throw new Error(`${where} has a "sign" with an empty line in it.`);
+  const { maxLines, arrow: wantsArrow } = SIGN_KINDS[kind];
+  if (lines.length > maxLines) {
+    throw new Error(`${where} has a "sign" of ${lines.length} lines; a ${kind} has room for ${maxLines}.`);
+  }
+  for (const line of lines) {
+    if ([...line].length > MAX_SIGN_LENGTH) {
+      throw new Error(`${where} has a "sign" line longer than ${MAX_SIGN_LENGTH} characters: "${line}".`);
+    }
+  }
+
+  let arrow: SignArrow | null = null;
+  if (wantsArrow) {
+    if (!SIGN_ARROWS.includes(arrowValue as SignArrow)) {
+      throw new Error(`${where} is a ${kind} and needs an "arrow": one of ${SIGN_ARROWS.join(', ')}.`);
+    }
+    arrow = arrowValue as SignArrow;
+  }
+  return { sign: lines.join('\n'), arrow };
+}
+
+function toProp(mapId: string, object: TiledObject): AreaProp {
+  for (const property of object.properties ?? []) {
+    if (!PROP_PROPERTIES.includes(property.name)) {
+      throw new Error(
+        `Map "${mapId}" prop "${object.name}" has an unknown property "${property.name}". ` +
+          `A prop may carry: ${PROP_PROPERTIES.join(', ')}.`,
+      );
+    }
+  }
   const properties = propertyMap(object.properties);
   const interact = asString(properties.interact);
+  const texture = asString(properties.texture, object.name);
   return {
     name: object.name,
-    texture: asString(properties.texture, object.name),
+    texture,
     x: object.x,
     y: object.y,
     width: object.width,
@@ -309,6 +437,7 @@ function toProp(object: TiledObject): AreaProp {
     solid: asBoolean(properties.solid),
     depth: asNumber(properties.depth),
     interact: interact === '' ? null : interact,
+    ...parseSign(mapId, object, texture, properties.sign, properties.arrow),
   };
 }
 
@@ -368,7 +497,7 @@ export function parseTiledMap(id: string, map: TiledMap, tileset: TiledTileset, 
     pixelHeight: map.height * map.tileheight,
     tileSize: map.tilewidth,
     tiles,
-    props: objectsOfType(map, 'prop').map(toProp),
+    props: objectsOfType(map, 'prop').map((object) => toProp(id, object)),
     colliders: objectsOfType(map, 'collider').map(({ name, x, y, width, height }) => ({
       name,
       x,

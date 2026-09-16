@@ -7,9 +7,10 @@
  * every other module can lean on them while this one leans on none of those.
  */
 import { buildingsOn, solidRects } from '../../systems/buildings';
+import { floorFor } from '../../systems/mine';
 import { solidPlaceableRects } from '../../systems/placeables';
 import { solidNodeRects } from '../../systems/resources';
-import type { AreaId, Blockers, Direction } from '../../world/areas';
+import { START_AREA, mineDepth, spawnPoints, type AreaId, type Blockers, type Direction, type Point } from '../../world/areas';
 import type { ApplyResult, GameEvent } from '../intents';
 import type { FarmState, PlayerId, PlayerState } from '../types';
 
@@ -21,11 +22,28 @@ import type { FarmState, PlayerId, PlayerState } from '../types';
  * site that has to be threaded through.
  */
 export function blockersFor(state: FarmState, area: AreaId): Blockers {
+  const depth = mineDepth(area);
   return {
     buildings: solidRects(buildingsOn(state.buildings, area)),
     nodes: solidNodeRects(state.nodes, area),
     placeables: solidPlaceableRects(state.placeables, area),
+    // Today's walls. The floor is rebuilt from the seed rather than stored,
+    // and cached, so this costs a map lookup on every step in the mine.
+    floor: depth === null ? null : floorFor(state.mineSeed, depth),
   };
+}
+
+/**
+ * Where somebody taken out of the mine stands: a spawn point on the farm.
+ *
+ * The same spot whether they climbed out, fainted, were woken by the morning
+ * or were read off a disk — a floor from yesterday's seed no longer exists,
+ * so there is nowhere else sensible to put them.
+ */
+export function surfaceSpot(index = 0): { area: typeof START_AREA } & Point {
+  const spawns = spawnPoints();
+  const spawn = spawns[Math.abs(index) % spawns.length];
+  return { area: START_AREA, x: spawn.x, y: spawn.y };
 }
 
 export function facingFor(dx: number, dy: number, fallback: Direction): Direction {

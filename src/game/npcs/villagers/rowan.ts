@@ -24,6 +24,8 @@ export const ROWAN: NpcDef = {
   questGiver: true,
   defaultGiftReaction: 'neutral',
   gifts: {
+    // Spec 15. Everybody in the valley is glad of a bánh chưng.
+    'banh-chung': 'liked',
     rhubarb: 'loved',
     winterberry: 'loved',
     turnip: 'liked',

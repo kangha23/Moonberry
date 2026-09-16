@@ -13,10 +13,11 @@ import { spawnNpcs } from '../../npcs/schedule';
 import { advancePlotDay, killOutOfSeasonCrops, type PlotState } from '../../systems/farming';
 import { refillCharges } from '../../systems/inventory';
 import { itemDef } from '../../systems/items';
+import { mineSeedFor } from '../../systems/mine';
 import { isMachine } from '../../systems/placeables';
 import { startNodeDay } from '../../systems/resources';
 import { createTimeState, isRainy, seasonForDay, weatherForDay } from '../../systems/time';
-import { interactableAt } from '../../world/areas';
+import { interactableAt, isMineArea } from '../../world/areas';
 import type { ApplyResult, GameEvent } from '../intents';
 import {
   COLLAPSE_COIN_CAP,
@@ -25,7 +26,7 @@ import {
   type PlayerId,
   type PlayerState,
 } from '../types';
-import { unchanged, say, onlineMembers } from './common';
+import { unchanged, say, onlineMembers, surfaceSpot } from './common';
 import { learnRecipes, runSprinklers } from './placeables';
 
 /**
@@ -86,9 +87,16 @@ export function startNewDay(state: FarmState, collapsed = false): ApplyResult {
   }
 
   const players: Record<PlayerId, PlayerState> = {};
-  for (const [id, player] of Object.entries(state.players)) {
+  for (const [index, [id, player]] of Object.entries(state.players).entries()) {
+    // Nobody wakes up in the mine: the floor they were on belonged to
+    // yesterday's seed and is not there any more.
+    const underground = isMineArea(player.area);
+    if (underground) events.push({ kind: 'areaChanged', playerId: id, area: surfaceSpot(index).area });
     const woken: PlayerState = {
       ...player,
+      ...(underground ? surfaceSpot(index) : null),
+      health: player.maxHealth,
+      invulnerableUntil: 0,
       inventory: refillCharges(player.inventory),
       energy: collapsed ? Math.floor(player.maxEnergy / 2) : player.maxEnergy,
       asleep: false,
@@ -205,10 +213,22 @@ export function startNewDay(state: FarmState, collapsed = false): ApplyResult {
       hay: herd.hay,
       nodes: ground.nodes,
       players,
+      // A new seed, so a new mine, and nobody is down it to keep a monster awake.
+      mineSeed: mineSeedFor(state.worldSeed, time.day),
+      monsters: [],
       clockMs: 0,
     },
     events,
   };
+}
+
+/**
+ * What passing out costs the shared wallet: a tenth, capped. One formula for
+ * both ways of doing it — staying up past 02:00, and fainting in the mine —
+ * so spec 13 reuses spec 01's number instead of inventing a second.
+ */
+export function collapseCoinLoss(coins: number): number {
+  return Math.min(Math.floor(coins * COLLAPSE_COIN_SHARE), COLLAPSE_COIN_CAP);
 }
 
 /**
@@ -220,7 +240,7 @@ export function startNewDay(state: FarmState, collapsed = false): ApplyResult {
  * evening.
  */
 export function collapse(state: FarmState): ApplyResult {
-  const coinsLost = Math.min(Math.floor(state.coins * COLLAPSE_COIN_SHARE), COLLAPSE_COIN_CAP);
+  const coinsLost = collapseCoinLoss(state.coins);
   const rolled = startNewDay({ ...state, coins: state.coins - coinsLost }, true);
   return { state: rolled.state, events: [{ kind: 'collapsed', coinsLost }, ...rolled.events] };
 }
@@ -247,6 +267,12 @@ export function rollIfEveryoneAsleep(state: FarmState): ApplyResult | null {
 export function applySleep(state: FarmState, playerId: PlayerId): ApplyResult {
   const player = state.players[playerId];
   if (!player) return unchanged(state);
+
+  // Fainted, not asleep: the day is over for them and a key press does not
+  // un-faint anybody. Morning puts their health back and lets them up.
+  if (player.asleep && player.health <= 0) {
+    return { state, events: [say(playerId, 'Bạn còn quá mệt để đứng dậy.')] };
+  }
 
   if (!player.asleep && interactableAt(player.area, player)?.interact !== 'bed') {
     return { state, events: [say(playerId, 'Bạn cần một cái giường trước khi có thể đi ngủ.')] };

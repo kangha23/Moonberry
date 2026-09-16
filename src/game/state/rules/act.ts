@@ -13,7 +13,7 @@ import {
   isAnimalHouse,
 } from '../../systems/animals';
 import { buildingAt, buildingDef, buildingsOn, isComplete } from '../../systems/buildings';
-import { applySweep, sellAllCrops } from '../../systems/farming';
+import { applySweep } from '../../systems/farming';
 import { slotAt } from '../../systems/inventory';
 import {
   ITEMS,
@@ -24,6 +24,7 @@ import {
   type ItemId,
 } from '../../systems/items';
 import { placeableAt } from '../../systems/placeables';
+import { sellAtStall, stallFor } from '../../systems/shop';
 import { recordHarvest } from '../../systems/quest';
 import { nodeAt, nodeDef, workNodes, type ResourceNode } from '../../systems/resources';
 import {
@@ -31,7 +32,9 @@ import {
   describeTile,
   interactableAt,
   isWithinReach,
+  mineDepth,
   plotKey,
+  worldToTile,
   propGap,
   targetTile,
   tileAt,
@@ -41,11 +44,13 @@ import type { ApplyResult, GameEvent } from '../intents';
 import type { FarmState, PlayerId, PlayerState } from '../types';
 import { unchanged, say } from './common';
 import { applySleep } from './day';
-import { setPanel } from './counters';
+import { closedStallMessage, setPanel, stallOpen } from './counters';
 import { applyAnimalAct, applyHouseChores } from './ranch';
 import { nearestNpc, applyNpcAct } from './village';
 import { applyCast } from './fishing';
 import { applyPlaceItem, applyPlaceableAct } from './placeables';
+import { applyAttack, applyDescend, holdsSword } from './mine';
+import { floorFor } from '../../systems/mine';
 
 /**
  * Swinging at something standing on the ground.
@@ -174,6 +179,19 @@ export function applyAct(state: FarmState, playerId: PlayerId, target?: Point): 
     return { state, events: [say(playerId, 'Chỗ đó ngoài tầm với.')] };
   }
 
+  // Underground the action key means one of two things (spec 13): a sword in
+  // hand swings it, and standing on the ladder goes down it. A click with a
+  // sword is always a swing; the bare key on the ladder is always the ladder,
+  // so a player holding a sword never has to put it away to descend.
+  const depth = mineDepth(player.area);
+  if (depth !== null) {
+    const ladder = floorFor(state.mineSeed, depth).ladder;
+    const onLadder =
+      ladder !== null && worldToTile(player.x) === ladder.x && worldToTile(player.y) === ladder.y;
+    if (holdsSword(player) && (target || !onLadder)) return applyAttack(state, playerId, target);
+    if (onLadder) return applyDescend(state, playerId);
+  }
+
   const tile = target ?? targetTile(player.area, player, player.facing);
   const key = plotKey(player.area, tile.x, tile.y);
   const plot = state.plots[key];
@@ -201,8 +219,14 @@ export function applyAct(state: FarmState, playerId: PlayerId, target?: Point): 
   // the counter and the stall opens with the coins it just paid you. Keeping
   // the sale on the keypress means the common trip is still one key, and
   // opening the panel is what makes the coins worth having.
-  if (nearby?.interact === 'market') {
-    const sale = sellAllCrops(player.inventory);
+  //
+  // Bà Xoan's cart is the same visit with its own stock, and only while she is
+  // keeping it: walked up to out of hours it says when to come back, and sells
+  // nothing and opens nothing.
+  const stall = stallFor(nearby?.interact);
+  if (stall) {
+    if (!stallOpen(state, stall)) return { state, events: [say(playerId, closedStallMessage(stall))] };
+    const sale = sellAtStall(player.inventory, stall);
     const events: GameEvent[] = [say(playerId, sale.message)];
     const next: PlayerState = {
       ...player,

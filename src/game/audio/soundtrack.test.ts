@@ -78,6 +78,11 @@ const EVENT_KINDS = [
   'bite',
   'fishCaught',
   'fishEscaped',
+  'damaged',
+  'monsterKilled',
+  'descended',
+  'faint',
+  'newDepthRecord',
 ] as const satisfies readonly GameEvent['kind'][];
 
 /** True only when the two unions have exactly the same members. */
@@ -211,6 +216,9 @@ describe('which bed plays', () => {
     // Not every unusual sky is wet: a firefly shower is, a breeze is not.
     expect(musicFor({ area: 'farm', weather: 'Breezy', time: noon })).toBe('day-farm-loop');
     expect(musicFor({ area: 'farm', weather: 'Firefly Shower', time: noon })).toBe(RAIN_MUSIC);
+    // Underground there is no rain: the mine has its own bed.
+    expect(musicFor({ area: 'mine:12', weather: 'Drizzle', time: noon })).toBe('mine-loop');
+    expect(allMusic(['farm'])).toContain('mine-loop');
   });
 
   it('plays the house its own bed indoors, whatever the sky is doing outside', () => {

@@ -5,6 +5,7 @@ import { MAX_CRAFT, isRecipeId } from '../systems/crafting';
 import { CHEST_SLOTS, isPlaceableKind } from '../systems/placeables';
 import { HOTBAR_SIZE, INVENTORY_SIZE } from '../systems/inventory';
 import { isItemId, type ItemId, type PlaceableKind } from '../systems/items';
+import { ELEVATOR_EVERY, MAX_DEPTH } from '../systems/mine';
 import { MAX_BUY } from '../systems/shop';
 import type { FarmState, PlayerId } from '../state/types';
 import { MAX_AREA_TILES, type AreaId, type Direction } from '../world/areas';
@@ -163,7 +164,20 @@ export type ClientCommand =
    * So the server runs the bar and this says only whether the key is down.
    */
   | { type: 'reel'; down: boolean }
-  | { type: 'cancelCast' };
+  | { type: 'cancelCast' }
+  /**
+   * Swing the sword in hand, at a tile or the way the player faces.
+   *
+   * No damage, no monster, no hit: which monsters are in the fan, how much
+   * health they lose and what they drop are all the server's, measured from
+   * where the server thinks this player is standing.
+   */
+  | { type: 'attack'; target?: { x: number; y: number } }
+  /** Down the ladder underfoot, or into the mine from its mouth. Nothing to say. */
+  | { type: 'descend' }
+  /** Ride to an elevator stop. Whether it has been opened is the reducer's answer. */
+  | { type: 'useElevator'; depth: number }
+  | { type: 'exitMine' };
 
 export interface MoveUpdate {
   id: PlayerId;
@@ -184,6 +198,12 @@ export interface ClockMessage {
   time: FarmState['time'];
   season: FarmState['season'];
   weather: FarmState['weather'];
+  /**
+   * The awake monsters. They move on the clock step, and resending the whole
+   * farm every 1.2s for as long as somebody is underground would be the cost
+   * this compact frame exists to avoid. Empty whenever the mine is.
+   */
+  monsters: FarmState['monsters'];
 }
 
 export interface EventsMessage {
@@ -429,6 +449,27 @@ export function parseClientCommand(raw: unknown): ClientCommand | null {
 
     case 'cancelCast':
       return { type: 'cancelCast' };
+
+    case 'attack': {
+      const target = parseTarget(command.target);
+      if (target === null) return null;
+      return target ? { type: 'attack', target } : { type: 'attack' };
+    }
+
+    case 'descend':
+      return { type: 'descend' };
+
+    case 'useElevator':
+      // A stop that could exist. Whether this farm has opened it, and whether
+      // the sender is standing at an elevator, are the reducer's answers.
+      if (typeof command.depth !== 'number' || !Number.isInteger(command.depth)) return null;
+      if (command.depth < ELEVATOR_EVERY || command.depth > MAX_DEPTH || command.depth % ELEVATOR_EVERY !== 0) {
+        return null;
+      }
+      return { type: 'useElevator', depth: command.depth };
+
+    case 'exitMine':
+      return { type: 'exitMine' };
 
     case 'collectMachine':
       if (!isId(command.machineId)) return null;

@@ -72,6 +72,11 @@ export type MusicId = string;
 
 export const RAIN_MUSIC: MusicId = 'rain-loop';
 export const NIGHT_MUSIC: MusicId = 'night-loop';
+/**
+ * The mine's bed. Named by the generated floors rather than by a Tiled map,
+ * so it has to be listed here to be preloaded — no map in `AREA_IDS` names it.
+ */
+export const MINE_MUSIC: MusicId = 'mine-loop';
 /** What an area gets when its map names no track of its own. */
 export const DEFAULT_MUSIC: MusicId = 'day-farm-loop';
 
@@ -185,6 +190,15 @@ export const EVENT_SOUNDS: Partial<Record<GameEvent['kind'], SoundId>> = {
   // The loss, and it borrows the one sound already in the set that means
   // "that did not work": a tool skidding off something it could not mark.
   fishEscaped: 'tool-bounce',
+  // The mine (spec 13), borrowing until it has a bed and a set of its own.
+  // Being hit is the tool skidding sound because both mean "that hurt the
+  // wrong party"; a kill breaks like a rock because it is the same reward.
+  damaged: 'tool-bounce',
+  monsterKilled: 'node-break',
+  descended: 'footstep-path',
+  faint: 'slump',
+  // The farm's news, like a finished building: everybody can go deeper now.
+  newDepthRecord: 'fanfare',
 };
 
 /**
@@ -233,6 +247,11 @@ const LOCAL_ONLY: ReadonlySet<GameEvent['kind']> = new Set([
   'bite',
   'fishCaught',
   'fishEscaped',
+  // One person's fight on one floor, and one person's fall.
+  'damaged',
+  'monsterKilled',
+  'descended',
+  'faint',
   // One person's axe. Four farmhands clearing four corners of the wood should
   // not sound like one person standing in the middle of all of it.
   'nodeHit',
@@ -326,7 +345,7 @@ export function musicFor({ area, weather, time }: MusicContext): MusicId {
 
 /** Every bed that can come up, so they can all be queued in `preload`. */
 export function allMusic(areas: readonly AreaId[]): MusicId[] {
-  return [...new Set([RAIN_MUSIC, NIGHT_MUSIC, DEFAULT_MUSIC, ...areas.map(areaMusic)])];
+  return [...new Set([RAIN_MUSIC, NIGHT_MUSIC, DEFAULT_MUSIC, MINE_MUSIC, ...areas.map(areaMusic)])];
 }
 
 // --- footsteps ---------------------------------------------------------------
