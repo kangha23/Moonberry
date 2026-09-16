@@ -131,6 +131,38 @@ keeps every one of them a clear tile away from paths, shores and field edges.
 Full per-item credits vendored at
 [`credits/CREDITS-plants.txt`](credits/CREDITS-plants.txt).
 
+## [LPC] Containers (mixed licences — see the vendored credits)
+
+Applies to six things the player builds and puts down, each cut once and used
+twice — as the sprite standing on the tile and as the icon in the satchel:
+`chest` (a plain banded chest), `big-chest` (the red ornate one, so the two
+read apart at a glance), `keg` (a barrel), `jar` (a clay pot), `churn` (a
+wooden bucket) and `kiln` (a dark cauldron). Exact rectangles are in
+`art/sources.json`.
+
+The ground sprite and the icon differ only in where the content sits inside
+its 32x32 box. The scene centres a placeable texture on its tile, so the
+ground version stands on the box's bottom edge; the hotbar forces a square, so
+the icon is centred instead.
+
+> "[LPC] Containers" by bluecarrot16, Lanea Zimmerman (Sharm), William
+> Thompson, Tuomo Untinen (Reemax), Evert, Buch, Blarumyrran, n2liquid,
+> Jetrel, Guido Bos, Hyptosis, Bonsaiheldin, NaRNeRZz, PriorBlue, Jerom,
+> 7Soul, and Wolthera van Hövell tot Westerflier (TheraHedwig).
+> https://opengameart.org/content/lpc-containers
+
+**This pack's licence is not one licence.** It is assembled from eighteen
+upstream sets under CC-BY-SA 3.0, CC-BY-SA 4.0, CC-BY 3.0, CC-BY 4.0, GPL 3.0,
+GPL 2.0, OGA-BY 3.0 and CC0, and its own credits file does not say which
+sprite came from which set. Two consequences worth stating rather than
+glossing: the pack asks that **all** the authors above be credited with a link
+back, which is why the whole list is here; and because one contributing set is
+CC-BY-SA **4.0**, which 3.0 cannot absorb, anything derived from this pack
+should be treated as CC-BY-SA 4.0 rather than 3.0 unless someone traces the
+individual sprite. The upstream credits file is vendored verbatim at
+[`credits/CREDITS-container.txt`](credits/CREDITS-container.txt) and is part of
+this notice.
+
 ## [LPC] Style Farm Animals (CC-BY 3.0 or GPL 2.0+)
 
 Applies to: `animal-chicken-sheet.png`, `animal-cow-sheet.png` and

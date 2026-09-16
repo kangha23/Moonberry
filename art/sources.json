@@ -32,6 +32,37 @@
           "extract": "lpc-flowers-plants-fungi-wood/plants.png"
         }
       }
+    },
+    "lpc-containers": {
+      "title": "[LPC] Containers",
+      "page": "https://opengameart.org/content/lpc-containers",
+      "licence": "mixed: CC-BY-SA 3.0 / CC-BY-SA 4.0 / CC-BY 3.0 / CC-BY 4.0 / GPL 3.0 / OGA-BY 3.0 / CC0 — see credits/CREDITS-container.txt",
+      "authors": [
+        "bluecarrot16",
+        "Lanea Zimmerman (Sharm)",
+        "William Thompson",
+        "Tuomo Untinen (Reemax)",
+        "Evert",
+        "Buch",
+        "Blarumyrran",
+        "n2liquid",
+        "Jetrel",
+        "Guido Bos",
+        "Hyptosis",
+        "Bonsaiheldin",
+        "NaRNeRZz",
+        "PriorBlue",
+        "Jerom",
+        "7Soul",
+        "Wolthera van Hövell tot Westerflier (TheraHedwig)"
+      ],
+      "files": {
+        "container.png": {
+          "from": "https://opengameart.org/sites/default/files/container-v4_2.zip",
+          "sha256": "bf31c8f6bbba4f7da16958191ee4426e4884da6eb40fe2835f57fd635ac7fced",
+          "extract": "container-v4_2/container.png"
+        }
+      }
     }
   },
   "notImported": {
@@ -523,6 +554,198 @@
         80
       ],
       "floor": 74
+    },
+    {
+      "target": "placeable-keg",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        420,
+        98,
+        24,
+        29
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 32
+    },
+    {
+      "target": "item-keg",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        420,
+        98,
+        24,
+        29
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 30
+    },
+    {
+      "target": "placeable-churn",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        134,
+        131,
+        20,
+        24
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 32
+    },
+    {
+      "target": "item-churn",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        134,
+        131,
+        20,
+        24
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 28
+    },
+    {
+      "target": "placeable-kiln",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        67,
+        147,
+        21,
+        24
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 32
+    },
+    {
+      "target": "item-kiln",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        67,
+        147,
+        21,
+        24
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 28
+    },
+    {
+      "target": "placeable-chest",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        353,
+        258,
+        31,
+        28
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 32
+    },
+    {
+      "target": "item-chest",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        353,
+        258,
+        31,
+        28
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 30
+    },
+    {
+      "target": "placeable-big-chest",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        161,
+        354,
+        31,
+        30
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 32
+    },
+    {
+      "target": "item-big-chest",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        161,
+        354,
+        31,
+        30
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 31
+    },
+    {
+      "target": "placeable-jar",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        353,
+        896,
+        30,
+        32
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 32
+    },
+    {
+      "target": "item-jar",
+      "pack": "lpc-containers",
+      "file": "container.png",
+      "rect": [
+        353,
+        896,
+        30,
+        32
+      ],
+      "box": [
+        32,
+        32
+      ],
+      "floor": 32
     }
   ]
 }
