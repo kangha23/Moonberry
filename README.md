@@ -48,11 +48,11 @@ Phaser 4.
   Công cụ tốt hơn xử lý cả một hình chữ nhật trong một nhát — tới 3x5 — và tốn
   ít sức hơn khi làm việc đó. Ông ấy giữ công cụ trong lúc làm, và đó là cái giá.
 - Một cái mỏ bốn mươi tầng sinh tất định từ hạt giống, xuống được từ khu rừng.
-  Mỗi tầng có mạch quặng đòi cuốc chim đúng bậc — đá và than thì cuốc thường
-  cuốc được, quặng sắt cần cuốc đồng, quặng vàng cần cuốc thép — và quái canh
-  giữ chúng. Xuống mỏ lần đầu mà chưa có kiếm thì nhận ngay một thanh kiếm gỉ
-  bỏ lại ở cửa mỏ; kiếm tốt hơn chế được từ thỏi kim loại và mở công thức theo
-  độ sâu cả nhóm đã xuống tới, không riêng người vừa xuống.
+  Mỗi tầng có mạch quặng đòi cuốc chim đúng bậc — đá, than và quặng đồng thì
+  cuốc thường cuốc được, quặng sắt cần cuốc đồng, quặng vàng cần cuốc thép — và
+  quái canh giữ chúng. Xuống mỏ lần đầu mà chưa có kiếm thì nhận ngay một thanh
+  kiếm gỉ bỏ lại ở cửa mỏ; kiếm tốt hơn chế được từ thỏi kim loại và mở công
+  thức theo độ sâu cả nhóm đã xuống tới, không riêng người vừa xuống.
 - Bốn công trình dựng được trên nông trại — kho, silo, chuồng gà, chuồng bò — đặt
   bằng cách kéo một khung mờ quanh đồng, trả bằng ví chung, và đứng đó như một
   giàn giáo cho tới khi thợ mộc xong việc. Chúng đặc: bạn đi sau lưng chuồng bò và
@@ -367,7 +367,7 @@ thành "không có bản lưu" thay vì ném lỗi vào vòng lặp vẽ.
 5. ~~**Dữ liệu bền và mã mời** — thế giới lưu trong cơ sở dữ liệu sống sót qua khởi động lại.~~ Xong.
 6. ~~**Năng lượng và giấc ngủ** — một ngày có giá và kết thúc khi người chơi quyết định.~~ Xong.
 
-Mười một spec đã vào hết. Một ngày là một ngân sách, nông trại có một cái bánh cóc,
+Mười lăm spec đã vào hết. Một ngày là một ngân sách, nông trại có một cái bánh cóc,
 và trong làng có người: năng lượng và ánh sáng ban ngày cạn dần, tiền mua công cụ
 và công trình khiến ngày sau rẻ hơn ngày trước, và có một lý do để đi bộ sang làng
 không phải là quầy chợ. [`docs/specs/`](docs/specs/) ghi lại mỗi spec đặt ra làm
@@ -388,6 +388,8 @@ gì:
 | 12 | ~~[Câu cá](docs/specs/12-fishing.md)~~ | Xong. Việc duy nhất không tiêu sức; một lý do để trời mưa là ngày tốt |
 | 13 | ~~[Mỏ và chiến đấu](docs/specs/13-mine-and-combat.md)~~ | Xong. Nơi kim loại đến từ, và hệ thống duy nhất có rủi ro |
 | 14 | ~~[Bước vào trong nhà](docs/specs/14-farmhouse-interior.md)~~ | Xong. Ngôi nhà thôi là mặt tiền, và giấc ngủ có một cái giường |
+| 15 | ~~[Phố Việt](docs/specs/15-vietnamese-street.md)~~ | Xong. Một khu phố nghe tiếng Việt; bước đầu của thành phố, không trả giá của nó |
+| 16 | ~~[Kim loại có chỗ dùng](docs/specs/16-metal-and-the-mine.md)~~ | Xong. Mỏ cho quặng, lò nấu cho thỏi; thợ rèn và kiếm giờ đòi kim loại chứ không chỉ vàng |
 
 ### Còn lại gì
 
@@ -402,9 +404,9 @@ spec sau đó lại thêm một mảnh HUD nữa — làm nó sau nghĩa là vi�
 lần. Nó cũng là một trong hai spec không đổi `FarmState`.
 
 [`docs/specs/README.md`](docs/specs/README.md) bàn kỹ hơn về thứ tự — đáng đọc
-trước khi bắt đầu, vì trong năm spec còn lại thì thứ tự đánh số không phải thứ tự
-chặt chẽ nhất — và liệt kê những gì vẫn chưa có spec: nấu ăn, kỹ năng và cấp độ,
-lễ hội, hôn nhân, bó vật phẩm, bảo tàng và nâng cấp nhà.
+trước khi bắt đầu, vì thứ tự đánh số không phải thứ tự chặt chẽ nhất — và liệt
+kê những gì vẫn chưa có spec: nấu ăn, kỹ năng và cấp độ, lễ hội, hôn nhân, bó
+vật phẩm, bảo tàng và nâng cấp nhà.
 
 ### Hai giới hạn đã biết, không nằm trong spec nào
 
