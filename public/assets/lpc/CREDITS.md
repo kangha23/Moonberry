@@ -60,6 +60,29 @@ Applies to: `crop-sunflower.png` (column 4, row 6), `crop-frostcap.png`
 (9, 5), `flowers-white` (8, 10), `stump` (0, 24), `log` (3, 24) and
 `stump-flowers` (5, 24).
 
+Also nine forage icons from the same sheet, listed in `art/sources.json` with
+their exact cells: `item-purple-mushroom` (0, 22), `item-wild-daisy` (1, 3),
+`item-poppy` (8, 9), `item-buttercup` (9, 9), `item-daffodil` (9, 4),
+`item-wild-grape` (3, 19), `item-chestnut` (3, 7), `item-wild-greens` (10, 10)
+and `item-wild-leek` (0, 10). Note the coordinates in this file are quoted the
+way the pack's own documentation reads them; `art/sources.json` is zero-based,
+and `npm run art:sync -- --verify` is what decides which is right.
+
+The three remaining forage items keep their generated icons, because this pack
+has no mineral and no root vegetable in it: `item-quartz`, `item-snow-yam` and
+`item-winter-root`.
+
+**What the palette does to these.** Quantising them to the 48 colours moves
+every pixel by a mean of 0.022 to 0.064 in OkLab, which is small — except that
+three of the nine lose the colour they are named for. The palette holds no
+saturated yellow at all, so `item-daffodil` and `item-buttercup` come out
+cream; and its one strong purple (`#7f2c99`) is vivid enough that the muted
+purples in `item-purple-mushroom` and `item-wild-grape` land nearer a
+violet-grey instead. This is not a fault of the imported art: the generated
+icons draw from the same 48 colours and are no more purple or yellow than
+these are. It is the palette that cannot say those words yet, and widening it
+is its own piece of work, because re-deriving it recolours every file here.
+
 The scatter props are placed by `scripts/generate-maps.mjs`, not by hand: it
 sprinkles them over any grass tile whose eight neighbours are also grass, which
 keeps every one of them a clear tile away from paths, shores and field edges.

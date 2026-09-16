@@ -71,15 +71,195 @@
     "tree": "imported before this table existed; source coordinates were not recorded"
   },
   "cuts": [
-    { "target": "stump", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [0, 24] },
-    { "target": "log", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [3, 24] },
-    { "target": "stump-flowers", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [5, 24] },
-    { "target": "bush", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [8, 22] },
-    { "target": "tuft-tall", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [9, 22] },
-    { "target": "flowers-red", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [8, 5] },
-    { "target": "flowers-gold", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [9, 5] },
-    { "target": "flowers-white", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [8, 10] },
-    { "target": "crop-sunflower", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [4, 6] },
-    { "target": "crop-frostcap", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [5, 22] }
+    {
+      "target": "stump",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        0,
+        24
+      ]
+    },
+    {
+      "target": "log",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        3,
+        24
+      ]
+    },
+    {
+      "target": "stump-flowers",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        5,
+        24
+      ]
+    },
+    {
+      "target": "bush",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        8,
+        22
+      ]
+    },
+    {
+      "target": "tuft-tall",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        9,
+        22
+      ]
+    },
+    {
+      "target": "flowers-red",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        8,
+        5
+      ]
+    },
+    {
+      "target": "flowers-gold",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        9,
+        5
+      ]
+    },
+    {
+      "target": "flowers-white",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        8,
+        10
+      ]
+    },
+    {
+      "target": "crop-sunflower",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        4,
+        6
+      ]
+    },
+    {
+      "target": "crop-frostcap",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        5,
+        22
+      ]
+    },
+    {
+      "target": "item-purple-mushroom",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        0,
+        22
+      ]
+    },
+    {
+      "target": "item-wild-daisy",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        1,
+        3
+      ]
+    },
+    {
+      "target": "item-poppy",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        8,
+        9
+      ]
+    },
+    {
+      "target": "item-buttercup",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        9,
+        9
+      ]
+    },
+    {
+      "target": "item-daffodil",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        9,
+        4
+      ]
+    },
+    {
+      "target": "item-wild-grape",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        3,
+        19
+      ]
+    },
+    {
+      "target": "item-chestnut",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        3,
+        7
+      ]
+    },
+    {
+      "target": "item-wild-greens",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        10,
+        10
+      ]
+    },
+    {
+      "target": "item-wild-leek",
+      "pack": "lpc-plants",
+      "file": "plants.png",
+      "grid": 32,
+      "cell": [
+        0,
+        10
+      ]
+    }
   ]
 }
