@@ -1,32 +1,57 @@
 {
-  "packs": {},
+  "packs": {
+    "lpc-plants": {
+      "title": "[LPC] Flowers / Plants / Fungi / Wood",
+      "page": "https://opengameart.org/content/lpc-flowers-plants-fungi-wood",
+      "licence": "CC-BY-SA 3.0",
+      "authors": [
+        "bluecarrot16",
+        "Guido Bos",
+        "Ivan Voirol (Silver IV)",
+        "SpiderDave",
+        "William.Thompsonj",
+        "Yar",
+        "Stephen Challener and the Open Surge team",
+        "Gaurav Munjal",
+        "Johann Charlot",
+        "Casper Nilsson",
+        "Jetrel",
+        "Zabin",
+        "Hyptosis",
+        "Surt",
+        "Lanea Zimmerman",
+        "George Bailey",
+        "ansimuz",
+        "Buch",
+        "the Open Pixel Project contributors"
+      ],
+      "files": {
+        "plants.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-flowers-plants-fungi-wood.zip",
+          "sha256": "ec3e039bd872757b8424a0d11c1818eca0286fd1dc0322d276462a46b0f0948f",
+          "extract": "lpc-flowers-plants-fungi-wood/plants.png"
+        }
+      }
+    }
+  },
   "notImported": {
     "animal-chicken-sheet": "imported before this table existed; source coordinates were not recorded",
     "animal-cow-sheet": "imported before this table existed; source coordinates were not recorded",
     "animal-duck-sheet": "imported before this table existed; source coordinates were not recorded",
     "animal-goat-sheet": "imported before this table existed; source coordinates were not recorded",
-    "bush": "imported before this table existed; source coordinates were not recorded",
     "crop-cranberry": "imported before this table existed; source coordinates were not recorded",
-    "crop-frostcap": "imported before this table existed; source coordinates were not recorded",
     "crop-melon": "imported before this table existed; source coordinates were not recorded",
     "crop-pumpkin": "imported before this table existed; source coordinates were not recorded",
     "crop-rhubarb": "imported before this table existed; source coordinates were not recorded",
     "crop-sprout": "imported before this table existed; source coordinates were not recorded",
     "crop-strawberry": "imported before this table existed; source coordinates were not recorded",
-    "crop-sunflower": "imported before this table existed; source coordinates were not recorded",
     "crop-tomato": "imported before this table existed; source coordinates were not recorded",
     "crop-turnip": "imported before this table existed; source coordinates were not recorded",
     "crop-winterberry": "imported before this table existed; source coordinates were not recorded",
     "farmhouse": "imported before this table existed; source coordinates were not recorded",
-    "flowers-gold": "imported before this table existed; source coordinates were not recorded",
-    "flowers-red": "imported before this table existed; source coordinates were not recorded",
-    "flowers-white": "imported before this table existed; source coordinates were not recorded",
     "grass-tuft": "imported before this table existed; source coordinates were not recorded",
-    "log": "imported before this table existed; source coordinates were not recorded",
     "player-sheet": "imported before this table existed; source coordinates were not recorded",
     "rowan-sheet": "imported before this table existed; source coordinates were not recorded",
-    "stump-flowers": "imported before this table existed; source coordinates were not recorded",
-    "stump": "imported before this table existed; source coordinates were not recorded",
     "tile-grass-1x": "imported before this table existed; source coordinates were not recorded",
     "tile-grass-1xy": "imported before this table existed; source coordinates were not recorded",
     "tile-grass-1y": "imported before this table existed; source coordinates were not recorded",
@@ -43,8 +68,18 @@
     "tile-water-2": "imported before this table existed; source coordinates were not recorded",
     "tile-water-3": "imported before this table existed; source coordinates were not recorded",
     "tile-water": "imported before this table existed; source coordinates were not recorded",
-    "tree": "imported before this table existed; source coordinates were not recorded",
-    "tuft-tall": "imported before this table existed; source coordinates were not recorded"
+    "tree": "imported before this table existed; source coordinates were not recorded"
   },
-  "cuts": []
+  "cuts": [
+    { "target": "stump", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [0, 24] },
+    { "target": "log", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [3, 24] },
+    { "target": "stump-flowers", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [5, 24] },
+    { "target": "bush", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [8, 22] },
+    { "target": "tuft-tall", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [9, 22] },
+    { "target": "flowers-red", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [8, 5] },
+    { "target": "flowers-gold", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [9, 5] },
+    { "target": "flowers-white", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [8, 10] },
+    { "target": "crop-sunflower", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [4, 6] },
+    { "target": "crop-frostcap", "pack": "lpc-plants", "file": "plants.png", "grid": 32, "cell": [5, 22] }
+  ]
 }
