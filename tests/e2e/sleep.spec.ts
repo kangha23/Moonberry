@@ -40,8 +40,11 @@ async function waitForGameRunning(page: Page) {
  * autosave the old position back over it.
  */
 async function reloadOnTheDoorstep(page: Page) {
+  // The first save waits for the first clock step plus the autosave debounce,
+  // which is two seconds on an idle machine and more than the default five
+  // when every worker is booting its own copy of the game at once.
   await expect
-    .poll(() => page.evaluate(() => localStorage.getItem('moonberry:farm') !== null))
+    .poll(() => page.evaluate(() => localStorage.getItem('moonberry:farm') !== null), { timeout: 15_000 })
     .toBe(true)
   await page.addInitScript(() => {
     if (sessionStorage.getItem('doorstep')) return

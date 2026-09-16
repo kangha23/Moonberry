@@ -161,7 +161,12 @@ test('the satchel takes Escape before the menu does', async ({ page }) => {
   await page.goto('/')
   await stage(page)
 
-  await page.keyboard.press('Tab')
+  // Held briefly rather than tapped: Phaser clears "just pressed" on key-up,
+  // so a press that begins and ends inside one frame is never seen — and on
+  // a loaded machine a frame is long enough for that to happen.
+  await page.keyboard.down('Tab')
+  await page.waitForTimeout(150)
+  await page.keyboard.up('Tab')
   await expect(page.getByRole('dialog', { name: 'Túi đồ' })).toBeVisible()
 
   await page.keyboard.press('Escape')
