@@ -63,6 +63,61 @@
           "extract": "container-v4_2/container.png"
         }
       }
+    },
+    "lpc-daneeklu": {
+      "title": "[LPC] Farming tilesets, magic animations and UI elements",
+      "page": "https://opengameart.org/content/lpc-farming-tilesets-magic-animations-and-ui-elements",
+      "licence": "CC-BY-SA 3.0 / GPL 3.0",
+      "authors": [
+        "Daniel Eddeland (Daneeklu)"
+      ],
+      "files": {
+        "farming_fishing.png": {
+          "from": "https://opengameart.org/sites/default/files/submission_daneeklu.zip",
+          "sha256": "4fd2b459b0105bf750dd9766ec36c3d00c54b42b8b67f1a3696341ac8491d0a3",
+          "extract": "submission_daneeklu/tilesets/farming_fishing.png"
+        },
+        "fence.png": {
+          "from": "https://opengameart.org/sites/default/files/submission_daneeklu.zip",
+          "sha256": "4fd2b459b0105bf750dd9766ec36c3d00c54b42b8b67f1a3696341ac8491d0a3",
+          "extract": "submission_daneeklu/tilesets/fence.png"
+        },
+        "fence_alt.png": {
+          "from": "https://opengameart.org/sites/default/files/submission_daneeklu.zip",
+          "sha256": "4fd2b459b0105bf750dd9766ec36c3d00c54b42b8b67f1a3696341ac8491d0a3",
+          "extract": "submission_daneeklu/tilesets/fence_alt.png"
+        }
+      }
+    },
+    "lpc-terrains": {
+      "title": "[LPC] Terrains",
+      "page": "https://opengameart.org/content/lpc-terrains",
+      "licence": "CC-BY-SA 3.0 / GPL 3.0 / CC-BY 3.0 — see credits/CREDITS-terrain.txt",
+      "authors": [
+        "bluecarrot16",
+        "Lanea Zimmerman (Sharm)",
+        "Daniel Eddeland (Daneeklu)",
+        "Richard Kettering (Jetrel)",
+        "Zachariah Husiar (Zabin)",
+        "Hyptosis",
+        "Casper Nilsson",
+        "Buko Studios",
+        "Nushio",
+        "ZaPaper",
+        "billknye",
+        "William Thompson",
+        "caeles",
+        "Stephen Challener (Redshrike)",
+        "Bertram",
+        "Rayane Félix (RayaneFLX)"
+      ],
+      "files": {
+        "terrain-v7.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-terrains.zip",
+          "sha256": "d2d48771a1af9c02c7f12e3a8412ba4b746a2858d42a5f639da064f934eef80f",
+          "extract": "lpc-terrains/terrain-v7.png"
+        }
+      }
     }
   },
   "notImported": {
@@ -746,6 +801,180 @@
         32
       ],
       "floor": 32
+    },
+    {
+      "target": "placeable-wood-fence",
+      "pack": "lpc-daneeklu",
+      "file": "fence.png",
+      "rect": [
+        32,
+        0,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "item-wood-fence",
+      "pack": "lpc-daneeklu",
+      "file": "fence.png",
+      "rect": [
+        32,
+        0,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "placeable-hardwood-fence",
+      "pack": "lpc-daneeklu",
+      "file": "fence_alt.png",
+      "rect": [
+        32,
+        0,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "item-hardwood-fence",
+      "pack": "lpc-daneeklu",
+      "file": "fence_alt.png",
+      "rect": [
+        32,
+        0,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "placeable-wood-path",
+      "pack": "lpc-daneeklu",
+      "file": "farming_fishing.png",
+      "rect": [
+        472,
+        10,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "placeable-stone-path",
+      "pack": "lpc-terrains",
+      "file": "terrain-v7.png",
+      "rect": [
+        608,
+        768,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "placeable-gravel-path",
+      "pack": "lpc-terrains",
+      "file": "terrain-v7.png",
+      "rect": [
+        800,
+        320,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "item-wood-path",
+      "pack": "lpc-daneeklu",
+      "file": "farming_fishing.png",
+      "rect": [
+        472,
+        10,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "item-stone-path",
+      "pack": "lpc-terrains",
+      "file": "terrain-v7.png",
+      "rect": [
+        608,
+        768,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "item-gravel-path",
+      "pack": "lpc-terrains",
+      "file": "terrain-v7.png",
+      "rect": [
+        800,
+        320,
+        32,
+        32
+      ]
+    },
+    {
+      "target": "item-perch",
+      "pack": "lpc-daneeklu",
+      "file": "farming_fishing.png",
+      "rect": [
+        535,
+        204,
+        18,
+        12
+      ],
+      "box": [
+        40,
+        40
+      ],
+      "floor": 26
+    },
+    {
+      "target": "item-smallmouth-bass",
+      "pack": "lpc-daneeklu",
+      "file": "farming_fishing.png",
+      "rect": [
+        480,
+        408,
+        32,
+        17
+      ],
+      "box": [
+        40,
+        40
+      ],
+      "floor": 28
+    },
+    {
+      "target": "item-rainbow-trout",
+      "pack": "lpc-daneeklu",
+      "file": "farming_fishing.png",
+      "rect": [
+        512,
+        361,
+        31,
+        17
+      ],
+      "box": [
+        40,
+        40
+      ],
+      "floor": 28
+    },
+    {
+      "target": "item-pike",
+      "pack": "lpc-daneeklu",
+      "file": "farming_fishing.png",
+      "rect": [
+        480,
+        489,
+        36,
+        16
+      ],
+      "box": [
+        40,
+        40
+      ],
+      "floor": 28
     }
   ]
 }

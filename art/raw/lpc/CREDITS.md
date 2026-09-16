@@ -163,6 +163,65 @@ individual sprite. The upstream credits file is vendored verbatim at
 [`credits/CREDITS-container.txt`](credits/CREDITS-container.txt) and is part of
 this notice.
 
+## [LPC] Farming tilesets, magic animations and UI elements (CC-BY-SA 3.0 or GPL 3.0)
+
+Applies to the two fences, the plank path, and four of the fish:
+`placeable-wood-fence` / `item-wood-fence` (a rail fence),
+`placeable-hardwood-fence` / `item-hardwood-fence` (a picket fence),
+`placeable-wood-path` / `item-wood-path` (decking cut out of the middle of the
+pack's dock), and `item-perch`, `item-smallmouth-bass`, `item-rainbow-trout`,
+`item-pike`. Exact rectangles are in `art/sources.json`.
+
+> "[LPC] Farming tilesets, magic animations and UI elements" by
+> **Daniel Eddeland (Daneeklu)**. Dual-licensed CC-BY-SA 3.0 or GPL 3.0 or
+> later. Some of the art is based on the LPC competition base assets.
+> https://opengameart.org/content/lpc-farming-tilesets-magic-animations-and-ui-elements
+
+The pack's own readme is vendored verbatim at
+[`credits/CREDITS-daneeklu.txt`](credits/CREDITS-daneeklu.txt).
+
+The three tiles are cut so that they **repeat**: the fences are the middle
+piece of a horizontal run, so a row of them is one continuous fence rather
+than a row of separate posts, and the decking is cut on the planking's own
+32-pixel period (`y = 10`, not `y = 0`) so that a path has no seam across it.
+Each was checked by tiling it three by three before it was committed.
+
+**Only four fish, not the eighteen the game has.** The pack draws five
+species — perch, bass, trout, pike and a tuna — and the game's list has no
+tuna in it, so four are imported and fourteen keep their generated drawings.
+Recolouring one fish into five would have put five names on one drawing, which
+is the thing this whole migration exists to stop doing.
+
+The four share a 40x40 box rather than the 32x32 every other icon uses,
+because a pike is 36 pixels long and a perch is 18: boxing each one snugly
+would have drawn them the same size in the satchel. The box is square, so
+`ItemIcon`'s `width={size} height={size}` still scales it without distortion.
+
+## [LPC] Terrains (CC-BY-SA 3.0 / GPL 3.0 / CC-BY 3.0)
+
+Applies to: `placeable-stone-path` / `item-stone-path` (pale flagstone, the
+`Stone_White` terrain) and `placeable-gravel-path` / `item-gravel-path` (the
+`Gravel_1` terrain).
+
+> "[LPC] Terrains" by **bluecarrot16, Lanea Zimmerman (Sharm), Daniel Eddeland
+> (Daneeklu), Richard Kettering (Jetrel), Zachariah Husiar (Zabin), Hyptosis,
+> Casper Nilsson, Buko Studios, Nushio, ZaPaper, billknye, William Thompson,
+> caeles, Stephen Challener (Redshrike), Bertram, and Rayane Félix
+> (RayaneFLX)**.
+> https://opengameart.org/content/lpc-terrains
+
+This pack is also assembled from other people's work — twelve upstream sets —
+but unlike the containers pack every one of them is CC-BY-SA 3.0, GPL 3.0 or
+CC-BY 3.0, so the whole thing sits under CC-BY-SA 3.0 with no 4.0 surprise in
+it. The upstream credits file, which names each set and its licence, is
+vendored verbatim at [`credits/CREDITS-terrain.txt`](credits/CREDITS-terrain.txt)
+and is part of this notice.
+
+Both cuts are the **centre** tile of the terrain's 3x3 blob, which is the one
+tile in the set designed to tile against itself. The cells either side of it
+are edge pieces with transparent corners and were rejected by tiling them and
+looking: a path built from one of those is a row of ragged islands.
+
 ## [LPC] Style Farm Animals (CC-BY 3.0 or GPL 2.0+)
 
 Applies to: `animal-chicken-sheet.png`, `animal-cow-sheet.png` and

@@ -181,6 +181,20 @@ if (process.argv[1] && process.argv[1].endsWith('apply-palette.mjs')) {
   // CC-BY-SA requires for the colour-reduction this script itself performs.
   const rawCredits = fs.readFileSync(path.join(IN_DIR, 'CREDITS.md'), 'utf8');
   fs.writeFileSync(path.join(OUT_DIR, 'CREDITS.md'), creditsWithNotice(rawCredits));
+
+  // The upstream credits files CREDITS.md links to travel with it. Some packs
+  // do not state their licence in CREDITS.md at all — they state it in their
+  // own credits file and CREDITS.md points at it — so shipping the pointer
+  // without the target ships art whose licence text is simply absent. These
+  // were copied by hand until now, which meant the next pack added would have
+  // been the one nobody remembered to copy.
+  const creditsDir = path.join(IN_DIR, 'credits');
+  if (fs.existsSync(creditsDir)) {
+    fs.mkdirSync(path.join(OUT_DIR, 'credits'), { recursive: true });
+    for (const name of fs.readdirSync(creditsDir)) {
+      fs.copyFileSync(path.join(creditsDir, name), path.join(OUT_DIR, 'credits', name));
+    }
+  }
   console.log(`quantised ${IN_DIR} -> ${OUT_DIR}; ${changed} files changed`);
 
   const orphans = findOrphans(OUT_DIR, sourceNames);
