@@ -69,7 +69,10 @@ const files = fs
 // name is the only thing the folder knows, so the name carries the difference.
 const sheets = files.filter((name) => name.endsWith('-sheet') && !name.startsWith('animal-'));
 const animalSheets = files.filter((name) => name.startsWith('animal-') && name.endsWith('-sheet'));
-const images = files.filter((name) => !name.endsWith('-sheet'));
+// Portraits are a third shape: four 64px expressions side by side, read as a
+// sheet so the dialogue box can ask for a mood by frame rather than by crop.
+const portraits = files.filter((name) => name.startsWith('portrait-'));
+const images = files.filter((name) => !name.endsWith('-sheet') && !name.startsWith('portrait-'));
 
 /**
  * One animal sheet's frame size, measured rather than declared.
@@ -177,6 +180,14 @@ ${animalSheets
   .join('\n')}
 ];
 
+/**
+ * The villager portraits, as the id each one draws: \`portrait-rowan\` is
+ * \`'rowan'\`. Four 64px frames across, in the order of \`PORTRAIT_MOODS\` in
+ * \`src/game/npcs/types.ts\`. A villager missing from this list talks from an
+ * empty frame rather than from somebody else's face.
+ */
+export const LPC_PORTRAITS: readonly string[] = [${portraits.map((name) => `'${name.slice('portrait-'.length)}'`).join(', ')}];
+
 ${sheetType}
 
 /**
@@ -193,6 +204,7 @@ fs.writeFileSync(OUT_FILE, `${banner}${body}`);
 
 console.log(`wrote ${OUT_FILE}`);
 console.log(`  images ${images.length}, sheets ${sheets.length} (${sheets.join(', ') || 'none'})`);
+console.log(`  portraits ${portraits.length} (${portraits.join(', ') || 'none'})`);
 console.log(`  animal sheets ${animalSheets.length} (${animalSheets.join(', ') || 'none'})`);
 console.log(`  crops drawn ${drawnCrops.length}/${crops.length}: ${drawnCrops.join(', ') || 'none'}`);
 

@@ -46,8 +46,8 @@ export const POND = village(21, 18);
 export const RANCH = village(11, 22);
 
 /** The doorstep of each cottage, which is where "home" means. */
-export const ROWAN_DOOR = village(3, 11);
-export const TOBIAS_DOOR = village(4, 4);
-export const JUNIPER_DOOR = village(24, 4);
+export const ROWAN_DOOR = village(3, 12);
+export const TOBIAS_DOOR = village(4, 6);
+export const JUNIPER_DOOR = village(24, 6);
 export const MAEVE_DOOR = village(24, 16);
-export const BRAM_DOOR = village(6, 22);
+export const BRAM_DOOR = village(1, 22);

@@ -1,12 +1,13 @@
 import Phaser from 'phaser';
 import { zoomFor } from '../constants';
 import { createPixelArtTextures } from '../assets/createPixelArtTextures';
-import { LPC_ANIMAL_SHEETS, LPC_IMAGES, LPC_SHEETS } from '../assets/lpc.generated';
+import { LPC_ANIMAL_SHEETS, LPC_IMAGES, LPC_PORTRAITS, LPC_SHEETS } from '../assets/lpc.generated';
 import { PALETTE, tint } from '../assets/palette.generated';
 import { hudLayout, hudZones } from '../ui/hudLayout';
 import { SoundManager } from '../audio/SoundManager';
 import { FOOTSTEP_INTERVAL_MS, footstepFor, musicFor } from '../audio/soundtrack';
 import { connectToFarm, type FarmConnection } from '../net/client';
+import type { NpcId, PortraitMood } from '../npcs/types';
 import type { GameEvent } from '../state/intents';
 import { hotbarSlots } from '../state/selectors';
 import {
@@ -44,6 +45,7 @@ import {
 import { AreaView } from './farm/area';
 import { AtmosphereView } from './farm/atmosphere';
 import { AvatarView } from './farm/avatars';
+import { DialogueBox } from './farm/dialogue';
 import { FishingHud } from './farm/fishing';
 import { GroundView } from './farm/ground';
 import { Hud } from './farm/hud';
@@ -149,6 +151,7 @@ export default class FarmScene extends Phaser.Scene {
   private atmosphere!: AtmosphereView;
   /** The morning panel, and the tally it reports. */
   private summary!: MorningSummary;
+  private dialogue!: DialogueBox;
   /** The float, the line, the bar and the catch card. */
   private fishingHud!: FishingHud;
 
@@ -216,7 +219,12 @@ export default class FarmScene extends Phaser.Scene {
     this.load.image('frame-slot', '/assets/ui/frame-slot.png');
     this.load.image('frame-plate', '/assets/ui/frame-plate.png');
     this.load.svg('quest-star', '/assets/pixel/quest-star.svg', { width: 32, height: 32 });
-    this.load.svg('market-ribbon', '/assets/pixel/market-ribbon.svg', { width: 96, height: 32 });
+    // The stall has a drawing now. The old ribbon stays behind as its stand-in,
+    // under the same key, and is only asked for when the drawing is not there:
+    // two loads under one key is a warning and the second one loses.
+    if (!LPC_IMAGES.some(([key]) => key === 'market-stall')) {
+      this.load.svg('market-stall', '/assets/pixel/market-ribbon.svg', { width: 96, height: 32 });
+    }
     // Hand-drawn art (LPC + CC0, see public/assets/lpc/CREDITS.md).
     // Missing files fall back to procedural textures via createPixelArtTextures.
     //
@@ -238,6 +246,10 @@ export default class FarmScene extends Phaser.Scene {
         frameHeight: sheet.frameHeight,
       }),
     );
+    // Four faces a villager, 64px each, in `PORTRAIT_MOODS` order.
+    LPC_PORTRAITS.forEach((npc) =>
+      this.load.spritesheet(`portrait-${npc}`, `/assets/lpc/portrait-${npc}.png`, { frameWidth: 64, frameHeight: 64 }),
+    );
     // Same bargain as the art: a missing file is silence, not a broken game.
     SoundManager.preload(this, AREA_IDS);
   }
@@ -256,6 +268,7 @@ export default class FarmScene extends Phaser.Scene {
     this.herdView = new HerdView(context);
     this.hud = new Hud(context, this.screen);
     this.summary = new MorningSummary(this, this.screen);
+    this.dialogue = new DialogueBox(this, this.screen);
     this.fishingHud = new FishingHud(context, this.screen);
     this.atmosphere = new AtmosphereView(context, this.screen, this.hud, this.areaView);
 
@@ -267,6 +280,7 @@ export default class FarmScene extends Phaser.Scene {
     this.atmosphere.createWeatherSprites();
     this.atmosphere.createAmbient();
     this.hud.createUi();
+    this.dialogue.create();
     this.summary.createSummaryPanel();
     this.fishingHud.createFishingUi();
     this.bindInput();
@@ -354,7 +368,10 @@ export default class FarmScene extends Phaser.Scene {
     // so the key that dismisses it does not also swing a tool.
     // Told to the store rather than kept here alone, because Escape's ladder
     // is decided in one place and it has to be able to see this panel.
-    setSummaryOpen(this.summary.summaryPanel.visible);
+    // The dialogue box rides on the same flag: it is the other thing Escape
+    // closes rather than opening the menu over, and the scene reads that key
+    // for itself in both cases.
+    setSummaryOpen(this.summary.summaryPanel.visible || this.dialogue.isOpen);
 
     if (this.summary.summaryPanel.visible) {
       if (this.summary.dismissRequested && time - this.summary.summaryShownAt > SUMMARY_MIN_MS) {
@@ -363,6 +380,19 @@ export default class FarmScene extends Phaser.Scene {
       }
       this.summary.dismissRequested = false;
       this.releaseAct();
+      sendMove(0, 0, delta);
+    } else if (this.dialogue.isOpen) {
+      // Somebody is talking to you, so you stand and listen. The key that
+      // closes the box is still down on the frame it closes, and left alone it
+      // would act again at once and start the same conversation over — so the
+      // act is marked spent, and nothing more happens until it is let go of.
+      if (this.dialogue.update(time)) {
+        this.villagerView.stopListening();
+        this.actHeld = true;
+        this.actSpent = true;
+      } else {
+        this.releaseAct();
+      }
       sendMove(0, 0, delta);
     } else if (farmStore.getState().inventoryOpen || this.localPlayer?.panel) {
       // The grid is a document the DOM is drawing over the canvas. The world
@@ -476,6 +506,18 @@ export default class FarmScene extends Phaser.Scene {
     return localPlayerId ? (farm.players[localPlayerId] ?? null) : null;
   }
 
+  /**
+   * Holds up what a villager said, and turns them to face whoever they said it to.
+   *
+   * The box opens on the frame the event lands; the key that asked for it was
+   * pressed before the box existed, so it can never also be the key that closes it.
+   */
+  private showDialogue(npc: NpcId, line: string, mood: PortraitMood) {
+    const player = this.localPlayer;
+    if (player) this.villagerView.listen(npc, player.x, player.y);
+    this.dialogue.open(npc, line, mood, this.time.now);
+  }
+
   /** Turns simulation events into sprites, tweens, and re-renders. */
   private handleEvents(events: GameEvent[]) {
     const { localPlayerId } = farmStore.getState();
@@ -495,11 +537,18 @@ export default class FarmScene extends Phaser.Scene {
         // Arrives in the same batch as `dayStarted`, so the field this draws
         // over is already the new morning's field.
         this.groundView.spraySprinklers();
+      } else if (event.kind === 'npcSpoke') {
+        // Yours only. Somebody else chatting to Maeve across the yard is not a
+        // box over your screen.
+        if (event.playerId === localPlayerId) this.showDialogue(event.npc, event.line, event.mood);
       } else if (event.kind === 'giftGiven') {
-        // Shown rather than narrated: the prompt bar carries the words, and
-        // the heart is what you actually watch for. Only for the player who
+        // Shown rather than narrated: the box carries the words and the face,
+        // and the heart is what you actually watch for. Only for the player who
         // gave it — somebody else's gift is not your moment.
-        if (event.playerId === localPlayerId && event.heartGained) this.villagerView.popHeart(event.npc);
+        if (event.playerId === localPlayerId) {
+          if (event.heartGained) this.villagerView.popHeart(event.npc);
+          if (event.line) this.showDialogue(event.npc, event.line, event.mood);
+        }
       } else if (event.kind === 'cropsWithered') {
         // Stashed rather than shown now: it arrives in the same frame as
         // `dayStarted`, and the morning panel is where it belongs.
@@ -607,8 +656,23 @@ export default class FarmScene extends Phaser.Scene {
 
     // Any key at all dismisses the morning summary; `update` decides whether
     // it is old enough to be dismissed yet.
-    keyboard.on('keydown', () => {
-      this.summary.dismissRequested = true;
+    //
+    // The dialogue box is narrower: the act keys and Escape. Walking keys are
+    // left out so a player already heading off does not skip a line they never
+    // saw, and a key held down since it opened the box repeats without ever
+    // being a fresh press.
+    keyboard.on('keydown', (event: KeyboardEvent) => {
+      if (this.summary.summaryPanel.visible) {
+        this.summary.dismissRequested = true;
+        return;
+      }
+      if (event.repeat || !this.dialogue.isOpen) return;
+      if (event.code === 'Escape') {
+        this.dialogue.close();
+        this.villagerView.stopListening();
+      } else if (event.code === 'Space' || event.code === 'Enter' || event.code === 'NumpadEnter') {
+        this.dialogue.requestAdvance();
+      }
     });
 
     this.bindPointer();
@@ -619,7 +683,7 @@ export default class FarmScene extends Phaser.Scene {
     this.input.on(
       'wheel',
       (_pointer: Phaser.Input.Pointer, _over: unknown, _dx: number, dy: number) => {
-        if (farmStore.getState().inventoryOpen || this.summary.summaryPanel.visible) return;
+        if (farmStore.getState().inventoryOpen || this.summary.summaryPanel.visible || this.dialogue.isOpen) return;
         if (dy === 0) return;
         this.cycleSlot(dy > 0 ? 1 : -1);
       },
@@ -654,6 +718,8 @@ export default class FarmScene extends Phaser.Scene {
 
     this.input.on('pointerdown', (pointer: Phaser.Input.Pointer) => {
       this.trackPointer(pointer);
+      // A click anywhere turns the page, the way a key does.
+      if (this.dialogue.isOpen && this.summary.summaryPanel.visible === false) this.dialogue.requestAdvance();
       // A press that begins on the HUD stays a press on the HUD for as long as
       // it is held, so dragging off the hotbar does not start tilling.
       this.pointerActArmed =
@@ -714,6 +780,7 @@ export default class FarmScene extends Phaser.Scene {
   private inputSuspended(): boolean {
     return (
       this.summary.summaryPanel.visible ||
+      this.dialogue.isOpen ||
       farmStore.getState().inventoryOpen ||
       Boolean(this.localPlayer?.panel)
     );
@@ -1126,6 +1193,7 @@ export default class FarmScene extends Phaser.Scene {
     this.buildHint.setPosition(width / 2, Math.min(96, height * 0.14));
     this.fishingHud.layout(width, height);
     this.summary.layout(width, height);
+    this.dialogue.layout(this.hud.layout);
   }
 
   // --- cursors --------------------------------------------------------------

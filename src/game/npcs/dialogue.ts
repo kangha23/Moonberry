@@ -1,5 +1,5 @@
 import type { Season, Weather } from '../systems/time';
-import type { DialogueCondition, DialogueEntry, NpcDef } from './types';
+import type { DialogueCondition, DialogueEntry, GiftReaction, NpcDef, PortraitMood } from './types';
 
 /**
  * Everything a line is allowed to know about.
@@ -48,8 +48,14 @@ export function candidateLines(def: NpcDef, context: DialogueContext): DialogueE
   return allowed.filter((entry) => entry.priority === best);
 }
 
+/** A line, and the face it is said with. */
+export interface SpokenLine {
+  line: string;
+  mood: PortraitMood;
+}
+
 /**
- * What they say.
+ * What they say, and how they look saying it.
  *
  * The highest-priority line whose conditions hold, and where several tie, one
  * chosen by the day so a villager standing in the same place all season is not
@@ -59,11 +65,33 @@ export function candidateLines(def: NpcDef, context: DialogueContext): DialogueE
  * Never empty. A villager with nothing to say is a bug rather than a silence,
  * so every definition carries an unconditional line and `definitions.test.ts`
  * refuses to let one ship without it; the last resort below exists only so
- * that this function's type can be `string`.
+ * that this function's type can promise a line.
  */
-export function pickDialogue(def: NpcDef, context: DialogueContext): string {
+export function pickLine(def: NpcDef, context: DialogueContext): SpokenLine {
   const shortlist = candidateLines(def, context);
-  if (shortlist.length === 0) return `${def.name} gật đầu, và không nói gì.`;
+  if (shortlist.length === 0) return { line: `${def.name} gật đầu, và không nói gì.`, mood: 'neutral' };
   const index = ((context.day % shortlist.length) + shortlist.length) % shortlist.length;
-  return shortlist[index].line;
+  const entry = shortlist[index];
+  return { line: entry.line, mood: entry.mood ?? 'neutral' };
 }
+
+/** What they say, without the face. See `pickLine`. */
+export function pickDialogue(def: NpcDef, context: DialogueContext): string {
+  return pickLine(def, context).line;
+}
+
+/**
+ * The face a gift puts on somebody.
+ *
+ * It overrides the mood of the line they say after it, because the gift is
+ * what just happened: a villager handed something they hate does not say a
+ * cheerful line about the weather with a cheerful face, whatever the table
+ * had them feeling about the weather.
+ */
+export const GIFT_MOOD: Record<GiftReaction, PortraitMood> = {
+  loved: 'happy',
+  liked: 'happy',
+  neutral: 'neutral',
+  disliked: 'sad',
+  hated: 'angry',
+};

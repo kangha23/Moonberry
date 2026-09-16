@@ -18,9 +18,8 @@ export const MAEVE: NpcDef = {
   name: 'Maeve',
   blurb: 'Thợ rèn. Sẽ kể cho cậu nghe nông cụ của cậu hỏng ở đâu, rất dài.',
   texture: 'npc-maeve',
-  sheet: 'player-sheet',
-  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
-  tint: 0xc98a8a,
+  sheet: 'maeve-sheet',
+  tint: 0xffffff,
   birthday: { season: 'Autumn', day: 3 },
   defaultGiftReaction: 'neutral',
   gifts: {
@@ -53,7 +52,7 @@ export const MAEVE: NpcDef = {
     { priority: 10, when: { activity: 'lane' }, line: '"Đi cho giãn gân. Mười tiếng bên đe thì tai ù cả tối."' },
     { priority: 10, when: { activity: 'home' }, line: '"Lò nguội rồi. Quay lại khi nó chưa nguội."' },
 
-    { priority: 20, when: { weather: 'Drizzle' }, line: '"Than ướt. Không. Mai."' },
+    { priority: 20, when: { weather: 'Drizzle' }, line: '"Than ướt. Không. Mai."', mood: 'angry' },
     { priority: 20, when: { weather: 'Breezy' }, line: '"Hôm nay lửa bén gió. Nghe là thấy khác ngay."' },
     { priority: 20, when: { season: 'Winter' }, line: '"Tháng duy nhất trong năm nghề tôi dễ chịu. Tranh thủ mà nhờ vả."' },
     { priority: 20, when: { season: 'Summer' }, line: '"Đứng cạnh lửa giữa tháng Tám. Cậu thử hỏi tôi buôn bán thế nào xem."' },
@@ -66,8 +65,8 @@ export const MAEVE: NpcDef = {
     { priority: 50, when: { minHearts: 6 }, line: '"Hai ngày không có cuốc là lâu đấy. Tôi biết chứ. Tôi vẫn lấy đủ hai ngày, vì hàng làm vội thì rồi cũng quay lại."' },
     { priority: 50, when: { minHearts: 6, season: 'Autumn' }, line: '"Mang bí ngô tới cho tôi trước khi bán. Tôi trả bằng công, không trả bằng tiền."' },
     { priority: 60, when: { minHearts: 8 }, line: '"Trên giá có một cái búa khắc tên cậu ở cán. Đừng làm nó thành chuyện kỳ cục."' },
-    { priority: 60, when: { minHearts: 10 }, line: '"Cậu là người duy nhất tới lò rèn để gặp tôi chứ không phải gặp cái đe. Tôi nhận ra ngay từ tuần đầu."' },
+    { priority: 60, when: { minHearts: 10 }, line: '"Cậu là người duy nhất tới lò rèn để gặp tôi chứ không phải gặp cái đe. Tôi nhận ra ngay từ tuần đầu."', mood: 'happy' },
 
-    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tôi mà lửa vẫn đòi ăn than. Nói nhanh một câu rồi lát nữa tôi sẽ thấy vui."' },
+    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tôi mà lửa vẫn đòi ăn than. Nói nhanh một câu rồi lát nữa tôi sẽ thấy vui."', mood: 'happy' },
   ],
 };

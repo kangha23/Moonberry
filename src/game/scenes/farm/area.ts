@@ -22,7 +22,7 @@ import {
   type AreaMap,
 } from '../../world/areas';
 import type { GroundView } from './ground';
-import { AVATAR_DEPTH_BASE, type SceneContext } from './shared';
+import { AVATAR_DEPTH_BASE, propDepth, type SceneContext } from './shared';
 
 /** The map of the built area, drawn. */
 export class AreaView {
@@ -155,7 +155,7 @@ export class AreaView {
       const centreX = prop.x + prop.width / 2;
       const centreY = prop.y + prop.height / 2;
 
-      const image = this.scene.add.image(centreX, centreY, prop.texture).setDepth(prop.depth);
+      const image = this.scene.add.image(centreX, centreY, prop.texture);
       // Props are sized by their Tiled footprint, so resizing one in the editor
       // resizes it in game without touching this file — but the footprint sets
       // the width only, and the height follows the drawing's own proportions.
@@ -185,6 +185,13 @@ export class AreaView {
       const drawnHeight = naturalWidth > 0 ? (prop.width * naturalHeight) / naturalWidth : prop.height;
       image.setDisplaySize(prop.width, drawnHeight);
       image.setPosition(centreX, prop.y + prop.height - drawnHeight / 2);
+      // Everything drawn with the prop is placed relative to this depth, except
+      // the shadows: a shadow is on the ground, and stays at the map's depth
+      // under the avatar band whether or not its prop has joined it. What sits
+      // on top of the prop — a window's glow, a fire — goes up by less than a
+      // whole row, or in the avatar band it would cover whoever stands in front.
+      const depth = propDepth(prop, drawnHeight, TILE_SIZE);
+      image.setDepth(depth);
       this.context.areaLayer?.add(image);
 
       if (prop.texture === 'farmhouse') {
@@ -200,7 +207,7 @@ export class AreaView {
         // house happens to be drawn at, instead of a measurement from the top
         // of the footprint that only held for one picture.
         const top = image.y - image.displayHeight / 2;
-        const glow = this.scene.add.image(centreX, image.y, 'glow').setDepth(prop.depth + 2).setScale(2.6).setAlpha(0);
+        const glow = this.scene.add.image(centreX, image.y, 'glow').setDepth(depth + 0.5).setScale(2.6).setAlpha(0);
         this.context.areaLayer?.addMultiple([shadow, glow]);
         this.houseGlow = glow;
         this.chimney = { x: centreX + prop.width / 3, y: top + 2 };
@@ -214,13 +221,13 @@ export class AreaView {
         const hearth = top + image.displayHeight * 0.7;
         const fire = this.scene.add
           .image(centreX, hearth - 8, 'hearth-fire-0')
-          .setDepth(prop.depth + 0.5);
+          .setDepth(depth + 0.25);
         // Tinted towards the fire's own orange. The glow texture is the pale
         // one the house windows use, and on its own it read as a haze rather
         // than as firelight.
         const glow = this.scene.add
           .image(centreX, hearth - 10, 'glow')
-          .setDepth(prop.depth + 1)
+          .setDepth(depth + 0.5)
           .setScale(1.6)
           .setTint(tint('light.4'))
           .setAlpha(0.6);
@@ -282,19 +289,25 @@ export class AreaView {
       const def = buildingDef(building.kind);
       const bounds = buildingBounds(building);
       const done = isComplete(building);
+      // A finished building is drawn at its own size, centred on its footprint
+      // and standing on the footprint's bottom edge, so a silo taller than its
+      // three tiles rises out of them rather than being squashed into them.
+      // Stretching to the footprint was fine while the drawings were made to
+      // measure; the ones from an art pack are not, and pixel art scaled by
+      // anything but a whole number is exactly what `pixelArt` is on to avoid.
+      //
+      // The scaffold is still stretched: it is one drawing for four sizes of
+      // site, and a site is as big as the building going up on it.
       const sprite = this.scene.add
-        .image(
-          bounds.x + bounds.width / 2,
-          bounds.y + bounds.height / 2,
-          done ? `building-${building.kind}` : 'building-scaffold',
-        )
-        .setDisplaySize(bounds.width, bounds.height)
+        .image(bounds.x + bounds.width / 2, bounds.y + bounds.height, done ? `building-${building.kind}` : 'building-scaffold')
+        .setOrigin(0.5, 1)
         // Sorted by the row the building's feet stand on, in the avatars' own
         // band rather than the props' — `+ AVATAR_DEPTH_BASE` is what an
         // avatar adds to its row, and matching it is the whole point: a player
         // north of a barn has the lower row and is drawn behind it, and a
         // player south of it has the higher row and is drawn in front.
         .setDepth(building.y + def.height - 1 + AVATAR_DEPTH_BASE);
+      if (!done) sprite.setDisplaySize(bounds.width, bounds.height);
       this.context.areaLayer?.add(sprite);
       this.buildingSprites.set(building.id, sprite);
     }

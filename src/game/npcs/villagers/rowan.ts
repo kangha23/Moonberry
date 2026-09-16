@@ -61,7 +61,7 @@ export const ROWAN: NpcDef = {
     { priority: 20, when: { season: 'Autumn' }, line: '"Mùa thu có tiền. Đổ vào đất chứ đừng đổ vào mình, rồi thu sang năm còn nhiều hơn."' },
     { priority: 20, when: { season: 'Winter' }, line: '"Chẳng gì mọc được. Nhưng thế không có nghĩa là không có việc."' },
 
-    { priority: 30, when: { questCompleted: true, questRewarded: false }, line: '"Ba củ cải, củ nào cũng thật thà. Để bác trả cho đàng hoàng."' },
+    { priority: 30, when: { questCompleted: true, questRewarded: false }, line: '"Ba củ cải, củ nào cũng thật thà. Để bác trả cho đàng hoàng."', mood: 'happy' },
     { priority: 30, when: { questRewarded: true, minHearts: 0, maxHearts: 1 }, line: '"Bác đã nói với ngoài chợ về cháu. Cái đó còn đáng hơn mấy đồng bạc."' },
 
     { priority: 40, when: { minHearts: 2 }, line: '"Cháu nắm được mẹo rồi đấy. Phần lớn người ta bỏ cuộc trước mùa thứ hai."' },
@@ -70,8 +70,8 @@ export const ROWAN: NpcDef = {
     { priority: 50, when: { minHearts: 6 }, line: '"Bà nội bác làm ruộng bên phía thung lũng của con sông. Hai người hẳn sẽ hợp nhau."' },
     { priority: 50, when: { minHearts: 6, activity: 'well' }, line: '"Ngồi một lát đi. Bên giếng là chỗ hay để chẳng nói gì cả."' },
     { priority: 60, when: { minHearts: 8 }, line: '"Bác đã ghi lại Amberfall vào sổ là nông trại đang canh tác. Ô đó bỏ trống đã lâu lắm rồi."' },
-    { priority: 60, when: { minHearts: 10 }, line: '"Cháu đã biến nơi này thành ngôi làng có nông trại, chứ không còn là nông trại nằm cạnh một ngôi làng nữa. Cảm ơn cháu."' },
+    { priority: 60, when: { minHearts: 10 }, line: '"Cháu đã biến nơi này thành ngôi làng có nông trại, chứ không còn là nông trại nằm cạnh một ngôi làng nữa. Cảm ơn cháu."', mood: 'happy' },
 
-    { priority: 100, when: { birthday: true }, line: '"Sinh nhật bác, phải rồi. Đến tuổi bác thì người ta thôi đếm mà bắt đầu làm tròn."' },
+    { priority: 100, when: { birthday: true }, line: '"Sinh nhật bác, phải rồi. Đến tuổi bác thì người ta thôi đếm mà bắt đầu làm tròn."', mood: 'happy' },
   ],
 };

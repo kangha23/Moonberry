@@ -33,6 +33,30 @@ export const DEPTH = {
 export const AVATAR_DEPTH_BASE = 40;
 
 /**
+ * Where a Tiled prop sorts.
+ *
+ * A prop drawn no taller than its footprint lies flat on the ground — a bush,
+ * a rug, a ribbon of flowers — and keeps the depth the map gave it, below
+ * everything that stands up.
+ *
+ * A prop whose drawing rises out of its footprint stands up, and has to sort
+ * with the things that walk past it. It used to keep its map depth too, which
+ * sits under the whole avatar band: a rock one row north of a tree's trunk was
+ * drawn on top of the canopy, and so was a player walking behind it. So it
+ * joins the band by the row its feet stand on, exactly as a building does —
+ * north of the trunk is behind the canopy, south of it is in front.
+ */
+export function propDepth(
+  prop: { y: number; height: number; depth: number },
+  drawnHeight: number,
+  tileSize: number,
+): number {
+  if (drawnHeight <= prop.height) return prop.depth;
+  const feetRow = Math.floor((prop.y + prop.height - 1) / tileSize);
+  return feetRow + AVATAR_DEPTH_BASE;
+}
+
+/**
  * Where a thing that is walked over sits: above the tilled-plot fringe at 0.5
  * and below everything that stands on the ground. Paths and sprinklers.
  */

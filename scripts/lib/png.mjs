@@ -384,6 +384,43 @@ export function composite(images) {
 }
 
 /**
+ * Lays pieces out on a blank canvas, first at the bottom, by the same
+ * source-over rule `composite` uses.
+ *
+ * `composite` stacks whole sheets that already line up. A building in a
+ * modular pack does not come that way: a wall, a roof and a door are three
+ * rectangles in three places on the sheet, and the drawing only exists once
+ * each has been put where it goes. So each piece is first copied onto a
+ * transparent layer the size of the canvas, at its own offset, and the layers
+ * are stacked — which keeps one blending rule rather than two.
+ *
+ * A piece that hangs past the canvas edge is clipped rather than refused, for
+ * the same reason `sliceRect` reads past a sheet's edge as transparent.
+ */
+export function arrange(width, height, pieces) {
+  const layers = [{ width, height, pixels: new Uint8Array(width * height * 4) }];
+  for (const { image, x: atX, y: atY } of pieces) {
+    const pixels = new Uint8Array(width * height * 4);
+    for (let row = 0; row < image.height; row += 1) {
+      const toY = atY + row;
+      if (toY < 0 || toY >= height) continue;
+      for (let col = 0; col < image.width; col += 1) {
+        const toX = atX + col;
+        if (toX < 0 || toX >= width) continue;
+        const from = (row * image.width + col) * 4;
+        const to = (toY * width + toX) * 4;
+        pixels[to] = image.pixels[from];
+        pixels[to + 1] = image.pixels[from + 1];
+        pixels[to + 2] = image.pixels[from + 2];
+        pixels[to + 3] = image.pixels[from + 3];
+      }
+    }
+    layers.push({ width, height, pixels });
+  }
+  return composite(layers);
+}
+
+/**
  * Mirrors an image horizontally, vertically, or both.
  *
  * The cheapest way there is to break up a tiling pattern. A speckled grass

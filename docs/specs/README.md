@@ -21,6 +21,7 @@ cái thứ hai. Mọi thứ còn lại là chiều sâu đặt lên trên hai c�
 | 05 | [Một HUD, và con chuột](05-hud-and-mouse.md) | 03 | Sửa cái đang sai, chứ không chỉ thêm cái đang thiếu. |
 | 06 | [Công cụ và công trình](06-tools-and-buildings.md) | 03 | Cái bánh cóc: mỗi ngày kết thúc với năng lực cao hơn lúc bắt đầu. |
 | 07 | [NPC đáng ghé thăm](07-npc-relationships.md) | 03 | Lý do ở lại một khi nông trại đã tự chạy. |
+| 08 | [Khung game và ngôn ngữ thị giác](08-frame-and-look.md) | 05 | Hai giây đầu từng nói "trang giới thiệu sản phẩm". Rẻ nhất tính theo ấn tượng đổi được. |
 | 09 | [Vật nuôi](09-animals.md) | 06 | Chuồng hết là vỏ rỗng, và tháng Chạp hết là tháng chết. |
 | 10 | [Thu thập tài nguyên](10-resources-and-tools.md) | 06 | Gỗ và đá bắt đầu tồn tại, và nông trại bắt đầu ở trạng thái đáng khai phá. |
 | 11 | [Chế tác](11-crafting.md) | 10, tốt hơn sau 09 | Cho cái kho một cái ruột, và cho nông trại bậc thang thứ hai. |
@@ -29,13 +30,11 @@ cái thứ hai. Mọi thứ còn lại là chiều sâu đặt lên trên hai c�
 
 ## Phần còn lại
 
-Spec 08 nói về thứ người chơi nhìn thấy; spec 13 lấp trụ cột cuối cùng mà thể loại
-có và game này chưa có. Chúng lớn hơn phần lớn những cái trên, và mỗi cái đứng
-được một mình.
+Spec 13 lấp trụ cột cuối cùng mà thể loại có và game này chưa có. Nó lớn hơn
+phần lớn những cái trên, và nó đứng được một mình.
 
 | # | Spec | Phụ thuộc | Vì sao nó ở đây |
 | --- | --- | --- | --- |
-| 08 | [Khung game và ngôn ngữ thị giác](08-frame-and-look.md) | 05 | Hai giây đầu đang nói "trang giới thiệu sản phẩm". Rẻ nhất tính theo ấn tượng đổi được. |
 | 13 | [Mỏ và chiến đấu](13-mine-and-combat.md) | 10, 11 | Nơi kim loại đến từ. Hệ thống duy nhất có rủi ro. |
 
 ### Về thứ tự

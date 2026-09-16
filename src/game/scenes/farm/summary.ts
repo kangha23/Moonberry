@@ -250,7 +250,11 @@ export class MorningSummary {
 
       const y = top + SUMMARY.head + index * SUMMARY.rowHeight - SUMMARY.rowHeight / 2;
       if (this.scene.textures.exists(row.texture)) slot.icon.setTexture(row.texture);
-      slot.icon.setDisplaySize(SUMMARY.icon, SUMMARY.icon);
+      // Fitted inside the icon's square rather than stretched to it: a silo is
+      // twice as tall as it is wide, and squashed square it is a barrel.
+      const frame = slot.icon.frame;
+      const fit = SUMMARY.icon / Math.max(frame.width, frame.height, 1);
+      slot.icon.setDisplaySize(frame.width * fit, frame.height * fit);
       slot.icon.setPosition(-SUMMARY.width / 2 + 44, y);
       slot.icon.setTint(row.tint ?? 0xffffff);
       slot.text.setPosition(-SUMMARY.width / 2 + 72, y).setText(row.text);

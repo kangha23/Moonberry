@@ -19,9 +19,8 @@ export const BRAM: NpcDef = {
   name: 'Bram',
   blurb: 'Người bán gia súc. Nhớ tên từng con vật đã đi qua tay mình.',
   texture: 'npc-bram',
-  sheet: 'rowan-sheet',
-  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
-  tint: 0xb8a06a,
+  sheet: 'bram-sheet',
+  tint: 0xffffff,
   birthday: { season: 'Summer', day: 21 },
   defaultGiftReaction: 'neutral',
   gifts: {
@@ -73,8 +72,8 @@ export const BRAM: NpcDef = {
     { priority: 50, when: { minHearts: 6 }, line: '"Vuốt mỗi ngày một lần thôi, nhưng ngày nào cũng phải có. Đó là khác biệt giữa trứng thường và trứng thượng hạng."' },
     { priority: 50, when: { minHearts: 6, season: 'Winter' }, line: '"Tháng Chạp cậu vẫn ra chuồng lúc sáu giờ. Người như thế trong thung lũng này đếm trên một bàn tay."' },
     { priority: 60, when: { minHearts: 8 }, line: '"Có con dê con sắp ra ràng. Tôi chưa nói với ai, và tôi đang nói với cậu."' },
-    { priority: 60, when: { minHearts: 10 }, line: '"Bốn mươi năm tôi bán gia súc cho người ta. Cậu là người đầu tiên tôi không thấy tiếc con nào."' },
+    { priority: 60, when: { minHearts: 10 }, line: '"Bốn mươi năm tôi bán gia súc cho người ta. Cậu là người đầu tiên tôi không thấy tiếc con nào."', mood: 'happy' },
 
-    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tôi à? Đàn bò không biết. Cậu biết thì hơn chúng một bậc rồi đấy."' },
+    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tôi à? Đàn bò không biết. Cậu biết thì hơn chúng một bậc rồi đấy."', mood: 'happy' },
   ],
 };

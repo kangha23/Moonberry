@@ -1613,6 +1613,30 @@ describe('the village, and the people in it', () => {
     );
   });
 
+  it('says hello with a face for the dialogue box to draw', () => {
+    let state = join(createFarmState(), 'a');
+    state = beside(state, 'a', 'rowan');
+
+    const spoke = applyIntent(state, { type: 'player/act', playerId: 'a' }).events.find(
+      (event) => event.kind === 'npcSpoke',
+    );
+
+    expect(spoke).toMatchObject({ mood: expect.stringMatching(/^(neutral|happy|sad|angry)$/) });
+  });
+
+  it('puts the line and the reaction’s face on a gift, since a gift does not also speak', () => {
+    let state = join(createFarmState(), 'a');
+    state = beside(state, 'a', 'rowan');
+    state = carrying(state, 'a', 'wood', 1);
+
+    const result = applyIntent(state, { type: 'player/act', playerId: 'a' });
+    const gift = result.events.find((event) => event.kind === 'giftGiven');
+
+    expect(gift).toMatchObject({ reaction: 'hated', mood: 'angry' });
+    expect(gift && 'line' in gift && gift.line.length).toBeGreaterThan(0);
+    expect(result.events.some((event) => event.kind === 'npcSpoke')).toBe(false);
+  });
+
   it('keeps the friendships of two players entirely separate', () => {
     // The one place the shared-world model is deliberately broken. Everything
     // else on this farm is common property; this is not.

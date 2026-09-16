@@ -1,6 +1,7 @@
 import type { Season, TimeState, Weather } from '../systems/time';
 import { TILE_SIZE, type AreaId } from '../world/areas';
 import { NPCS, NPC_IDS } from './definitions';
+import { walkToward } from './pathing';
 import { scheduleHour, type NpcDef, type NpcId, type ScheduleEntry } from './types';
 
 /**
@@ -133,11 +134,10 @@ export function spawnNpcs(season: Season, weather: Weather, time: TimeState): Np
 /**
  * Walk everybody a little way toward wherever they are supposed to be.
  *
- * A straight line, which is all the village needs: it is open ground and the
- * only solid things in it are wide enough to walk around by accident. The seam
- * for A* is right here and nowhere else — the day there is an indoor area with
- * a doorway, this function is the one that has to get cleverer, and nothing
- * that calls it has to change.
+ * Around things rather than through them: see `pathing.ts`. This used to be a
+ * straight line, on the grounds that the village was open ground — until the
+ * houses grew and it turned out half the schedule already walked people
+ * through the well.
  *
  * Returns the same array when nobody moved, so the renderer and the store can
  * compare by identity instead of diffing six villagers every frame.
@@ -168,22 +168,14 @@ export function advanceNpcs(
       return { ...actor, entry, ...target };
     }
 
-    const dx = target.x - actor.x;
-    const dy = target.y - actor.y;
-    const distance = Math.hypot(dx, dy);
-    if (distance <= step) {
-      if (actor.x === target.x && actor.y === target.y && actor.entry === entry) return actor;
+    if (actor.x === target.x && actor.y === target.y) {
+      if (actor.entry === entry) return actor;
       changed = true;
-      return { ...actor, entry, ...target };
+      return { ...actor, entry };
     }
 
     changed = true;
-    return {
-      ...actor,
-      entry,
-      x: actor.x + (dx / distance) * step,
-      y: actor.y + (dy / distance) * step,
-    };
+    return { ...actor, entry, ...walkToward(target.area, actor, target, step) };
   });
 
   return changed ? next : (npcs as NpcActor[]);

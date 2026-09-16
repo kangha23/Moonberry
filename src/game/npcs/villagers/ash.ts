@@ -16,9 +16,8 @@ export const ASH: NpcDef = {
   name: 'Ash',
   blurb: 'Em trai của Juniper. Ra ngoài bất kể thời tiết, và ca cẩm về thời tiết.',
   texture: 'npc-ash',
-  sheet: 'player-sheet',
-  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
-  tint: 0x8fb6e0,
+  sheet: 'ash-sheet',
+  tint: 0xffffff,
   birthday: { season: 'Winter', day: 8 },
   defaultGiftReaction: 'disliked',
   gifts: {
@@ -52,7 +51,7 @@ export const ASH: NpcDef = {
     { priority: 20, when: { weather: 'Breezy' }, line: '"Gió đẹp nhất mùa. Tớ có diều mà không có dây, nên chủ yếu là đứng đây thôi."' },
     { priority: 30, when: { weather: 'Firefly Shower' }, line: '"Juniper đang ra ao làm bộ bí hiểm. Hôm nay tớ được ra ngoài vì hôm nay đặc biệt."' },
     { priority: 20, when: { season: 'Summer' }, line: '"Dưa. Ai cũng đi trồng củ cải và tớ không hiểu nổi một ai trong số các người."' },
-    { priority: 20, when: { season: 'Winter' }, line: '"Tuyết hay được đúng một ngày, sau đó chỉ là trời lạnh kèm thêm mấy bước phiền phức."' },
+    { priority: 20, when: { season: 'Winter' }, line: '"Tuyết hay được đúng một ngày, sau đó chỉ là trời lạnh kèm thêm mấy bước phiền phức."', mood: 'angry' },
     { priority: 20, when: { season: 'Spring' }, line: '"Chỗ nào cũng mùi bùn mà ai cũng khoái chí. Tớ chịu."' },
     { priority: 20, when: { season: 'Autumn' }, line: '"Juniper bảo mùa thu là tháng đẹp nhất. Chị ấy nói câu đó về tháng nào đang tới."' },
 
@@ -62,8 +61,8 @@ export const ASH: NpcDef = {
     { priority: 50, when: { minHearts: 6 }, line: '"Tớ sẽ có nông trại. Không to đâu. Một nông trại dưa."' },
     { priority: 50, when: { minHearts: 6, activity: 'green' }, line: '"Thôi được. Nó là cây của hai đứa. Tớ nghĩ kỹ rồi và đó là quyết định cuối cùng."' },
     { priority: 60, when: { minHearts: 8 }, line: '"Ai hỏi ai sống ở Amberfall là tớ nói tên cậu như thể tớ quen cậu. Vì tớ quen thật."' },
-    { priority: 60, when: { minHearts: 10 }, line: '"Juniper bảo cậu là điều tốt nhất đến với làng này trong mười năm. Tớ bảo tớ biết rồi. Tớ biết thật mà."' },
+    { priority: 60, when: { minHearts: 10 }, line: '"Juniper bảo cậu là điều tốt nhất đến với làng này trong mười năm. Tớ bảo tớ biết rồi. Tớ biết thật mà."', mood: 'happy' },
 
-    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tớ mà trời lại ĐỔ TUYẾT, sinh nhật tệ nhất có thể, và tớ đang vui kinh khủng."' },
+    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tớ mà trời lại ĐỔ TUYẾT, sinh nhật tệ nhất có thể, và tớ đang vui kinh khủng."', mood: 'happy' },
   ],
 };

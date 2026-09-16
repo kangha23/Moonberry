@@ -1479,9 +1479,11 @@ function createVillagerTextures(scene: Phaser.Scene) {
     withTexture(scene, palette.key, 24, 32, (ctx) => drawVillager(ctx, palette));
   }
 
-  // One cottage, sized to its Tiled footprint like every other prop, so the
-  // four on the village map are one drawing at four positions.
-  withTexture(scene, 'cottage', 96, 64, (ctx) => {
+  // The stand-in for the cottage drawings in the art folder, one for each of
+  // the three names the village map uses, so a missing PNG is still a house
+  // rather than a hole. It was made for the old three-by-two footprint and is
+  // scaled to the four-by-three one — which is fine for a fallback.
+  for (const key of ['cottage', 'cottage-brown', 'cottage-stone']) withTexture(scene, key, 96, 64, (ctx) => {
     ctx.clearRect(0, 0, 96, 64);
     rect(ctx, 'rgba(0,0,0,0.22)', 4, 58, 88, 6);
     // walls

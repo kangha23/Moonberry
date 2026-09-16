@@ -78,6 +78,10 @@ Phaser 4.
   không làm lò ngoài trời khi mưa, Juniper ra ao vào đêm đom đóm — và có bảng quà,
   ngày sinh, cùng hơn hai chục câu thoại đổi theo trái tim, mùa, bầu trời và việc
   họ đang làm dở.
+- Nói chuyện là một hộp thoại chứ không phải một dòng chữ: câu thoại gõ dần ra
+  bên trái, chân dung và tên người nói bên phải, và người đó đứng lại quay mặt
+  về phía bạn cho tới khi bạn bấm đóng. Mỗi người có bốn nét mặt — bình thường,
+  vui, buồn, cáu — đổi theo câu đang nói và theo món quà vừa nhận.
 - Tình bạn là của bạn, không phải của nông trại. Hai món quà mỗi người mỗi tuần,
   một món mỗi ngày, và quà đúng sinh nhật tính gấp tám lần — đó là lý do đáng nhìn
   vào tấm lịch. Trái tim tính theo từng người chơi: dưa của bạn không làm cả nhóm

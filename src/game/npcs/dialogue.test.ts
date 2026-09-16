@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { NPCS, NPC_IDS } from './definitions';
-import { candidateLines, pickDialogue, type DialogueContext } from './dialogue';
+import { GIFT_MOOD, candidateLines, pickDialogue, pickLine, type DialogueContext } from './dialogue';
 import type { NpcDef } from './types';
 import { SEASONS, WEATHERS } from '../systems/time';
 
@@ -151,5 +151,37 @@ describe('a villager always has something to say', () => {
     // guards. This is the belt to that braces: the return type is `string`,
     // and it should never be an empty one.
     expect(pickDialogue(villager([]), context())).not.toBe('');
+  });
+});
+
+describe('the face a line is said with', () => {
+  it('is neutral unless the line names one', () => {
+    const def = villager([{ priority: 0, line: 'plain' }]);
+    expect(pickLine(def, context())).toEqual({ line: 'plain', mood: 'neutral' });
+  });
+
+  it('travels with the line that won', () => {
+    const def = villager([
+      { priority: 0, line: 'plain' },
+      { priority: 10, when: { minHearts: 4 }, line: 'warm', mood: 'happy' },
+    ]);
+    expect(pickLine(def, context()).mood).toBe('neutral');
+    expect(pickLine(def, context({ hearts: 4 }))).toEqual({ line: 'warm', mood: 'happy' });
+  });
+
+  it('agrees with pickDialogue about what was said', () => {
+    for (const def of Object.values(NPCS)) {
+      for (const day of [1, 2, 3]) {
+        expect(pickLine(def, context({ day })).line).toBe(pickDialogue(def, context({ day })));
+      }
+    }
+  });
+
+  it('pleases on a gift they like and scowls on one they hate', () => {
+    expect(GIFT_MOOD.loved).toBe('happy');
+    expect(GIFT_MOOD.liked).toBe('happy');
+    expect(GIFT_MOOD.neutral).toBe('neutral');
+    expect(GIFT_MOOD.disliked).toBe('sad');
+    expect(GIFT_MOOD.hated).toBe('angry');
   });
 });

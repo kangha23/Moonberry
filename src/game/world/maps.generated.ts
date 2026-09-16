@@ -3627,12 +3627,12 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
           2,
           2,
           13,
-          9,
-          2,
-          12,
-          5,
-          1,
-          11,
+          13,
+          13,
+          13,
+          13,
+          13,
+          13,
           9,
           2,
           2,
@@ -3789,13 +3789,13 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
           14,
           14,
           11,
-          6,
-          8,
-          1,
-          8,
-          10,
-          2,
-          2,
+          13,
+          13,
+          13,
+          13,
+          13,
+          13,
+          13,
           13,
           5,
           10,
@@ -3866,7 +3866,7 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
               {
                 "name": "texture",
                 "type": "string",
-                "value": "market-ribbon"
+                "value": "market-stall"
               },
               {
                 "name": "solid",
@@ -3917,7 +3917,7 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             "type": "prop",
             "x": 448,
             "y": 448,
-            "width": 96,
+            "width": 128,
             "height": 64,
             "properties": [
               {
@@ -3947,9 +3947,9 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             "name": "cottage-tobias",
             "type": "prop",
             "x": 96,
-            "y": 64,
-            "width": 96,
-            "height": 64,
+            "y": 96,
+            "width": 128,
+            "height": 96,
             "properties": [
               {
                 "name": "texture",
@@ -3973,14 +3973,14 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             "name": "cottage-juniper",
             "type": "prop",
             "x": 736,
-            "y": 64,
-            "width": 96,
-            "height": 64,
+            "y": 96,
+            "width": 128,
+            "height": 96,
             "properties": [
               {
                 "name": "texture",
                 "type": "string",
-                "value": "cottage"
+                "value": "cottage-brown"
               },
               {
                 "name": "solid",
@@ -4000,13 +4000,13 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             "type": "prop",
             "x": 64,
             "y": 288,
-            "width": 96,
-            "height": 64,
+            "width": 128,
+            "height": 96,
             "properties": [
               {
                 "name": "texture",
                 "type": "string",
-                "value": "cottage"
+                "value": "cottage-stone"
               },
               {
                 "name": "solid",
@@ -4025,9 +4025,9 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             "name": "cottage-maeve",
             "type": "prop",
             "x": 736,
-            "y": 448,
-            "width": 96,
-            "height": 64,
+            "y": 416,
+            "width": 128,
+            "height": 96,
             "properties": [
               {
                 "name": "texture",
@@ -4050,15 +4050,15 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             "id": 8,
             "name": "cottage-bram",
             "type": "prop",
-            "x": 160,
-            "y": 640,
-            "width": 96,
-            "height": 64,
+            "x": 0,
+            "y": 608,
+            "width": 128,
+            "height": 96,
             "properties": [
               {
                 "name": "texture",
                 "type": "string",
-                "value": "cottage"
+                "value": "cottage-brown"
               },
               {
                 "name": "solid",
@@ -4159,6 +4159,58 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             "id": 13,
             "name": "tuft-tall",
             "type": "prop",
+            "x": 192,
+            "y": 32,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "tuft-tall"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": false
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "id": 14,
+            "name": "stump",
+            "type": "prop",
+            "x": 704,
+            "y": 32,
+            "width": 32,
+            "height": 32,
+            "properties": [
+              {
+                "name": "texture",
+                "type": "string",
+                "value": "stump"
+              },
+              {
+                "name": "solid",
+                "type": "bool",
+                "value": true
+              },
+              {
+                "name": "depth",
+                "type": "int",
+                "value": 1
+              }
+            ]
+          },
+          {
+            "id": 15,
+            "name": "tuft-tall",
+            "type": "prop",
             "x": 32,
             "y": 64,
             "width": 32,
@@ -4182,7 +4234,7 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             ]
           },
           {
-            "id": 14,
+            "id": 16,
             "name": "log",
             "type": "prop",
             "x": 448,
@@ -4208,7 +4260,7 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             ]
           },
           {
-            "id": 15,
+            "id": 17,
             "name": "tuft-tall",
             "type": "prop",
             "x": 512,
@@ -4234,33 +4286,7 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             ]
           },
           {
-            "id": 16,
-            "name": "stump-flowers",
-            "type": "prop",
-            "x": 864,
-            "y": 96,
-            "width": 32,
-            "height": 32,
-            "properties": [
-              {
-                "name": "texture",
-                "type": "string",
-                "value": "stump-flowers"
-              },
-              {
-                "name": "solid",
-                "type": "bool",
-                "value": true
-              },
-              {
-                "name": "depth",
-                "type": "int",
-                "value": 3
-              }
-            ]
-          },
-          {
-            "id": 17,
+            "id": 18,
             "name": "log",
             "type": "prop",
             "x": 800,
@@ -4286,7 +4312,7 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             ]
           },
           {
-            "id": 18,
+            "id": 19,
             "name": "tuft-tall",
             "type": "prop",
             "x": 864,
@@ -4308,32 +4334,6 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
                 "name": "depth",
                 "type": "int",
                 "value": 9
-              }
-            ]
-          },
-          {
-            "id": 19,
-            "name": "tuft-tall",
-            "type": "prop",
-            "x": 192,
-            "y": 320,
-            "width": 32,
-            "height": 32,
-            "properties": [
-              {
-                "name": "texture",
-                "type": "string",
-                "value": "tuft-tall"
-              },
-              {
-                "name": "solid",
-                "type": "bool",
-                "value": false
-              },
-              {
-                "name": "depth",
-                "type": "int",
-                "value": 10
               }
             ]
           },
@@ -4365,32 +4365,6 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
           },
           {
             "id": 21,
-            "name": "stump-flowers",
-            "type": "prop",
-            "x": 672,
-            "y": 480,
-            "width": 32,
-            "height": 32,
-            "properties": [
-              {
-                "name": "texture",
-                "type": "string",
-                "value": "stump-flowers"
-              },
-              {
-                "name": "solid",
-                "type": "bool",
-                "value": true
-              },
-              {
-                "name": "depth",
-                "type": "int",
-                "value": 15
-              }
-            ]
-          },
-          {
-            "id": 22,
             "name": "flowers-red",
             "type": "prop",
             "x": 896,
@@ -4416,59 +4390,7 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             ]
           },
           {
-            "id": 23,
-            "name": "stump-flowers",
-            "type": "prop",
-            "x": 640,
-            "y": 512,
-            "width": 32,
-            "height": 32,
-            "properties": [
-              {
-                "name": "texture",
-                "type": "string",
-                "value": "stump-flowers"
-              },
-              {
-                "name": "solid",
-                "type": "bool",
-                "value": true
-              },
-              {
-                "name": "depth",
-                "type": "int",
-                "value": 16
-              }
-            ]
-          },
-          {
-            "id": 24,
-            "name": "tuft-tall",
-            "type": "prop",
-            "x": 704,
-            "y": 544,
-            "width": 32,
-            "height": 32,
-            "properties": [
-              {
-                "name": "texture",
-                "type": "string",
-                "value": "tuft-tall"
-              },
-              {
-                "name": "solid",
-                "type": "bool",
-                "value": false
-              },
-              {
-                "name": "depth",
-                "type": "int",
-                "value": 17
-              }
-            ]
-          },
-          {
-            "id": 25,
+            "id": 22,
             "name": "flowers-white",
             "type": "prop",
             "x": 640,
@@ -4494,10 +4416,10 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
             ]
           },
           {
-            "id": 26,
-            "name": "stump",
+            "id": 23,
+            "name": "flowers-white",
             "type": "prop",
-            "x": 64,
+            "x": 192,
             "y": 640,
             "width": 32,
             "height": 32,
@@ -4505,12 +4427,12 @@ export const MAP_SOURCES: Record<AreaId, TiledMap> = {
               {
                 "name": "texture",
                 "type": "string",
-                "value": "stump"
+                "value": "flowers-white"
               },
               {
                 "name": "solid",
                 "type": "bool",
-                "value": true
+                "value": false
               },
               {
                 "name": "depth",

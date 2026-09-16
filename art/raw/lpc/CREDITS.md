@@ -7,7 +7,7 @@ The artwork files in this folder are **not** MIT — each keeps its own license:
 
 Applies to: `tile-grass*.png`, `tile-path.png`, `tile-water.png`,
 `plot-*.png`, `grass-tuft.png`, `tree.png`, `farmhouse.png`,
-`player-sheet.png`, `rowan-sheet.png`
+`player-sheet.png`
 (sliced and composed from LPC sheets; adaptations stay under the same licenses)
 
 - Terrain, trees, house parts: **Lanea Zimmerman (Sharm)**
@@ -16,8 +16,7 @@ Applies to: `tile-grass*.png`, `tile-path.png`, `tile-water.png`,
   commissioned by William Thompson (William.Thompsonj)
   https://opengameart.org/user/47
 - Clothes, hair, shoes layers composited into the walkcycles (Farmer outfit:
-  Forest long-sleeve, Leather pants, Brown shoes, Bedhead hair; Rowan outfit:
-  Blue Irish dress, Ghillies, Brown Bangs-Long hair): **Universal LPC
+  Forest long-sleeve, Leather pants, Brown shoes, Bedhead hair): **Universal LPC
   Spritesheet contributors** via the character set vendored in the LPC repo
   (`sprite/character/`)
   https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator
@@ -82,9 +81,9 @@ right in the sheet turned out to be hedges rather than trees, which only
 became obvious once they were rendered standing on the floor line — worth
 knowing before picking the next batch by eye.
 
-`node-rock` and `node-boulder` keep their generated art: this is a pack of
-flowers, plants, fungi and wood, and there is no stone in it. So does
-`node-chip`, which is a 6x6 particle rather than an object.
+There is no stone in this pack, so `node-rock` and `node-boulder` come from
+[LPC] Rocks below. `node-chip` keeps its generated art: it is a 6x6 particle
+rather than an object.
 
 The three remaining forage items keep their generated icons, because this pack
 has no mineral and no root vegetable in it: `item-quartz`, `item-snow-yam` and
@@ -222,6 +221,155 @@ tile in the set designed to tile against itself. The cells either side of it
 are edge pieces with transparent corners and were rejected by tiling them and
 looking: a path built from one of those is a row of ragged islands.
 
+## [LPC] Rocks (CC-BY-SA 4.0 / CC-BY-SA 3.0)
+
+Applies to the resource nodes `node-rock` (a round stone, 30x27 at 257, 291)
+and `node-boulder` (the big boulder with grass at its foot, 48x55 at 391, 388).
+Both come from the second of the sheet's four colour bands, so they share a
+stone and a light direction, and both are boxed into 64x80 with their feet on
+the node floor line at y=74 like every other node. Exact rectangles are in
+`art/sources.json`.
+
+**Why the second band, and why each cut recolours one colour.** The sheet draws
+the same rocks four times, in pale grey, dark grey, darker grey and sand. Put
+through the 48-colour palette, the pale band's mauve-greys land on the soil
+browns and come out as tan lumps, and the darkest band's shadows land on
+`foliage.2` and turn green. The second band survives nearly whole, except for
+one shadow colour in each drawing: `#3d3748` on the rock goes to the teal
+`foliage.2` and `#3a313a` on the boulder to the brown `soil.1`. There is no
+palette grey between `shadow.2` and `foliage.4`, so each cut maps its one
+stray colour to `shadow.2` before quantising, and the stone keeps one hue from
+top to bottom.
+
+> "[LPC] Rocks" by **bluecarrot16, Johann Charlot, Yar, Hyptosis, Evert, Lanea
+> Zimmerman (Sharm), Guillaume Lecollinet, Richard Kettering (Jetrel),
+> Zachariah Husiar (Zabin), Redshrike, Rayane Félix (RayaneFLX), and Michele
+> Bucelli (Buch)**.
+> CC-BY-SA 4.0 / CC-BY-SA 3.0. https://opengameart.org/content/lpc-rocks
+
+The author asks that everything in the pack's credits file be included, and it
+names each upstream set and its licence (CC-BY-SA 3.0, CC-BY 3.0, CC-BY 4.0 and
+CC0), so it is vendored verbatim at
+[`credits/CREDITS-rocks.txt`](credits/CREDITS-rocks.txt) and is part of this
+notice.
+
+## [LPC] Farm (CC-BY 4.0)
+
+Applies to all four of the farm's buildings — `building-silo` (the stone tower
+with the slate cone, 64x160 at 0, 768, boxed into 96 wide so it stands centred
+on its three tiles), `building-shed` (the slate-roofed granary on stone feet),
+`building-barn` (the red gambrel barn) and `building-coop` (the slate-roofed
+hen house with its ramp) — and to the village's `ranch-pen`, a run of the
+pack's rail fence around its feed trough.
+
+**The barn and the coop are rebuilt from the author's own preview.** In this
+pack a barn is not a drawing but a set of 32px tiles meant to be assembled in
+Tiled — gable corners, trim, door leaves, roof slopes — and guessing that
+assembly by eye came out patchwork. `farm-preview.png` on the pack's page is
+the author's assembly, at 1:1 and on the 32px grid, so each of its cells was
+matched against every tile of `barn.png` (top layer first, then whatever is
+visible underneath) and the matches became the cut's `pieces`. Where the
+preview has something in front that is not in the sheet — a cow in the barn
+door, hay bales along its foot, hens behind the coop's lattice — those cells
+were finished by hand from the same tiles: the barn's door leaves are the
+sheet's own 2x3 leaves, its open doorway is the inside of the sheet's open
+shed, and the coop's upper lattice is the sheet's dark-backed version rather
+than the see-through one. The barn is 256x352 and the coop 116 wide boxed
+into 192; both are drawn at their own size, centred on their footprint.
+
+The shed is the first cut in this folder laid out from **pieces** rather than
+cut as one rectangle: a small stone pot from the next drawing in the sheet sits
+inside the granary's bounding box, over the empty sky beside its roof ridge,
+so the roof's top ten rows are taken from a rectangle that stops short of it
+and the rest of the building from one that starts below it. `art/sources.json`
+has both rectangles and where each is laid.
+
+Both carry a `recolour`. The slate and the stone shade through `#3a313a` and
+`#3d3748`, which the palette would send to a soil brown and to the teal
+`foliage.2`, so both go to `shadow.2`; the silo's pale mortar `#b19998` would
+go to tan and goes to `building.2` instead.
+
+> "[LPC] Farm" by **bluecarrot16, Wolthera van Hövell tot Westerflier
+> (TheraHedwig), and Ivan Voirol**. Commissioned by Rupil. CC-BY 4.0.
+> https://opengameart.org/content/lpc-farm
+
+It is built on Ivan Voirol's Slates set (CC-BY 4.0) and TheraHedwig's LPC
+compatible Ancient Greek Architecture (CC-BY 4.0 / GPL 3.0 / OGA-BY 3.0). The
+upstream credits file is vendored verbatim at
+[`credits/CREDITS-farm.txt`](credits/CREDITS-farm.txt) and is part of this
+notice.
+
+## [LPC] Thatched-roof Cottage (CC-BY-SA 3.0 / GPL 3.0+)
+
+Applies to the three village houses, `cottage`, `cottage-brown` and
+`cottage-stone`, each 128x190 on a four-by-three footprint. Each is laid out
+from pieces: the pack's hip roof (120x97, the yellow one at 88, 8 or the brown
+one at 88, 232) over a timber wall made of two overlapping halves of one
+three-tile panel — cream plaster, yellow plaster or stone infill — so the wall
+is 112 wide and the roof overhangs it by four pixels a side.
+
+The yellow thatch and the yellow plaster would quantise to the olive
+`gold.0`, so each cut maps its one yellow to `light.5` first.
+
+> "[LPC] Thatched-roof Cottage" by **bluecarrot16**, based on "LPC Base
+> Assets" by Lanea Zimmerman (Sharm) and Daniel Armstrong (HughSpectrum) and
+> "LPC art entry" by Casper Nilsson. CC-BY-SA 3.0 / GPL 3.0+.
+> https://opengameart.org/content/lpc-thatched-roof-cottage
+
+## [LPC] Windows & Doors (CC-BY-SA 3.0 / GPL 3.0+)
+
+The cottages' doors, windows and window boxes. The pack's own preview is what
+the thatched cottage pack was drawn against.
+
+> "LPC Windows & Doors" by **bluecarrot16, Lanea Zimmerman (Sharm) and Daniel
+> Armstrong (HughSpectrum), Casper Nilsson, Anamaris, Krusmira, Keith Karnage,
+> Guido Bos, and Talosaurus**. CC-BY-SA 3.0 / GPL 3.0+.
+> https://opengameart.org/content/lpc-windows-doors
+
+The upstream credits file, which names each set it draws on and its licence,
+is vendored verbatim at
+[`credits/CREDITS-windows-doors.txt`](credits/CREDITS-windows-doors.txt) and
+is part of this notice.
+
+## [LPC] Blacksmith (OGA-BY 3.0 / CC-BY 3.0+ / GPL 2.0+)
+
+The village forge, `blacksmith`, 128x124 on a four-by-two footprint: the pack's
+lit brick smelter with its chimney, one of its anvils in front, and the open
+timber shelter from [LPC] Medieval Village Decorations beside it.
+
+> "[LPC] Blacksmith Workshop" by **bluecarrot16**. OGA-BY 3.0, CC-BY 3.0+,
+> GPL 2.0+. https://opengameart.org/content/lpc-blacksmith
+
+Vendored at [`credits/CREDITS-blacksmith.txt`](credits/CREDITS-blacksmith.txt).
+
+## [LPC] Medieval Village Decorations (CC-BY-SA 4.0 / CC-BY-SA 3.0)
+
+Applies to two things in the village, and one piece of a third (the timber
+shelter beside the forge in `blacksmith`): `well` (the stone well under a timber
+winch frame, 64x96 at 448, 416) and `market-stall` (the two-tile stall with the
+striped awning, 64x158 at 192, 800, boxed into 96 wide to stand centred on the
+market's three tiles). `market-stall` replaces the generated `market-ribbon`
+SVG, which is still loaded under the stall's key if the PNG is ever missing.
+
+The awning is drawn in white and orange, and the palette has neither a pure
+white nor an orange that is not a brick red, so the stall's `recolour` moves
+its oranges to the soil browns before quantising. It comes out cream and brown
+rather than pink and red.
+
+> "[LPC] Medieval Village Decorations" by **bluecarrot16, Lanea Zimmerman
+> (Sharm), Reemax (Tuomo Untinen), Xenodora, Johann C, Johannes Sjölund, Casper
+> Nilsson, Daniel Cook, Rayane Félix (RayaneFLX), Wolthera van Hövell tot
+> Westerflier (TheraHedwig), Hyptosis, mold, Zachariah Husiar (Zabin), Clint
+> Bellanger, Jetrel, Nemisys, Guido Bos, Curt, Bertram, and Daniel Eddeland
+> (daneeklu)**. CC-BY-SA 4.0 / CC-BY-SA 3.0.
+> https://opengameart.org/content/lpc-medieval-village-decorations
+
+The author asks that everything in the pack's credits file be included — it
+names each upstream set and its licence, among them "LPC Style Well" by
+Xenodora and Sharm — so it is vendored verbatim at
+[`credits/CREDITS-decorations-medieval.txt`](credits/CREDITS-decorations-medieval.txt)
+and is part of this notice.
+
 ## [LPC] Floors (CC-BY-SA 4.0)
 
 Applies to `tile-floor-wood` (cell 6, 37 — honey-coloured boards laid in a
@@ -318,6 +466,204 @@ stands taller than a goat does, which is why `ANIMAL_SCALE` in `FarmScene.ts`
 draws it smaller than everything else from this set rather than at the 0.62 the
 rest of the LPC art shares.
 
+## Universal LPC Spritesheet Character Generator (per layer — see below)
+
+Applies to the six villager walk sheets: `rowan-sheet`, `maeve-sheet`,
+`tobias-sheet`, `juniper-sheet`, `ash-sheet` and `bram-sheet`.
+
+Each is stacked from the generator's own layers — a body, a head, hair,
+clothes — taken at commit `553ba75` of
+<https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator>
+and recorded layer by layer, with the colour swaps each one gets, in
+`art/sources.json`. The generator ships every item in one base palette and
+recolours it in the browser; the same swaps are applied here from its
+`palette_definitions`, so a skin, a shirt and a head of hair can be three
+different colours without anyone repainting them. `--dropstand` then removes
+the standing pose each row opens with, so the stride sits in the eight columns
+the game plays.
+
+The licences differ by item and every item is credited below, as the generator
+credits it. Where an item offers several licences, it is used under the most
+permissive one listed (OGA-BY or CC-BY where offered); items offered only
+under CC-BY-SA 3.0 / GPL 3.0 keep those terms, and so do the sheets built
+from them.
+
+- `beards/beard/basic` — JaidynReiman, Carlo Enrico Victoria (Nemisys). CC-BY-SA 3.0 / GPL 3.0.
+  Original by Nemisys, repositioning by JaidynReiman.
+  <https://opengameart.org/content/lpc-white-beard>
+- `beards/mustache/basic` — JaidynReiman, Carlo Enrico Victoria (Nemisys). CC-BY-SA 3.0 / GPL 3.0.
+  Original by Nemisys, repositioning by JaidynReiman.
+  <https://opengameart.org/content/lpc-brunet-mustache>
+- `beards/mustache/bigstache` — JaidynReiman, Thane Brimhall (pennomi), laetissima. CC-BY-SA 3.0 / GPL 3.0.
+  Original by Pennomi, repositioning by JaidynReiman.
+  <https://opengameart.org/content/lpc-base-character-expressions>
+- `body/bodies/child` — bluecarrot16, Benjamin K. Smith (BenCreating), ElizaWy, MuffinElZangano, Durrani, Nila122, kheftel, Stephen Challener (Redshrike). OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-child-standing-template>
+  <https://opengameart.org/content/lpc-children-walk-animation>
+  <https://opengameart.org/content/lpc-male-jumping-animation-by-durrani>
+  <https://opengameart.org/content/lpc-jump-expanded>
+- `body/bodies/female` — Benjamin K. Smith (BenCreating), bluecarrot16, TheraHedwig, Evert, MuffinElZangano, Durrani, Pierre Vigier (pvigier), ElizaWy, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike). OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  see details at https://opengameart.org/content/lpc-character-bases
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+  <https://opengameart.org/content/lpc-ladies>
+  <https://opengameart.org/content/lpc-7-womens-shirts>
+  <https://opengameart.org/content/lpc-jump-expanded>
+  <https://opengameart.org/content/lpc-be-seated>
+  <https://opengameart.org/content/lpc-revised-character-basics>
+  <https://gitlab.com/vagabondgame/lpc-characters>
+  <https://opengameart.org/content/lpc-male-jumping-animation-by-durrani>
+  <https://opengameart.org/content/lpc-runcycle-and-diagonal-walkcycle>
+- `body/bodies/male` — bluecarrot16, JaidynReiman, Benjamin K. Smith (BenCreating), Evert, Eliza Wyatt (ElizaWy), TheraHedwig, MuffinElZangano, Durrani, Johannes Sjölund (wulax), Stephen Challener (Redshrike). OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  see details at https://opengameart.org/content/lpc-character-bases; 'Thick' Male Revised Run/Climb by JaidynReiman (based on ElizaWy's LPC Revised)
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+  <https://opengameart.org/content/lpc-male-jumping-animation-by-durrani>
+  <https://opengameart.org/content/lpc-runcycle-and-diagonal-walkcycle>
+  <https://opengameart.org/content/lpc-revised-character-basics>
+  <https://opengameart.org/content/lpc-be-seated>
+  <https://opengameart.org/content/lpc-runcycle-for-male-muscular-and-pregnant-character-bases-with-modular-heads>
+  <https://opengameart.org/content/lpc-jump-expanded>
+  <https://opengameart.org/content/lpc-character-bases>
+- `eyes/eyebrows/thick` — ElizaWy. OGA-BY 3.0.
+  <https://github.com/ElizaWy/LPC/tree/main/Characters/Hair>
+  <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+- `eyes/eyebrows/thin` — ElizaWy. OGA-BY 3.0.
+  <https://github.com/ElizaWy/LPC/tree/main/Characters/Hair>
+  <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+- `feet/boots/basic` — JaidynReiman, bluecarrot16, Nila122. OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 2.0 / GPL 3.0.
+  original by Nila122, edited for male and v3 bases by bluecarrot16, Jump/Sit/Emote/Run/Revised Combat by JaidynReiman
+  <https://opengameart.org/content/lpc-clothes-and-hair>
+  <https://opengameart.org/content/lpc-expanded-socks-shoes>
+- `feet/boots/basic/thin` — JaidynReiman, bluecarrot16, Nila122. OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 2.0 / GPL 3.0.
+  original by Nila122, edited for v3 bases by bluecarrot16, Jump/Sit/Emote/Run/Revised Combat by JaidynReiman
+  <https://opengameart.org/content/lpc-clothes-and-hair>
+  <https://opengameart.org/content/lpc-expanded-socks-shoes>
+- `feet/shoes` — JaidynReiman, bluecarrot16, Johannes Sjölund (wulax). OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  original by wulax, edited for v3 base by bluecarrot16, Jump/Sit/Emote/Run/Revised Combat by JaidynReiman
+  <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+  <http://opengameart.org/content/lpc-clothing-updates>
+  <https://opengameart.org/content/lpc-expanded-socks-shoes>
+- `hair/braid` — Nila122, ElizaWy. OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0 / GPL 2.0.
+  <https://opengameart.org/content/3-hairs-for-lpc>
+  <https://opengameart.org/content/lpc-hair>
+- `hair/halfmessy` — Nila122, bluecarrot16. OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0 / GPL 2.0.
+  <https://opengameart.org/content/more-lpc-clothes-and-hair>
+  <https://opengameart.org/content/lpc-hair>
+- `hair/parted` — JaidynReiman, Joe White, Manuel Riecke (MrBeast). CC-BY-SA 3.0 / GPL 3.0.
+  down 4 and 5 added by JaidynReiman; recolors by Joe White; original by Manuel Riecke (MrBeast)
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://github.com/jrconway3/Universal-LPC-spritesheet/commit/46ddcf05a0e43e7aa6ffd47d350eef0eb529ac24>
+  <https://opengameart.org/content/lpc-expanded-hair>
+- `hair/plain` — JaidynReiman, Manuel Riecke (MrBeast), Joe White. OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/ponytail-and-plain-hairstyles>
+  <https://opengameart.org/content/lpc-expanded-hair>
+- `hair/ponytail` — JaidynReiman, Manuel Riecke (MrBeast). CC-BY-SA 3.0 / GPL 3.0.
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-expanded-hair>
+- `hair/swoop_side` — JaidynReiman. OGA-BY 3.0+ / CC-BY 3.0+ / CC-BY-SA 3.0 / GPL 3.0.
+  <https://opengameart.org/content/lpc-1-hairstyle-2-hair-extensions-3-previously-unofficially-released-hairstyles>
+  <https://github.com/jrconway3/Universal-LPC-spritesheet/commit/46ddcf05a0e43e7aa6ffd47d350eef0eb529ac24>
+- `hat/cloth/bandana` — Matthew Krohn (makrohn), JaidynReiman, Marcel van de Steeg (MadMarcel), JaidynReiman. OGA-BY 3.0 / CC-BY-SA 3.0.
+  <https://opengameart.org/content/lpc-female-orcogregoblintroll-base-walkcycle>
+  <https://github.com/makrohn/Universal-LPC-spritesheet/commit/f50007cb47c235d8896cafae7a613f0b6a9a09a8?short_path=02b86d4#diff-02b86d45789a3e3e8e79519c7d17d15c9e6ecc9b4ddecb1bcd8dfbbaef430b75>
+  <https://opengameart.org/content/lpc-expanded-hats-facial-helmets>
+- `head/heads/human/child` — Stephen Challener (Redshrike), kheftel, bluecarrot16. OGA-BY 3.0 / CC-BY 3.0 / GPL 3.0.
+  <https://opengameart.org/content/>
+  <https://opengameart.org/content/lpc-child-standing-template>
+  <https://opengameart.org/content/lpc-character-bases>
+- `head/heads/human/female` — bluecarrot16, Benjamin K. Smith (BenCreating), Stephen Challener (Redshrike). OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  original head by Redshrike, tweaks by BenCreating, modular version by bluecarrot16
+  <https://opengameart.org/content/>
+  <https://opengameart.org/content/lpc-character-bases>
+- `head/heads/human/male` — bluecarrot16, Benjamin K. Smith (BenCreating), Stephen Challener (Redshrike). OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  original head by Redshrike, tweaks by BenCreating, modular version by bluecarrot16
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-character-bases>
+- `head/heads/human/male_elderly` — Benjamin K. Smith (BenCreating), Eliza Wyatt (ElizaWy), Stephen Challener (Redshrike). OGA-BY 3.0 / CC-BY 3.0.
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-revised-elders>
+  <https://opengameart.org/content/lpc-character-bases>
+- `head/heads/human/male_plump` — Stephen Challener (Redshrike), ??. CC-BY-SA 3.0 / GPL 3.0.
+  original head by Redshrike, plump version by ??
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-folk>
+- `legs/pants/child` — Nila122. OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  <https://opengameart.org/content/lpc-clothes-for-children>
+- `legs/pants/male` — bluecarrot16, JaidynReiman, ElizaWy, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike). OGA-BY 3.0 / GPL 3.0 / CC-BY-SA 3.0.
+  original male pants by wulax, recolors and edits to v3 base by bluecarrot16, climb/jump/run/sit/emotes/revised combat by JaidynReiman based on ElizaWy's LPC Revised
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+  <https://opengameart.org/content/lpc-expanded-pants>
+- `legs/pants/thin` — bluecarrot16, JaidynReiman, ElizaWy, Joe White, Matthew Krohn (makrohn), Johannes Sjölund (wulax), Stephen Challener (Redshrike). OGA-BY 3.0 / GPL 3.0 / CC-BY-SA 3.0.
+  original male pants by wulax, edited for female by Joe White, recolors and edits to v3 base by bluecarrot16, teen legs by ElizaWy derived from base, climb/jump/run/sit/emotes/revised combat by JaidynReiman based on ElizaWy's LPC Revised
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+  <http://opengameart.org/content/lpc-clothing-updates>
+  <https://opengameart.org/content/lpc-expanded-pants>
+- `torso/aprons/overalls` — ElizaWy, bluecarrot16, JaidynReiman. OGA-BY 3.0 / GPL 3.0.
+  original overalls by ElizaWy, extended to all animation frames, adapted from teen to male base, and edited for v3 bases by bluecarrot16; extended to combat animations by JaidynReiman
+  <https://opengameart.org/content/lpc-revised-character-basics>
+  <http://opengameart.org/content/lpc-clothing-updates>
+- `torso/aprons/suspenders` — ElizaWy, JaidynReiman. OGA-BY 3.0.
+  original by ElizaWy; spellcast/thrust/shoot/hurt/combat adapted from original by JaidynReiman
+  <https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing>
+  <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+- `torso/clothes/longsleeve/longsleeve/female` — bluecarrot16, ElizaWy, JaidynReiman, Stephen Challener (Redshrike). OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  original by ElizaWy, edited to v3 bases by bluecarrot16; cleanup and climb/jump/run/sit/emote/revised combat adapted from LPC Revised by JaidynReiman
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-7-womens-shirts>
+  <http://opengameart.org/content/lpc-clothing-updates>
+  <https://opengameart.org/content/lpc-revised-character-basics>
+  <https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing>
+  <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+  <https://opengameart.org/content/lpc-expanded-simple-shirts>
+- `torso/clothes/longsleeve/longsleeve/male` — JaidynReiman, Johannes Sjölund (wulax). OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  original by wulax; tweaks and further recolors by bluecarrot16; cleanup and climb/jump/run/sit/emote/revised combat adapted from LPC Revised by JaidynReiman
+  <https://opengameart.org/content/lpc-medieval-fantasy-character-sprites>
+  <http://opengameart.org/content/lpc-clothing-updates>
+  <https://opengameart.org/content/lpc-revised-character-basics>
+  <https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing>
+  <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+  <https://opengameart.org/content/lpc-expanded-simple-shirts>
+- `torso/clothes/shirt/child` — Nila122. OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  <https://opengameart.org/content/lpc-clothes-for-children>
+- `torso/clothes/shortsleeve/shortsleeve/female` — bluecarrot16, ElizaWy, JaidynReiman, Stephen Challener (Redshrike). OGA-BY 3.0 / CC-BY-SA 3.0 / GPL 3.0.
+  original by ElizaWy walkcycle only; extended to all animations by adapting from longsleeve, edited to v3 bases by bluecarrot16; cleanup and climb/jump/run/sit/emote/revised combat adapted from LPC Revised by JaidynReiman
+  <https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles>
+  <https://opengameart.org/content/lpc-7-womens-shirts>
+  <http://opengameart.org/content/lpc-revised-character-basics>
+  <http://opengameart.org/content/lpc-clothing-updates>
+  <https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing>
+  <https://opengameart.org/content/lpc-expanded-sit-run-jump-more>
+  <https://opengameart.org/content/lpc-expanded-simple-shirts>
+- `torso/clothes/vest` — bluecarrot16, Thane Brimhall (pennomi), laetissima, Stephen Challener (Redshrike), Johannes Sjölund (wulax). CC-BY-SA 3.0 / GPL 3.0.
+  <https://opengameart.org/content/lpc-2-characters>
+  <https://opengameart.org/content/lpc-gentleman>
+  <https://opengameart.org/content/lpc-pirates>
+
+## 64x64 Portrait (OGA-BY 3.0 / CC-BY-SA 3.0)
+
+Applies to: `portrait-rowan`, `portrait-maeve`, `portrait-tobias`,
+`portrait-juniper`, `portrait-ash` and `portrait-bram` — the faces in the
+dialogue box.
+
+> "64x64 Portrait" by **Nila122**. OGA-BY 3.0 / CC-BY-SA 3.0.
+> https://opengameart.org/content/64x64-portrait
+
+The pack is a kit of 64x64 layers — a head, then a nose, a mouth, brows, hair,
+facial hair and headwear drawn to stack over it. Each villager is one stack,
+recorded layer by layer in `art/sources.json`, and each file is four of those
+side by side: **neutral, happy, sad, angry**. The expressions are the kit's own
+parts: the smiling mouth, the sad eyes, and the three brow shapes.
+
+Picked under OGA-BY 3.0, which asks for attribution and nothing else. The skin
+tones and hair colours were chosen for how they survive `palette:apply`, not
+for how they look in the kit: two of its seven skins land on the same shade of
+the game palette and a third lands on green.
+
 ## CC0 (public domain, no attribution required — credited anyway)
 
 - Ground decoration reference: **Kenney Tiny Farm** (CC0)
@@ -368,11 +714,13 @@ Spec 06 adds three more sets on the same terms:
   because a better hoe should still read as the hoe you know at a glance in a
   twelve-cell bar. Replacing one is a hand-placed `ITEM_ICONS` entry, which
   wins over the generated recolour.
-- **The farm's buildings** (`building-shed/silo/coop/barn`, and the
-  `building-scaffold` each one starts as): one drawing function and a table of
-  four palettes in `createPixelArtTextures.ts`, stretched to whatever
-  footprint `BUILDING_DEFS` gives the kind.
-- **The blacksmith's forge** in the village, drawn the same way.
+- **The building site** (`building-scaffold`, what every farm building is
+  while it goes up): one drawing function in `createPixelArtTextures.ts`. The
+  four buildings themselves have drawings now — see [LPC] Farm above — and
+  the generated versions are only what is drawn if those PNGs are missing.
+- **The blacksmith's forge** in the village was drawn the same way, and so
+  were the well and the market ribbon. All three have drawings now; see
+  [LPC] Blacksmith and [LPC] Medieval Village Decorations above.
 
 Spec 07 puts five people in the village, and their art is worth being precise
 about because half of it is LPC and half of it is not:
@@ -393,14 +741,14 @@ about because half of it is LPC and half of it is not:
   `npc-rowan/maeve/tobias/juniper/ash`, one drawing function and a table of
   five palettes in `createPixelArtTextures.ts`. These are what is drawn if the
   walk sheets have not loaded, on the same terms as the crops above.
-- **The cottages and the gift heart** are generated the same way, from the
-  same file.
+- **The gift heart** is generated the same way, from the same file. The
+  cottages were too, and are drawn now — see [LPC] Thatched-roof Cottage above.
 
 Spec 09 adds the herd and spec 10 adds everything standing on the ground, both
 on the same terms and from the same file:
 
-- **The four animals** (`animal-chicken/duck/cow/goat`), the stock pen, and the
-  marker over a hungry one: one drawing function and a table of four palettes.
+- **The four animals** (`animal-chicken/duck/cow/goat`) and the marker over a
+  hungry one (the stock pen has a drawing now, from [LPC] Farm): one drawing function and a table of four palettes.
   Side-on and facing right, with the scene mirroring the sprite rather than
   asking for a second drawing.
 - **The resource nodes** (`node-tree-0` through `node-tree-4`, `node-stump`,

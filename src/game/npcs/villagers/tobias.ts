@@ -14,9 +14,8 @@ export const TOBIAS: NpcDef = {
   name: 'Tobias',
   blurb: 'Trông sạp chợ. Biết giá của mọi thứ, kể cả bác.',
   texture: 'npc-tobias',
-  sheet: 'player-sheet',
-  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
-  tint: 0xe0c27a,
+  sheet: 'tobias-sheet',
+  tint: 0xffffff,
   birthday: { season: 'Summer', day: 21 },
   defaultGiftReaction: 'liked',
   gifts: {
@@ -58,8 +57,8 @@ export const TOBIAS: NpcDef = {
     { priority: 50, when: { minHearts: 6 }, line: '"Hồi bác mới tới tôi cho bác đúng một mùa. Giờ tôi thôi nói câu đó với người ta rồi."' },
     { priority: 50, when: { minHearts: 6, season: 'Autumn' }, line: '"Năm nay giữ hàng lại hai ngày đi. Tin tôi, rồi tôi cho bác xem sổ."' },
     { priority: 60, when: { minHearts: 8 }, line: '"Giờ biển ghi \'nông sản Amberfall\'. Người ta hỏi mua đích danh. Cái đó không phải công tôi, mà là công bác."' },
-    { priority: 60, when: { minHearts: 10 }, line: '"Nửa cái sạp này là ruộng của bác. Tôi cũng không còn chắc cái chợ này là của ai trong hai chúng ta nữa."' },
+    { priority: 60, when: { minHearts: 10 }, line: '"Nửa cái sạp này là ruộng của bác. Tôi cũng không còn chắc cái chợ này là của ai trong hai chúng ta nữa."', mood: 'happy' },
 
-    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tôi! Mọi thứ nguyên giá và tôi rất vui được gặp bác."' },
+    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tôi! Mọi thứ nguyên giá và tôi rất vui được gặp bác."', mood: 'happy' },
   ],
 };

@@ -14,9 +14,8 @@ export const JUNIPER: NpcDef = {
   name: 'Juniper',
   blurb: 'Hái lượm ở các bìa rừng. Biết mùa nào đang nói dối bạn.',
   texture: 'npc-juniper',
-  sheet: 'rowan-sheet',
-  // One of five villager identity tints allowlisted in VILLAGER_TINTS (scripts/palette-lock.test.mjs) — see that comment for why.
-  tint: 0x9fd9a8,
+  sheet: 'juniper-sheet',
+  tint: 0xffffff,
   birthday: { season: 'Autumn', day: 26 },
   defaultGiftReaction: 'neutral',
   gifts: {
@@ -59,7 +58,7 @@ export const JUNIPER: NpcDef = {
     { priority: 10, when: { activity: 'well' }, line: '"Đi vòng đường xa về nhà. Chưa vào nhà thì chưa gọi là muộn."' },
     { priority: 10, when: { activity: 'home' }, line: '"Ash giữ cái cửa. Tôi giữ cái cửa sổ. Nói qua bên nào cũng được."' },
 
-    { priority: 20, when: { weather: 'Drizzle' }, line: '"Hôm nay thì không. Mưa là mọi thứ đáng tìm đều khép lại, kể cả tôi."' },
+    { priority: 20, when: { weather: 'Drizzle' }, line: '"Hôm nay thì không. Mưa là mọi thứ đáng tìm đều khép lại, kể cả tôi."', mood: 'sad' },
     { priority: 30, when: { weather: 'Firefly Shower' }, line: '"Đêm thắp đèn. Ra ao đi. Tôi sẽ không giải thích và bạn cũng chẳng cần tôi giải thích."' },
     { priority: 20, when: { season: 'Spring' }, line: '"Mùa xuân ồn ào và lộ liễu. Tôi thích một mùa kín đáo hơn."' },
     { priority: 20, when: { season: 'Summer' }, line: '"Xanh khắp nơi mà chẳng tìm được gì. Mùa hè là một nạn đói đẹp đẽ."' },
@@ -72,8 +71,8 @@ export const JUNIPER: NpcDef = {
     { priority: 50, when: { minHearts: 6 }, line: '"Có một bụi dâu đông tôi mới chỉ cho đúng một người. Ông ấy mất rồi, nên con số quay về một."' },
     { priority: 50, when: { minHearts: 6, season: 'Winter' }, line: '"Hôm nào tạnh ráo thì theo tôi ra ngoài. Nhớ đi đôi ủng mà bạn không tiếc."' },
     { priority: 60, when: { minHearts: 8 }, line: '"Bạn đã bắt đầu để ý tới những cái rìa. Nhìn chỗ bạn đi là tôi biết."' },
-    { priority: 60, when: { minHearts: 10 }, line: '"Tôi sẽ dẫn bạn đi khắp thung lũng. Từng cái rìa một. Mất cả năm, và tôi có cả năm."' },
+    { priority: 60, when: { minHearts: 10 }, line: '"Tôi sẽ dẫn bạn đi khắp thung lũng. Từng cái rìa một. Mất cả năm, và tôi có cả năm."', mood: 'happy' },
 
-    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tôi, và tôi định ở ngoài trời trọn ngày. Bạn được mời một phần trong đó."' },
+    { priority: 100, when: { birthday: true }, line: '"Sinh nhật tôi, và tôi định ở ngoài trời trọn ngày. Bạn được mời một phần trong đó."', mood: 'happy' },
   ],
 };

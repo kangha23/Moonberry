@@ -1,6 +1,7 @@
 import type { AnimalKind } from '../systems/animals';
 import type { BuildingKind } from '../systems/buildings';
 import type { GiftReaction, NpcId } from '../npcs/definitions';
+import type { PortraitMood } from '../npcs/types';
 import type { FarmAction } from '../systems/farming';
 import type { CropId, ItemId, ProduceGrade, ToolTier } from '../systems/items';
 import type { MachineKind, PlaceableKind } from '../systems/items';
@@ -184,8 +185,10 @@ export type GameEvent =
    * Somebody said something. The line is chosen in the reducer, because which
    * line it is depends on hearts, season, weather and what they are doing —
    * all of which are state, and none of which the renderer should be reading.
+   * `mood` is the face the dialogue box draws, chosen with the line for the
+   * same reason.
    */
-  | { kind: 'npcSpoke'; npc: NpcId; playerId: PlayerId; line: string }
+  | { kind: 'npcSpoke'; npc: NpcId; playerId: PlayerId; line: string; mood: PortraitMood }
   /**
    * A gift changed hands. `heartsNow` is carried so the renderer can pop a
    * heart without recomputing one from points it would have to go and fetch.
@@ -200,6 +203,13 @@ export type GameEvent =
       /** True only when this gift crossed a heart, which is worth a fanfare. */
       heartGained: boolean;
       birthday: boolean;
+      /**
+       * What they said on taking it, and the face they said it with — the
+       * reaction's face, not the line's. A gift does not also emit `npcSpoke`
+       * (two blips over one exchange), so the box opens off this instead.
+       */
+      line: string;
+      mood: PortraitMood;
     }
   /** A place-bound panel opened or closed. `panel` is null when it closed. */
   | { kind: 'panelChanged'; playerId: PlayerId; panel: PanelId | null }

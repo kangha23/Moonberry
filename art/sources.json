@@ -207,6 +207,507 @@
           "sha256": "877447045fdf8f09960c1b78aa927ab16b2fb9fb017da1a408889aae2dc30901"
         }
       }
+    },
+    "lpc-rocks": {
+      "title": "[LPC] Rocks",
+      "page": "https://opengameart.org/content/lpc-rocks",
+      "licence": "CC-BY-SA 4.0 / CC-BY-SA 3.0 — see credits/CREDITS-rocks.txt",
+      "authors": [
+        "bluecarrot16",
+        "Johann Charlot",
+        "Yar",
+        "Hyptosis",
+        "Evert",
+        "Lanea Zimmerman (Sharm)",
+        "Guillaume Lecollinet",
+        "Richard Kettering (Jetrel)",
+        "Zachariah Husiar (Zabin)",
+        "Redshrike",
+        "Rayane Félix (RayaneFLX)",
+        "Michele Bucelli (Buch)"
+      ],
+      "files": {
+        "rocks.png": {
+          "from": "https://opengameart.org/sites/default/files/rocks.zip",
+          "sha256": "c168a03888ba8b365579da843494cf37527cdfb7a0e87b83027b2e35cb44ed26",
+          "extract": "rocks/rocks.png"
+        }
+      }
+    },
+    "lpc-farm": {
+      "title": "[LPC] Farm",
+      "page": "https://opengameart.org/content/lpc-farm",
+      "licence": "CC-BY 4.0 — see credits/CREDITS-farm.txt",
+      "authors": [
+        "bluecarrot16",
+        "Wolthera van Hövell tot Westerflier (TheraHedwig)",
+        "Ivan Voirol"
+      ],
+      "files": {
+        "barn.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-farm.zip",
+          "sha256": "b6f0d53aaa645582c919dac15ce8887b489ffe38958aa7e20f7cc0939d59919a",
+          "extract": "lpc-farm/barn.png"
+        }
+      }
+    },
+    "lpc-decorations": {
+      "title": "[LPC] Medieval Village Decorations",
+      "page": "https://opengameart.org/content/lpc-medieval-village-decorations",
+      "licence": "CC-BY-SA 4.0 / CC-BY-SA 3.0 — see credits/CREDITS-decorations-medieval.txt",
+      "authors": [
+        "bluecarrot16",
+        "Lanea Zimmerman (Sharm)",
+        "Tuomo Untinen (Reemax)",
+        "Xenodora",
+        "Johann C",
+        "Johannes Sjölund",
+        "Casper Nilsson",
+        "Daniel Cook",
+        "Rayane Félix (RayaneFLX)",
+        "Wolthera van Hövell tot Westerflier (TheraHedwig)",
+        "Hyptosis",
+        "mold",
+        "Zachariah Husiar (Zabin)",
+        "Clint Bellanger",
+        "Jetrel",
+        "Nemisys",
+        "Guido Bos",
+        "Curt",
+        "Bertram",
+        "Daniel Eddeland (daneeklu)"
+      ],
+      "files": {
+        "decorations-medieval.png": {
+          "from": "https://opengameart.org/sites/default/files/decoration_medieval.zip",
+          "sha256": "c061a00c301aec1119e1e066d2c1625175a29d1fbf5a73dbff08d3a4b023c7c3",
+          "extract": "decoration_medieval/decorations-medieval.png"
+        }
+      }
+    },
+    "lpc-cottage": {
+      "title": "[LPC] Thatched-roof Cottage",
+      "page": "https://opengameart.org/content/lpc-thatched-roof-cottage",
+      "licence": "CC-BY-SA 3.0 / GPL 3.0+",
+      "authors": [
+        "bluecarrot16",
+        "Lanea Zimmerman (Sharm)",
+        "Daniel Armstrong (HughSpectrum)",
+        "Casper Nilsson"
+      ],
+      "files": {
+        "cottage.png": {
+          "from": "https://opengameart.org/sites/default/files/cottage.png",
+          "sha256": "b0c076d67a13608c4542654131c97435aaef24375ef437876da5b6cff380731b"
+        },
+        "thatched-roof.png": {
+          "from": "https://opengameart.org/sites/default/files/thatched-roof.png",
+          "sha256": "ce93207a11ffc5f22aff46f878631347884c48053474d5733901b1c6b03ee9ee"
+        }
+      }
+    },
+    "lpc-windows-doors": {
+      "title": "[LPC] Windows & Doors",
+      "page": "https://opengameart.org/content/lpc-windows-doors",
+      "licence": "CC-BY-SA 3.0 / GPL 3.0+ — see credits/CREDITS-windows-doors.txt",
+      "authors": [
+        "bluecarrot16",
+        "Lanea Zimmerman (Sharm)",
+        "Daniel Armstrong (HughSpectrum)",
+        "Casper Nilsson",
+        "Anamaris",
+        "Krusmira",
+        "Keith Karnage",
+        "Guido Bos",
+        "Talosaurus"
+      ],
+      "files": {
+        "windows-doors.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-windows-doors-v2.zip",
+          "sha256": "5a1c01aacc54fae857451fcd01871e2a8919ff9d84ca0eaccba9210148eef2be",
+          "extract": "lpc-windows-doors-v2/windows-doors.png"
+        }
+      }
+    },
+    "lpc-blacksmith": {
+      "title": "[LPC] Blacksmith",
+      "page": "https://opengameart.org/content/lpc-blacksmith",
+      "licence": "OGA-BY 3.0 / CC-BY 3.0+ / GPL 2.0+",
+      "authors": [
+        "bluecarrot16"
+      ],
+      "files": {
+        "blacksmith-smelter.png": {
+          "from": "https://opengameart.org/sites/default/files/lpc-blacksmith.zip",
+          "sha256": "ff003913ee4a393ea5efb42eccfa846a28b1f16580d5414498a108747b7a4250",
+          "extract": "lpc-blacksmith/blacksmith-smelter.png"
+        }
+      }
+    },
+    "lpc-portraits": {
+      "title": "64x64 Portrait",
+      "page": "https://opengameart.org/content/64x64-portrait",
+      "licence": "CC-BY-SA 3.0 / OGA-BY 3.0",
+      "authors": [
+        "Nila122"
+      ],
+      "files": {
+        "Base/base_dark.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Base/base_dark.png"
+        },
+        "Base/base_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Base/base_dark2.png"
+        },
+        "Base/base_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Base/base_light.png"
+        },
+        "Face/(Other/Brow/basic-angry/brow_basic-angry_brown.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/basic-angry/brow_basic-angry_brown.png"
+        },
+        "Face/(Other/Brow/basic-angry/brow_basic-angry_brunette.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/basic-angry/brow_basic-angry_brunette.png"
+        },
+        "Face/(Other/Brow/basic-normal/brow_basic-normal_brown.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/basic-normal/brow_basic-normal_brown.png"
+        },
+        "Face/(Other/Brow/basic-normal/brow_basic-normal_brunette.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/basic-normal/brow_basic-normal_brunette.png"
+        },
+        "Face/(Other/Brow/basic-sad/brow_basic-sad_brown.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/basic-sad/brow_basic-sad_brown.png"
+        },
+        "Face/(Other/Brow/basic-sad/brow_basic-sad_brunette.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/basic-sad/brow_basic-sad_brunette.png"
+        },
+        "Face/(Other/Brow/thick-angry/brow_thick-angry_darkgray.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/thick-angry/brow_thick-angry_darkgray.png"
+        },
+        "Face/(Other/Brow/thick-angry/brow_thick-angry_darkred.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/thick-angry/brow_thick-angry_darkred.png"
+        },
+        "Face/(Other/Brow/thick-angry/brow_thick-angry_white.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/thick-angry/brow_thick-angry_white.png"
+        },
+        "Face/(Other/Brow/thick-normal/brow_thick-normal_darkgray.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/thick-normal/brow_thick-normal_darkgray.png"
+        },
+        "Face/(Other/Brow/thick-normal/brow_thick-normal_darkred.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/thick-normal/brow_thick-normal_darkred.png"
+        },
+        "Face/(Other/Brow/thick-normal/brow_thick-normal_white.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/thick-normal/brow_thick-normal_white.png"
+        },
+        "Face/(Other/Brow/thick-sad/brow_thick-sad_darkgray.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/thick-sad/brow_thick-sad_darkgray.png"
+        },
+        "Face/(Other/Brow/thick-sad/brow_thick-sad_darkred.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/thick-sad/brow_thick-sad_darkred.png"
+        },
+        "Face/(Other/Brow/thick-sad/brow_thick-sad_white.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Brow/thick-sad/brow_thick-sad_white.png"
+        },
+        "Face/(Other/Eyelashes/eyelashes_normal.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Eyelashes/eyelashes_normal.png"
+        },
+        "Face/(Other/Eyelashes/eyelashes_sadeyes.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/Eyelashes/eyelashes_sadeyes.png"
+        },
+        "Face/(Other/birthmark/birthmark1.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/birthmark/birthmark1.png"
+        },
+        "Face/(Other/pupil/eyes_brown.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/pupil/eyes_brown.png"
+        },
+        "Face/(Other/pupil/eyes_gray.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/pupil/eyes_gray.png"
+        },
+        "Face/(Other/pupil/eyes_green.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/(Other/pupil/eyes_green.png"
+        },
+        "Face/dark/browbase_angry_dark.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark/browbase_angry_dark.png"
+        },
+        "Face/dark/browbase_normal_dark.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark/browbase_normal_dark.png"
+        },
+        "Face/dark/browbase_sad_dark.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark/browbase_sad_dark.png"
+        },
+        "Face/dark/eyes_sadeye_dark.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark/eyes_sadeye_dark.png"
+        },
+        "Face/dark/mouth_normal_dark.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark/mouth_normal_dark.png"
+        },
+        "Face/dark/mouth_normal_smile_dark.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark/mouth_normal_smile_dark.png"
+        },
+        "Face/dark/nose_normal_dark.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark/nose_normal_dark.png"
+        },
+        "Face/dark2/browbase_angry_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/browbase_angry_dark2.png"
+        },
+        "Face/dark2/browbase_normal_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/browbase_normal_dark2.png"
+        },
+        "Face/dark2/browbase_sad_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/browbase_sad_dark2.png"
+        },
+        "Face/dark2/eyes_sadeye_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/eyes_sadeye_dark2.png"
+        },
+        "Face/dark2/lines_forehead_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/lines_forehead_dark2.png"
+        },
+        "Face/dark2/lines_mouth-normal_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/lines_mouth-normal_dark2.png"
+        },
+        "Face/dark2/lines_mouth-smile_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/lines_mouth-smile_dark2.png"
+        },
+        "Face/dark2/mouth_normal_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/mouth_normal_dark2.png"
+        },
+        "Face/dark2/mouth_normal_smile_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/mouth_normal_smile_dark2.png"
+        },
+        "Face/dark2/nose_big_dark2.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/dark2/nose_big_dark2.png"
+        },
+        "Face/light/browbase_angry_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/browbase_angry_light.png"
+        },
+        "Face/light/browbase_normal_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/browbase_normal_light.png"
+        },
+        "Face/light/browbase_sad_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/browbase_sad_light.png"
+        },
+        "Face/light/eyes_closed_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/eyes_closed_light.png"
+        },
+        "Face/light/eyes_sadeye_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/eyes_sadeye_light.png"
+        },
+        "Face/light/lines_eye_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/lines_eye_light.png"
+        },
+        "Face/light/lines_eyecorner_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/lines_eyecorner_light.png"
+        },
+        "Face/light/lines_forehead_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/lines_forehead_light.png"
+        },
+        "Face/light/lines_mouth-smile_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/lines_mouth-smile_light.png"
+        },
+        "Face/light/mouth_normal_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/mouth_normal_light.png"
+        },
+        "Face/light/mouth_normal_smile_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/mouth_normal_smile_light.png"
+        },
+        "Face/light/nose_button_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/nose_button_light.png"
+        },
+        "Face/light/nose_potato_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/nose_potato_light.png"
+        },
+        "Face/light/nose_straight_light.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Face/light/nose_straight_light.png"
+        },
+        "Hair/bedhead/bedhead_brunette.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Hair/bedhead/bedhead_brunette.png"
+        },
+        "Hair/braid/braid_brunette.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Hair/braid/braid_brunette.png"
+        },
+        "Hair/halfmessy/halfmessy_brown.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Hair/halfmessy/halfmessy_brown.png"
+        },
+        "Hair/parted/parted_white.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Hair/parted/parted_white.png"
+        },
+        "Hair/plain/plain_darkgray.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Hair/plain/plain_darkgray.png"
+        },
+        "Hair/ponytail/ponytail_darkred.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Hair/ponytail/ponytail_darkred.png"
+        },
+        "Headwear/bandana.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/Headwear/bandana.png"
+        },
+        "facialhair/beard/beard_darkgray.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/facialhair/beard/beard_darkgray.png"
+        },
+        "facialhair/bigstache/bigstache_brown.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/facialhair/bigstache/bigstache_brown.png"
+        },
+        "facialhair/mustache/mustache_white.png": {
+          "from": "https://opengameart.org/sites/default/files/Portrait.zip",
+          "sha256": "02f28198d1b2cd42413ae8cd6930ac62eaf694223ab552fefcc21b0e152617e1",
+          "extract": "Portrait/facialhair/mustache/mustache_white.png"
+        }
+      }
+    },
+    "lpc-generator": {
+      "title": "Universal LPC Spritesheet Character Generator",
+      "page": "https://github.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator",
+      "licence": "mixed per layer: CC-BY 3.0 / CC-BY 3.0+ / CC-BY-SA 3.0 / GPL 2.0 / GPL 3.0 / OGA-BY 3.0 / OGA-BY 3.0+ — see the section in CREDITS.md",
+      "authors": [
+        "??",
+        "Benjamin K. Smith (BenCreating)",
+        "bluecarrot16",
+        "Carlo Enrico Victoria (Nemisys)",
+        "Durrani",
+        "Eliza Wyatt (ElizaWy)",
+        "ElizaWy",
+        "Evert",
+        "JaidynReiman",
+        "Joe White",
+        "Johannes Sjölund (wulax)",
+        "kheftel",
+        "laetissima",
+        "Manuel Riecke (MrBeast)",
+        "Marcel van de Steeg (MadMarcel)",
+        "Matthew Krohn (makrohn)",
+        "MuffinElZangano",
+        "Nila122",
+        "Pierre Vigier (pvigier)",
+        "Stephen Challener (Redshrike)",
+        "Thane Brimhall (pennomi)",
+        "TheraHedwig"
+      ],
+      "files": {}
     }
   },
   "notImported": {
@@ -226,7 +727,6 @@
     "farmhouse": "imported before this table existed; source coordinates were not recorded",
     "grass-tuft": "imported before this table existed; source coordinates were not recorded",
     "player-sheet": "imported before this table existed; source coordinates were not recorded",
-    "rowan-sheet": "imported before this table existed; source coordinates were not recorded",
     "tile-grass-1x": "imported before this table existed; source coordinates were not recorded",
     "tile-grass-1xy": "imported before this table existed; source coordinates were not recorded",
     "tile-grass-1y": "imported before this table existed; source coordinates were not recorded",
@@ -531,6 +1031,44 @@
         80
       ],
       "floor": 74
+    },
+    {
+      "target": "node-rock",
+      "pack": "lpc-rocks",
+      "file": "rocks.png",
+      "rect": [
+        257,
+        291,
+        30,
+        27
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74,
+      "recolour": {
+        "3d3748": "2d2330"
+      }
+    },
+    {
+      "target": "node-boulder",
+      "pack": "lpc-rocks",
+      "file": "rocks.png",
+      "rect": [
+        391,
+        388,
+        48,
+        55
+      ],
+      "box": [
+        64,
+        80
+      ],
+      "floor": 74,
+      "recolour": {
+        "3a313a": "2d2330"
+      }
     },
     {
       "target": "node-grass",
@@ -1285,6 +1823,6210 @@
         96,
         84
       ]
+    },
+    {
+      "target": "building-silo",
+      "pack": "lpc-farm",
+      "file": "barn.png",
+      "rect": [
+        0,
+        768,
+        64,
+        160
+      ],
+      "box": [
+        96,
+        160
+      ],
+      "floor": 159,
+      "recolour": {
+        "3a313a": "2d2330",
+        "3d3748": "2d2330",
+        "b19998": "93828d"
+      }
+    },
+    {
+      "target": "building-shed",
+      "pack": "lpc-farm",
+      "size": [
+        128,
+        191
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            826,
+            128,
+            181
+          ],
+          "at": [
+            0,
+            10
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            816,
+            103,
+            10
+          ],
+          "at": [
+            0,
+            0
+          ]
+        }
+      ],
+      "box": [
+        128,
+        191
+      ],
+      "floor": 190,
+      "recolour": {
+        "3a313a": "2d2330",
+        "3d3748": "2d2330"
+      }
+    },
+    {
+      "target": "well",
+      "pack": "lpc-decorations",
+      "file": "decorations-medieval.png",
+      "rect": [
+        448,
+        416,
+        64,
+        96
+      ]
+    },
+    {
+      "target": "market-stall",
+      "pack": "lpc-decorations",
+      "file": "decorations-medieval.png",
+      "rect": [
+        192,
+        800,
+        64,
+        158
+      ],
+      "box": [
+        96,
+        158
+      ],
+      "floor": 157,
+      "recolour": {
+        "984800": "8f6540",
+        "884000": "7d5633",
+        "894000": "7d5633",
+        "8d4401": "7d5633",
+        "944903": "8f6540",
+        "9a4a01": "8f6540",
+        "9c4c02": "8f6540",
+        "9e4e03": "8f6540",
+        "a45406": "8f6540",
+        "581000": "48331f",
+        "601800": "48331f",
+        "702800": "6b3a24",
+        "c8d0a8": "b78d64"
+      }
+    },
+    {
+      "target": "cottage",
+      "pack": "lpc-cottage",
+      "size": [
+        128,
+        190
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-cottage",
+          "file": "cottage.png",
+          "rect": [
+            0,
+            128,
+            56,
+            96
+          ],
+          "at": [
+            8,
+            94
+          ]
+        },
+        {
+          "pack": "lpc-cottage",
+          "file": "cottage.png",
+          "rect": [
+            40,
+            128,
+            56,
+            96
+          ],
+          "at": [
+            64,
+            94
+          ]
+        },
+        {
+          "pack": "lpc-windows-doors",
+          "file": "windows-doors.png",
+          "rect": [
+            16,
+            512,
+            32,
+            48
+          ],
+          "at": [
+            32,
+            142
+          ]
+        },
+        {
+          "pack": "lpc-windows-doors",
+          "file": "windows-doors.png",
+          "rect": [
+            160,
+            16,
+            32,
+            32
+          ],
+          "at": [
+            78,
+            118
+          ]
+        },
+        {
+          "pack": "lpc-windows-doors",
+          "file": "windows-doors.png",
+          "rect": [
+            448,
+            64,
+            32,
+            22
+          ],
+          "at": [
+            78,
+            140
+          ]
+        },
+        {
+          "pack": "lpc-cottage",
+          "file": "thatched-roof.png",
+          "rect": [
+            88,
+            8,
+            120,
+            97
+          ],
+          "at": [
+            4,
+            0
+          ]
+        }
+      ],
+      "recolour": {
+        "e3c654": "eaa473"
+      }
+    },
+    {
+      "target": "cottage-brown",
+      "pack": "lpc-cottage",
+      "size": [
+        128,
+        190
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-cottage",
+          "file": "cottage.png",
+          "rect": [
+            0,
+            0,
+            56,
+            96
+          ],
+          "at": [
+            8,
+            94
+          ]
+        },
+        {
+          "pack": "lpc-cottage",
+          "file": "cottage.png",
+          "rect": [
+            40,
+            0,
+            56,
+            96
+          ],
+          "at": [
+            64,
+            94
+          ]
+        },
+        {
+          "pack": "lpc-windows-doors",
+          "file": "windows-doors.png",
+          "rect": [
+            144,
+            512,
+            32,
+            48
+          ],
+          "at": [
+            32,
+            142
+          ]
+        },
+        {
+          "pack": "lpc-windows-doors",
+          "file": "windows-doors.png",
+          "rect": [
+            160,
+            16,
+            32,
+            32
+          ],
+          "at": [
+            78,
+            118
+          ]
+        },
+        {
+          "pack": "lpc-windows-doors",
+          "file": "windows-doors.png",
+          "rect": [
+            448,
+            64,
+            32,
+            22
+          ],
+          "at": [
+            78,
+            140
+          ]
+        },
+        {
+          "pack": "lpc-cottage",
+          "file": "thatched-roof.png",
+          "rect": [
+            88,
+            232,
+            120,
+            97
+          ],
+          "at": [
+            4,
+            0
+          ]
+        }
+      ],
+      "recolour": {
+        "cbba7b": "eaa473"
+      }
+    },
+    {
+      "target": "cottage-stone",
+      "pack": "lpc-cottage",
+      "size": [
+        128,
+        190
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-cottage",
+          "file": "cottage.png",
+          "rect": [
+            0,
+            256,
+            56,
+            96
+          ],
+          "at": [
+            8,
+            94
+          ]
+        },
+        {
+          "pack": "lpc-cottage",
+          "file": "cottage.png",
+          "rect": [
+            40,
+            256,
+            56,
+            96
+          ],
+          "at": [
+            64,
+            94
+          ]
+        },
+        {
+          "pack": "lpc-windows-doors",
+          "file": "windows-doors.png",
+          "rect": [
+            272,
+            512,
+            32,
+            48
+          ],
+          "at": [
+            32,
+            142
+          ]
+        },
+        {
+          "pack": "lpc-windows-doors",
+          "file": "windows-doors.png",
+          "rect": [
+            160,
+            16,
+            32,
+            32
+          ],
+          "at": [
+            78,
+            118
+          ]
+        },
+        {
+          "pack": "lpc-cottage",
+          "file": "thatched-roof.png",
+          "rect": [
+            88,
+            8,
+            120,
+            97
+          ],
+          "at": [
+            4,
+            0
+          ]
+        }
+      ],
+      "recolour": {
+        "e3c654": "eaa473"
+      }
+    },
+    {
+      "target": "blacksmith",
+      "pack": "lpc-blacksmith",
+      "size": [
+        128,
+        124
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-decorations",
+          "file": "decorations-medieval.png",
+          "rect": [
+            288,
+            656,
+            64,
+            112
+          ],
+          "at": [
+            60,
+            12
+          ]
+        },
+        {
+          "pack": "lpc-blacksmith",
+          "file": "blacksmith-smelter.png",
+          "rect": [
+            64,
+            10,
+            64,
+            118
+          ],
+          "at": [
+            0,
+            6
+          ]
+        },
+        {
+          "pack": "lpc-blacksmith",
+          "file": "blacksmith-smelter.png",
+          "rect": [
+            288,
+            424,
+            32,
+            24
+          ],
+          "at": [
+            80,
+            100
+          ]
+        }
+      ]
+    },
+    {
+      "target": "ranch-pen",
+      "pack": "lpc-farm",
+      "size": [
+        96,
+        64
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            0,
+            1056,
+            96,
+            32
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            0,
+            1088,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            28
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            64,
+            1088,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            28
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            128,
+            968,
+            64,
+            30
+          ],
+          "at": [
+            16,
+            28
+          ]
+        }
+      ]
+    },
+    {
+      "target": "building-barn",
+      "pack": "lpc-farm",
+      "size": [
+        256,
+        352
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            512,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            64,
+            512,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            512,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            128,
+            512,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            64,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            128,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            512,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            576,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            576,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            576,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            64,
+            576,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            576,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            128,
+            576,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            512,
+            576,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            544,
+            576,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            352,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            64,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            64,
+            352,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            352,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            128,
+            352,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            128,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            512,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            512,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            544,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            0,
+            384,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            640,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            640,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            384,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            128,
+            640,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            128,
+            384,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            160,
+            384,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            512,
+            640,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            448,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            96,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            96,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            160,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            576,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            160
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            0,
+            384,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            448,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            448,
+            352,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            480,
+            352,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            128,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            128,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            448,
+            352,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            160,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            480,
+            352,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            608,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            192
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            448,
+            544,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            0,
+            352,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            160,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            160,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            160,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            224
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            608,
+            96,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            384,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            384,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            608,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            96,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            0,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            256
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            608,
+            128,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            416,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            416,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            608,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            128,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            32,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            288
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            64,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            608,
+            160,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            96,
+            64,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            64,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            384,
+            64,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            416,
+            64,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            448,
+            32,
+            32
+          ],
+          "at": [
+            128,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            448,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            608,
+            64,
+            32,
+            32
+          ],
+          "at": [
+            160,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            64,
+            32,
+            32
+          ],
+          "at": [
+            192,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            32,
+            64,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            160,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            320
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            64,
+            32,
+            32
+          ],
+          "at": [
+            224,
+            320
+          ]
+        }
+      ]
+    },
+    {
+      "target": "building-coop",
+      "pack": "lpc-farm",
+      "size": [
+        160,
+        192
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            960,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            864,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            864,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            704,
+            864,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            704,
+            992,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            896,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            896,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            704,
+            896,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            32
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            992,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            704,
+            928,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            1024,
+            32,
+            32
+          ],
+          "at": [
+            0,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            1024,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            960,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            704,
+            960,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            96
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            928,
+            928,
+            32,
+            32
+          ],
+          "at": [
+            96,
+            128
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            640,
+            928,
+            32,
+            32
+          ],
+          "at": [
+            32,
+            64
+          ]
+        },
+        {
+          "pack": "lpc-farm",
+          "file": "barn.png",
+          "rect": [
+            672,
+            928,
+            32,
+            32
+          ],
+          "at": [
+            64,
+            64
+          ]
+        }
+      ],
+      "box": [
+        192,
+        192
+      ],
+      "floor": 191
+    },
+    {
+      "target": "portrait-rowan",
+      "pack": "lpc-portraits",
+      "size": [
+        256,
+        64
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_gray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_forehead_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_eyecorner_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_straight_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/mustache/mustache_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-normal/brow_thick-normal_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/parted/parted_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_gray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_forehead_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_eyecorner_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_mouth-smile_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_straight_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_smile_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/mustache/mustache_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-normal/brow_thick-normal_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/parted/parted_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_gray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/eyes_sadeye_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_forehead_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_eyecorner_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_straight_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_sad_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/mustache/mustache_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-sad/brow_thick-sad_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/parted/parted_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_gray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_forehead_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_eyecorner_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_straight_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_angry_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/mustache/mustache_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-angry/brow_thick-angry_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/parted/parted_white.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "target": "portrait-maeve",
+      "pack": "lpc-portraits",
+      "size": [
+        256,
+        64
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/nose_normal_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/browbase_normal_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/mouth_normal_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Eyelashes/eyelashes_normal.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-normal/brow_thick-normal_darkred.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/ponytail/ponytail_darkred.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Headwear/bandana.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/nose_normal_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/browbase_normal_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/mouth_normal_smile_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Eyelashes/eyelashes_normal.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-normal/brow_thick-normal_darkred.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/ponytail/ponytail_darkred.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Headwear/bandana.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/eyes_sadeye_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/nose_normal_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/browbase_sad_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/mouth_normal_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Eyelashes/eyelashes_sadeyes.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-sad/brow_thick-sad_darkred.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/ponytail/ponytail_darkred.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Headwear/bandana.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/nose_normal_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/browbase_angry_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark/mouth_normal_dark.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Eyelashes/eyelashes_normal.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-angry/brow_thick-angry_darkred.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/ponytail/ponytail_darkred.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Headwear/bandana.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "target": "portrait-tobias",
+      "pack": "lpc-portraits",
+      "size": [
+        256,
+        64
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_eye_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_potato_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/bigstache/bigstache_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-normal/brow_basic-normal_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/halfmessy/halfmessy_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_eye_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_mouth-smile_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_potato_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_smile_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/bigstache/bigstache_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-normal/brow_basic-normal_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/halfmessy/halfmessy_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/eyes_sadeye_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_eye_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_potato_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_sad_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/bigstache/bigstache_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-sad/brow_basic-sad_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/halfmessy/halfmessy_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/lines_eye_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_potato_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_angry_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/bigstache/bigstache_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-angry/brow_basic-angry_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/halfmessy/halfmessy_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "target": "portrait-juniper",
+      "pack": "lpc-portraits",
+      "size": [
+        256,
+        64
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_green.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_button_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Eyelashes/eyelashes_normal.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-normal/brow_basic-normal_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/braid/braid_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/birthmark/birthmark1.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_green.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_button_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_smile_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Eyelashes/eyelashes_normal.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-normal/brow_basic-normal_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/braid/braid_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/birthmark/birthmark1.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_green.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/eyes_sadeye_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_button_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_sad_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Eyelashes/eyelashes_sadeyes.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-sad/brow_basic-sad_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/braid/braid_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/birthmark/birthmark1.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_green.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_button_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_angry_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Eyelashes/eyelashes_normal.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-angry/brow_basic-angry_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/braid/braid_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/birthmark/birthmark1.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "target": "portrait-ash",
+      "pack": "lpc-portraits",
+      "size": [
+        256,
+        64
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_green.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_button_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-normal/brow_basic-normal_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/bedhead/bedhead_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_green.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/eyes_closed_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_button_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_smile_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-normal/brow_basic-normal_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/bedhead/bedhead_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_green.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/eyes_sadeye_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_button_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_sad_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-sad/brow_basic-sad_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/bedhead/bedhead_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_green.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/nose_button_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/browbase_angry_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/light/mouth_normal_light.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/basic-angry/brow_basic-angry_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/bedhead/bedhead_brunette.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "target": "portrait-bram",
+      "pack": "lpc-portraits",
+      "size": [
+        256,
+        64
+      ],
+      "pieces": [
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/lines_forehead_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/lines_mouth-normal_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/nose_big_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/browbase_normal_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/mouth_normal_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/beard/beard_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-normal/brow_thick-normal_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/plain/plain_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            0,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/lines_forehead_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/lines_mouth-normal_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/lines_mouth-smile_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/nose_big_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/browbase_normal_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/mouth_normal_smile_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/beard/beard_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-normal/brow_thick-normal_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/plain/plain_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            64,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/eyes_sadeye_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/lines_forehead_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/lines_mouth-normal_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/nose_big_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/browbase_sad_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/mouth_normal_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/beard/beard_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-sad/brow_thick-sad_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/plain/plain_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            128,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Base/base_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/pupil/eyes_brown.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/lines_forehead_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/lines_mouth-normal_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/nose_big_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/browbase_angry_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/dark2/mouth_normal_dark2.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "facialhair/beard/beard_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Face/(Other/Brow/thick-angry/brow_thick-angry_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        },
+        {
+          "pack": "lpc-portraits",
+          "file": "Hair/plain/plain_darkgray.png",
+          "rect": [
+            0,
+            0,
+            64,
+            64
+          ],
+          "at": [
+            192,
+            0
+          ]
+        }
+      ]
+    },
+    {
+      "target": "rowan-sheet",
+      "pack": "lpc-generator",
+      "dropstand": true,
+      "layers": {
+        "010 body.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/body/bodies/male/walk.png",
+          "sha256": "1e0e8f0c11ba5f4f7b3d4439fc416802b4227da2fe146c13de3de254d9f87f77"
+        },
+        "020 feet_shoes_basic.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/feet/shoes/basic/male/walk.png",
+          "sha256": "f544c6f65a3d87f08d8449e87a4f889bd1bc1bf6d714066ef5c30ab2bdafab46",
+          "recolour": {
+            "281820": "1d131e",
+            "958080": "4b2b13",
+            "4d4a5d": "411e05",
+            "c4b59f": "62351c",
+            "e5e6c7": "744b30",
+            "ffffff": "996b4a"
+          }
+        },
+        "030 legs_pants.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/legs/pants/male/walk.png",
+          "sha256": "2de5a3247743ffa37febdf3464cc0a83e79f64d1028aed410832ee29bea850b6",
+          "recolour": {
+            "281820": "000000",
+            "958080": "1c2222",
+            "4d4a5d": "130d14",
+            "c4b59f": "2a3034",
+            "e5e6c7": "4a5057",
+            "ffffff": "6e7675"
+          }
+        },
+        "040 torso_clothes_longsleeve.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/clothes/longsleeve/longsleeve/male/walk.png",
+          "sha256": "8b1c79d535d7a233371c9398ca51b196aa8fdf06117bd0eafd7fbcbf438d711b"
+        },
+        "050 torso_clothes_vest.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/clothes/vest/male/walk/navy.png",
+          "sha256": "8ab4cef81bc8e4c100bf96e3eec000f77e831ecf6abc8eeb8a551c23f2b3d52b"
+        },
+        "060 heads_human_male_elderly.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/head/heads/human/male_elderly/walk.png",
+          "sha256": "4d23bd0f66514d1b56760d576f0a4b73b1c9731976931b4f51434bb0eb45a904",
+          "recolour": {
+            "2a3c49": "3d3c37",
+            "5686ae": "8b8979",
+            "57cee4": "ada18f"
+          }
+        },
+        "070 eyebrows_thick.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/eyes/eyebrows/thick/adult/walk.png",
+          "sha256": "cc232732bf5270a9bd5c7b7868ebafac40f939414cbadaba9a75eccc7b20c01b",
+          "recolour": {
+            "260d14": "1d1d21",
+            "6a1108": "484e57",
+            "a42600": "8b9498",
+            "bf4000": "b8bbbc",
+            "e55600": "d8dcdc",
+            "ff8a00": "ffffff"
+          }
+        },
+        "080 beards_mustache.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/beards/mustache/basic/walk.png",
+          "sha256": "737ae818e64be19c9181b1f65bf9f971cfa529121ad3b457d7a15639b17cd716",
+          "recolour": {
+            "260d14": "1d1d21",
+            "6a1108": "484e57",
+            "a42600": "8b9498",
+            "bf4000": "b8bbbc",
+            "e55600": "d8dcdc",
+            "ff8a00": "ffffff"
+          }
+        },
+        "090 hair_parted.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/hair/parted/adult/walk.png",
+          "sha256": "aa86f9c6af54afb0b5ec52417fabf48f8d667a40ab9ccb44c8c46569b085898e",
+          "recolour": {
+            "260d14": "1d1d21",
+            "6a1108": "484e57",
+            "a42600": "8b9498",
+            "bf4000": "b8bbbc",
+            "e55600": "d8dcdc",
+            "ff8a00": "ffffff"
+          }
+        }
+      }
+    },
+    {
+      "target": "maeve-sheet",
+      "pack": "lpc-generator",
+      "dropstand": true,
+      "layers": {
+        "010 hair_ponytail-2.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/hair/ponytail/adult/bg/walk.png",
+          "sha256": "227756cbc31ce8a0f8ee64705610d5213cbc8a373f71de7128fe8534f782f41d",
+          "recolour": {
+            "260d14": "300000",
+            "6a1108": "870000",
+            "a42600": "a40712",
+            "bf4000": "cb0000",
+            "e55600": "e21414",
+            "ff8a00": "f1583a"
+          }
+        },
+        "020 body.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/body/bodies/female/walk.png",
+          "sha256": "594cb64a032d06d560f23b17f77b572e2dc8ba61df490cfca43f15316c85cfcf",
+          "recolour": {
+            "271920": "1a1213",
+            "99423c": "442725",
+            "cc8665": "644133",
+            "e4a47c": "7f4c31",
+            "f9d5ba": "ae6b3f",
+            "faece7": "d38b59"
+          }
+        },
+        "030 legs_pants.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/legs/pants/thin/walk.png",
+          "sha256": "064ffc33544e67bd13c574fd8b18a82a51e25d77e628f5eeccbc76a8860b2f83",
+          "recolour": {
+            "281820": "1d131e",
+            "958080": "4b2b13",
+            "4d4a5d": "411e05",
+            "c4b59f": "62351c",
+            "e5e6c7": "744b30",
+            "ffffff": "996b4a"
+          }
+        },
+        "040 feet_boots_basic.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/feet/boots/basic/thin/walk.png",
+          "sha256": "50eb7e0a6b3cb1c939ee1a68bd0ac42736f6dbf55f2e5aa4ecef7d2ff858a1d7",
+          "recolour": {
+            "281820": "000000",
+            "958080": "1c2222",
+            "4d4a5d": "101414",
+            "c4b59f": "22282a",
+            "e5e6c7": "2a3034",
+            "ffffff": "4a5057"
+          }
+        },
+        "050 torso_clothes_shortsleeve.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/clothes/shortsleeve/shortsleeve/female/walk.png",
+          "sha256": "3606237b8f0931e5e831049f7e5f29d8aa44b1a40e604789aaf584bf443de84c",
+          "recolour": {
+            "281820": "0e0e18",
+            "958080": "373340",
+            "4d4a5d": "201e2b",
+            "c4b59f": "585561",
+            "e5e6c7": "797580",
+            "ffffff": "a2a0a4"
+          }
+        },
+        "060 torso_aprons_overalls.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/aprons/overalls/female/walk/leather.png",
+          "sha256": "f1ae3b06be9930ced9743846f69f9895915849b5158dbf942ec3d7a1af729e5b"
+        },
+        "070 heads_human_female.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/head/heads/human/female/walk.png",
+          "sha256": "7ac84c09c9e126e5fd0b648c180901e24ddb116c7965cd3db6f2f653947b90bd",
+          "recolour": {
+            "271920": "1a1213",
+            "99423c": "442725",
+            "cc8665": "644133",
+            "e4a47c": "7f4c31",
+            "f9d5ba": "ae6b3f",
+            "faece7": "d38b59",
+            "2a3c49": "232017",
+            "5686ae": "544c2e",
+            "57cee4": "7e4e20"
+          }
+        },
+        "080 eyebrows_thick.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/eyes/eyebrows/thick/adult/walk.png",
+          "sha256": "cc232732bf5270a9bd5c7b7868ebafac40f939414cbadaba9a75eccc7b20c01b",
+          "recolour": {
+            "260d14": "300000",
+            "6a1108": "870000",
+            "a42600": "a40712",
+            "bf4000": "cb0000",
+            "e55600": "e21414",
+            "ff8a00": "f1583a"
+          }
+        },
+        "090 hair_ponytail.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/hair/ponytail/adult/fg/walk.png",
+          "sha256": "60034a16cedd173b1d8191da4987aeeb4648a534c0f58cd00e10a2d45606ae2b",
+          "recolour": {
+            "260d14": "300000",
+            "6a1108": "870000",
+            "a42600": "a40712",
+            "bf4000": "cb0000",
+            "e55600": "e21414",
+            "ff8a00": "f1583a"
+          }
+        },
+        "100 hat_bandana.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/hat/cloth/bandana/adult/walk.png",
+          "sha256": "3bad5f1f9f8a8c2bf4c6f793647165c9f9b4a977e1a14f12cc1abe3985ee844b",
+          "recolour": {
+            "281820": "1d131e",
+            "958080": "651117",
+            "4d4a5d": "400b1f",
+            "c4b59f": "82171c",
+            "e5e6c7": "ab1e1e",
+            "ffffff": "cd2429"
+          }
+        }
+      }
+    },
+    {
+      "target": "tobias-sheet",
+      "pack": "lpc-generator",
+      "dropstand": true,
+      "layers": {
+        "010 body.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/body/bodies/male/walk.png",
+          "sha256": "1e0e8f0c11ba5f4f7b3d4439fc416802b4227da2fe146c13de3de254d9f87f77"
+        },
+        "020 feet_shoes_basic.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/feet/shoes/basic/male/walk.png",
+          "sha256": "f544c6f65a3d87f08d8449e87a4f889bd1bc1bf6d714066ef5c30ab2bdafab46",
+          "recolour": {
+            "281820": "1d131e",
+            "958080": "4b2b13",
+            "4d4a5d": "411e05",
+            "c4b59f": "62351c",
+            "e5e6c7": "744b30",
+            "ffffff": "996b4a"
+          }
+        },
+        "030 legs_pants.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/legs/pants/male/walk.png",
+          "sha256": "2de5a3247743ffa37febdf3464cc0a83e79f64d1028aed410832ee29bea850b6",
+          "recolour": {
+            "281820": "3e2613",
+            "958080": "986a20",
+            "4d4a5d": "684415",
+            "c4b59f": "b78c41",
+            "e5e6c7": "b7996a",
+            "ffffff": "cfc587"
+          }
+        },
+        "040 torso_clothes_longsleeve.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/clothes/longsleeve/longsleeve/male/walk.png",
+          "sha256": "8b1c79d535d7a233371c9398ca51b196aa8fdf06117bd0eafd7fbcbf438d711b",
+          "recolour": {
+            "281820": "301723",
+            "958080": "ba5b23",
+            "4d4a5d": "5f2f25",
+            "c4b59f": "d99431",
+            "e5e6c7": "f3c03f",
+            "ffffff": "ffe360"
+          }
+        },
+        "050 torso_aprons_suspenders.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/aprons/suspenders/male/walk/brown.png",
+          "sha256": "2f9d6216b0f7a6abc6633ae0273d2b605fb74c7ad8c31e62199e9bb5e0bc3065"
+        },
+        "060 heads_human_male_plump.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/head/heads/human/male_plump/walk.png",
+          "sha256": "4e7797d12043bcb23aa178aec2ba1563dc17e53d58cc2a0431223c535918684b",
+          "recolour": {
+            "2a3c49": "232017",
+            "5686ae": "544c2e",
+            "57cee4": "7e4e20"
+          }
+        },
+        "070 eyebrows_thin.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/eyes/eyebrows/thin/adult/walk.png",
+          "sha256": "0f97688c229faad3a3e5f7e8e2ab7d539627f2182f122c7abf5917a16fe70a7b",
+          "recolour": {
+            "260d14": "200c0d",
+            "6a1108": "3a130e",
+            "a42600": "63200b",
+            "bf4000": "81310a",
+            "e55600": "b6550e",
+            "ff8a00": "d28102"
+          }
+        },
+        "080 beards_bigstache.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/beards/mustache/bigstache/walk.png",
+          "sha256": "b3edd8764eace8ef0722217370f1e60f5ba526d4ac0df6b56f1412bb09bcea3e",
+          "recolour": {
+            "260d14": "200c0d",
+            "6a1108": "3a130e",
+            "a42600": "63200b",
+            "bf4000": "81310a",
+            "e55600": "b6550e",
+            "ff8a00": "d28102"
+          }
+        },
+        "090 hair_halfmessy.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/hair/halfmessy/adult/walk.png",
+          "sha256": "c589a1afbe750e331941a7c4762b5463b4fd629adb63033261089d497be88db8",
+          "recolour": {
+            "260d14": "200c0d",
+            "6a1108": "3a130e",
+            "a42600": "63200b",
+            "bf4000": "81310a",
+            "e55600": "b6550e",
+            "ff8a00": "d28102"
+          }
+        }
+      }
+    },
+    {
+      "target": "juniper-sheet",
+      "pack": "lpc-generator",
+      "dropstand": true,
+      "layers": {
+        "010 hair_braid-2.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/hair/braid/adult/bg/walk.png",
+          "sha256": "dae1d04f9821a2efe5476402edf683dd8df9c4d7bd5ca85dc8ceba9cfad58295",
+          "recolour": {
+            "260d14": "1a0e04",
+            "6a1108": "301b07",
+            "a42600": "60350f",
+            "bf4000": "7d4513",
+            "e55600": "ae682a",
+            "ff8a00": "c88d58"
+          }
+        },
+        "020 body.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/body/bodies/female/walk.png",
+          "sha256": "594cb64a032d06d560f23b17f77b572e2dc8ba61df490cfca43f15316c85cfcf"
+        },
+        "030 legs_pants.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/legs/pants/thin/walk.png",
+          "sha256": "064ffc33544e67bd13c574fd8b18a82a51e25d77e628f5eeccbc76a8860b2f83",
+          "recolour": {
+            "281820": "1d131e",
+            "958080": "4b2b13",
+            "4d4a5d": "411e05",
+            "c4b59f": "62351c",
+            "e5e6c7": "744b30",
+            "ffffff": "996b4a"
+          }
+        },
+        "040 feet_boots_basic.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/feet/boots/basic/thin/walk.png",
+          "sha256": "50eb7e0a6b3cb1c939ee1a68bd0ac42736f6dbf55f2e5aa4ecef7d2ff858a1d7",
+          "recolour": {
+            "281820": "2b1c1d",
+            "958080": "4b2b13",
+            "4d4a5d": "311210",
+            "c4b59f": "704325",
+            "e5e6c7": "75502d",
+            "ffffff": "9a6f37"
+          }
+        },
+        "050 torso_clothes_longsleeve.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/clothes/longsleeve/longsleeve/female/walk.png",
+          "sha256": "6833ea1facfa45d07356a3b85ac022742db916f677c0a20474719aad61a13bc8",
+          "recolour": {
+            "281820": "09131d",
+            "958080": "0b1f25",
+            "4d4a5d": "07391d",
+            "c4b59f": "0b2b28",
+            "e5e6c7": "134507",
+            "ffffff": "1b5502"
+          }
+        },
+        "060 heads_human_female.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/head/heads/human/female/walk.png",
+          "sha256": "7ac84c09c9e126e5fd0b648c180901e24ddb116c7965cd3db6f2f653947b90bd",
+          "recolour": {
+            "2a3c49": "2b4b29",
+            "5686ae": "53b351",
+            "57cee4": "84ec50"
+          }
+        },
+        "070 eyebrows_thin.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/eyes/eyebrows/thin/adult/walk.png",
+          "sha256": "0f97688c229faad3a3e5f7e8e2ab7d539627f2182f122c7abf5917a16fe70a7b",
+          "recolour": {
+            "260d14": "1a0e04",
+            "6a1108": "301b07",
+            "a42600": "60350f",
+            "bf4000": "7d4513",
+            "e55600": "ae682a",
+            "ff8a00": "c88d58"
+          }
+        },
+        "080 hair_braid.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/hair/braid/adult/fg/walk.png",
+          "sha256": "9400841162f27b4564c98e16f9659c7f01036e27a14be570f0e0b801e13ba364",
+          "recolour": {
+            "260d14": "1a0e04",
+            "6a1108": "301b07",
+            "a42600": "60350f",
+            "bf4000": "7d4513",
+            "e55600": "ae682a",
+            "ff8a00": "c88d58"
+          }
+        }
+      }
+    },
+    {
+      "target": "ash-sheet",
+      "pack": "lpc-generator",
+      "dropstand": true,
+      "layers": {
+        "010 body.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/body/bodies/child/walk.png",
+          "sha256": "7c3ac85afcfcb4557f3d0b335605149393665dd2d00c1d3b1a2a6a325d291511"
+        },
+        "020 legs_childpants.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/legs/pants/child/walk/brown.png",
+          "sha256": "880df9765bc0c2d257a3b1ede25e6b8db1ca2857a889ed49898530e7b9f282d8"
+        },
+        "030 torso_clothes_child_shirt.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/clothes/shirt/child/walk/blue.png",
+          "sha256": "4100d226f4fbca77afc8b5e03718d868082671c87b9555066ce9adc3169f06e1"
+        },
+        "040 heads_human_child.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/head/heads/human/child/walk.png",
+          "sha256": "26f83d198cc26eb37a1cc95f7adfe891efb004bdb686d2bbc0d5d798070bb91d",
+          "recolour": {
+            "2a3c49": "2b4b29",
+            "5686ae": "53b351",
+            "57cee4": "84ec50"
+          }
+        },
+        "050 eyebrows_thin.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/eyes/eyebrows/thin/child/walk.png",
+          "sha256": "fc2bfdb9c617d640c685ed7240cfa75e67b55b7c21c96112e6fbadc41d6538c6",
+          "recolour": {
+            "260d14": "1a0e04",
+            "6a1108": "301b07",
+            "a42600": "60350f",
+            "bf4000": "7d4513",
+            "e55600": "ae682a",
+            "ff8a00": "c88d58"
+          }
+        },
+        "060 hair_swoop_side.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/hair/swoop_side/child/walk.png",
+          "sha256": "b2edd91280ea60231f160ef9497407ec6ab522c0a284327e5ff74ac57ea68827",
+          "recolour": {
+            "260d14": "1a0e04",
+            "6a1108": "301b07",
+            "a42600": "60350f",
+            "bf4000": "7d4513",
+            "e55600": "ae682a",
+            "ff8a00": "c88d58"
+          }
+        }
+      }
+    },
+    {
+      "target": "bram-sheet",
+      "pack": "lpc-generator",
+      "dropstand": true,
+      "layers": {
+        "010 body.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/body/bodies/male/walk.png",
+          "sha256": "1e0e8f0c11ba5f4f7b3d4439fc416802b4227da2fe146c13de3de254d9f87f77",
+          "recolour": {
+            "271920": "120e10",
+            "99423c": "412b29",
+            "cc8665": "5f4539",
+            "e4a47c": "76513a",
+            "f9d5ba": "9c663e",
+            "faece7": "b8773f"
+          }
+        },
+        "020 legs_pants.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/legs/pants/male/walk.png",
+          "sha256": "2de5a3247743ffa37febdf3464cc0a83e79f64d1028aed410832ee29bea850b6",
+          "recolour": {
+            "281820": "1d0f0e",
+            "958080": "62351c",
+            "4d4a5d": "3e2613",
+            "c4b59f": "744b30",
+            "e5e6c7": "996b4a",
+            "ffffff": "a17c50"
+          }
+        },
+        "030 feet_boots_basic.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/feet/boots/basic/male/walk.png",
+          "sha256": "13521e96fe8c6033c54622a8137cc1a05964a9db3bd1f5a115028951e5cecf18",
+          "recolour": {
+            "281820": "000000",
+            "958080": "1c2222",
+            "4d4a5d": "101414",
+            "c4b59f": "22282a",
+            "e5e6c7": "2a3034",
+            "ffffff": "4a5057"
+          }
+        },
+        "040 torso_clothes_longsleeve.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/clothes/longsleeve/longsleeve/male/walk.png",
+          "sha256": "8b1c79d535d7a233371c9398ca51b196aa8fdf06117bd0eafd7fbcbf438d711b",
+          "recolour": {
+            "281820": "11150b",
+            "958080": "2e403a",
+            "4d4a5d": "0b2b28",
+            "c4b59f": "315b49",
+            "e5e6c7": "557e85",
+            "ffffff": "79979d"
+          }
+        },
+        "050 torso_clothes_vest.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/torso/clothes/vest/male/walk/leather.png",
+          "sha256": "c5a147873e6bce1fd741ba7c4e45dce2d92ac16504d8e07bfac8fcf9508b6d6c"
+        },
+        "060 heads_human_male.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/head/heads/human/male/walk.png",
+          "sha256": "7e863954dc8c3c748d0727415c39888106bdd3779beb2e3b18011a3a9ef3e53c",
+          "recolour": {
+            "271920": "120e10",
+            "99423c": "412b29",
+            "cc8665": "5f4539",
+            "e4a47c": "76513a",
+            "f9d5ba": "9c663e",
+            "faece7": "b8773f",
+            "2a3c49": "232017",
+            "5686ae": "544c2e",
+            "57cee4": "7e4e20"
+          }
+        },
+        "070 eyebrows_thick.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/eyes/eyebrows/thick/adult/walk.png",
+          "sha256": "cc232732bf5270a9bd5c7b7868ebafac40f939414cbadaba9a75eccc7b20c01b",
+          "recolour": {
+            "260d14": "000000",
+            "6a1108": "0e0e0e",
+            "a42600": "1b1b1b",
+            "bf4000": "3b3b3b",
+            "e55600": "7c7c7c",
+            "ff8a00": "c1c1c1"
+          }
+        },
+        "080 beards_beard.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/beards/beard/basic/walk.png",
+          "sha256": "b0ecd4a9429925be32961407934db7dc528c8af36022ec13b6488e59c9a2d11e",
+          "recolour": {
+            "260d14": "000000",
+            "6a1108": "0e0e0e",
+            "a42600": "1b1b1b",
+            "bf4000": "3b3b3b",
+            "e55600": "7c7c7c",
+            "ff8a00": "c1c1c1"
+          }
+        },
+        "090 hair_plain.png": {
+          "from": "https://raw.githubusercontent.com/LiberatedPixelCup/Universal-LPC-Spritesheet-Character-Generator/553ba7562534cbf32e7d9a502660f569d6b26512/spritesheets/hair/plain/adult/walk.png",
+          "sha256": "4198b372f7381b7d12e516ddc69818dd50132224d1e6d8825f3dd920b0995b28",
+          "recolour": {
+            "260d14": "000000",
+            "6a1108": "0e0e0e",
+            "a42600": "1b1b1b",
+            "bf4000": "3b3b3b",
+            "e55600": "7c7c7c",
+            "ff8a00": "c1c1c1"
+          }
+        }
+      }
     }
   ]
 }

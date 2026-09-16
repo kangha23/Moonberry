@@ -413,39 +413,64 @@ function villageMap() {
     if (y >= 19 && x >= 22) return GID['tile-water'];
     if (y === 12 || y === 6) return GID['tile-path'];
     if (x === 8 || x === 18) return GID['tile-path'];
+    // The two doorsteps that are not on a lane get a spur out to one, so every
+    // house in the village is somewhere a path goes: Maeve's west to the
+    // forge lane, Bram's east along the foot of the green to the south lane.
+    if (y === 16 && x >= 19 && x <= 24) return GID['tile-path'];
+    if (y === 22 && x >= 1 && x <= 7) return GID['tile-path'];
     return grassGid(x, y);
   });
 
   let id = 1;
   const objects = [
     rectObject(id++, 'market', 'prop', 12, 5, 3, 1, {
-      properties: props({ texture: 'market-ribbon', solid: false, depth: 8, interact: 'market' }),
+      properties: props({ texture: 'market-stall', solid: false, depth: 8, interact: 'market' }),
     }),
     rectObject(id++, 'well', 'prop', 12, 8, 2, 2, {
       properties: props({ texture: 'well', solid: true, depth: 9 }),
     }),
     // The forge. South of the lane so it is a walk from the stall rather than
     // a second counter beside it: the two errands are different errands.
-    rectObject(id++, 'blacksmith', 'prop', 14, 14, 3, 2, {
+    rectObject(id++, 'blacksmith', 'prop', 14, 14, 4, 2, {
       properties: props({ texture: 'blacksmith', solid: true, depth: 16, interact: 'blacksmith' }),
     }),
-    // Four cottages, so the schedules have somewhere to send people home to.
+    // Five cottages, so the schedules have somewhere to send people home to.
     // A villager who stands outdoors at midnight is a villager on a timer
     // rather than one with a life, and a door is the cheapest way to say so.
-    rectObject(id++, 'cottage-tobias', 'prop', 3, 2, 3, 2, {
+    //
+    // Four tiles by three. They were three by two while the cottage was a
+    // drawing made to measure; a real timber-and-thatch house is a wall under
+    // a roof wider than it, and at three tiles across there was no room for a
+    // door and a window side by side. Each grew up and to the right, so its
+    // bottom row and its left edge — and therefore the doorstep below its
+    // second column, which is where "home" means — stayed where they were.
+    // Bram's is the exception: to the right was the lane, so it moved one
+    // tile west and its doorstep with it — and then, see below, to the edge.
+    //
+    // The two northern houses sit two rows lower than their old footprint,
+    // with their doorsteps on the lane itself. At rows 1 to 3 the drawing's
+    // roof rose 62 pixels past the top edge of the map, where the camera
+    // cannot go, and both houses were drawn without a roof ridge.
+    //
+    // A house's roof reaches three rows above its footprint, so two houses in
+    // one column need that much between them. Rowan's sits a row lower than
+    // it did, doorstep on the middle lane, so its roof clears Tobias's door;
+    // Bram's is against the west edge, so its roof clears the tree on the
+    // green — which is Ash's tree, and stays where Ash stands beside it.
+    rectObject(id++, 'cottage-tobias', 'prop', 3, 3, 4, 3, {
       properties: props({ texture: 'cottage', solid: true, depth: 4 }),
     }),
-    rectObject(id++, 'cottage-juniper', 'prop', 23, 2, 3, 2, {
-      properties: props({ texture: 'cottage', solid: true, depth: 4 }),
+    rectObject(id++, 'cottage-juniper', 'prop', 23, 3, 4, 3, {
+      properties: props({ texture: 'cottage-brown', solid: true, depth: 4 }),
     }),
-    rectObject(id++, 'cottage-rowan', 'prop', 2, 9, 3, 2, {
-      properties: props({ texture: 'cottage', solid: true, depth: 11 }),
+    rectObject(id++, 'cottage-rowan', 'prop', 2, 9, 4, 3, {
+      properties: props({ texture: 'cottage-stone', solid: true, depth: 11 }),
     }),
-    rectObject(id++, 'cottage-maeve', 'prop', 23, 14, 3, 2, {
+    rectObject(id++, 'cottage-maeve', 'prop', 23, 13, 4, 3, {
       properties: props({ texture: 'cottage', solid: true, depth: 16 }),
     }),
-    rectObject(id++, 'cottage-bram', 'prop', 5, 20, 3, 2, {
-      properties: props({ texture: 'cottage', solid: true, depth: 22 }),
+    rectObject(id++, 'cottage-bram', 'prop', 0, 19, 4, 3, {
+      properties: props({ texture: 'cottage-brown', solid: true, depth: 22 }),
     }),
     // The stock pen, where animals are bought. Not solid: it is a rail fence
     // and a trough, and a counter you cannot walk up to is not a counter.

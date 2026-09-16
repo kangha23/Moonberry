@@ -14,6 +14,9 @@
 /** A digest is 64 hex characters, and anything else is a typo, not a digest. */
 const SHA256 = /^[0-9a-f]{64}$/;
 
+/** A colour in a recolour map: six hex digits, no hash. */
+const HEX6 = /^[0-9a-fA-F]{6}$/;
+
 /**
  * Geometry field checks, so a mistyped `"cell": 3` dies here naming the row
  * that is wrong, rather than three files away inside `cutFlags`' `cut.cell.join(',')`
@@ -70,6 +73,43 @@ function wantSafePath(context, field, value) {
  * Every failure names the entry that caused it. A validator that says "invalid
  * sources.json" about a 182-row table has not helped anybody.
  */
+/**
+ * A cut assembled from rectangles of one or more sheets.
+ *
+ * Its `pack` is still required and still has to be credited: it names the
+ * pack the drawing is mostly made of. Every other pack a piece is taken from
+ * is credited too — see `packsUsed`.
+ *
+ * Exclusive with every other way of choosing a region, because a cut that
+ * named both `pieces` and a `rect` would have to pick one of them silently.
+ */
+function validatePieces(target, cut, packs) {
+  if (!Array.isArray(cut.pieces) || cut.pieces.length === 0) {
+    throw new Error(`Cut "${target}" has an empty "pieces"; a pieced cut needs at least one piece.`);
+  }
+  for (const other of ['file', 'layers', 'rect', 'grid', 'cell', 'walkcycle', 'animals']) {
+    if (cut[other] !== undefined) {
+      throw new Error(`Cut "${target}" names both "pieces" and "${other}"; a cut chooses its pixels one way.`);
+    }
+  }
+  wantWholeNumberArray(target, 'size', cut.size, 2);
+  cut.pieces.forEach((piece, index) => {
+    const label = `${target} piece ${index}`;
+    const from = packs[piece?.pack];
+    if (!from) throw new Error(`Cut "${label}" names pack "${piece?.pack}", which is not declared.`);
+    if (!from.files?.[piece.file]) {
+      throw new Error(`Cut "${label}" names file "${piece.file}", which pack "${piece.pack}" does not list.`);
+    }
+    wantWholeNumberArray(label, 'rect', piece.rect, 4);
+    wantWholeNumberArray(label, 'at', piece.at, 2);
+  });
+}
+
+/** Every pack a cut takes pixels from: its own, and each of its pieces'. */
+export function packsUsed(cut) {
+  return [cut.pack, ...(cut.pieces ?? []).map((piece) => piece.pack)];
+}
+
 export function validateSources(json) {
   const packs = json.packs ?? {};
   const cuts = json.cuts ?? [];
@@ -132,13 +172,15 @@ export function validateSources(json) {
     const pack = packs[cut.pack];
     if (!pack) throw new Error(`Cut "${target}" names pack "${cut.pack}", which is not declared.`);
 
+    if (cut.pieces !== undefined) validatePieces(target, cut, packs);
+
     if (cut.file && cut.layers) {
       throw new Error(
         `Cut "${target}" names both "file" and "layers"; a cut is one flat file or a layered stack, ` +
           'never both, and writing both silently resolves to "layers" while the "file" is ignored.',
       );
     }
-    if (!cut.layers && !pack.files?.[cut.file]) {
+    if (!cut.layers && !cut.pieces && !pack.files?.[cut.file]) {
       throw new Error(`Cut "${target}" names file "${cut.file}", which pack "${cut.pack}" does not list.`);
     }
 
@@ -182,6 +224,20 @@ export function validateSources(json) {
           throw new Error(`Cut "${target}" has two layers at position ${at}: "${positions.get(at)}" and "${name}".`);
         }
         positions.set(at, name);
+
+        // A layer's own colours, swapped before it is stacked. The generator
+        // ships one drawing per item in a base palette and recolours it at
+        // runtime, and a skin and a shirt can share a base colour — so a
+        // recolour applied to the finished stack could not tell the two apart.
+        if (entry?.recolour !== undefined) {
+          const pairs = entry.recolour && typeof entry.recolour === 'object' ? Object.entries(entry.recolour) : null;
+          if (!pairs || pairs.length === 0 || !pairs.every(([a, b]) => HEX6.test(a) && HEX6.test(b))) {
+            throw new Error(
+              `Cut "${target}" layer "${name}" has an invalid "recolour": expected a non-empty map of ` +
+                'six-digit hex colours, like { "cc8665": "7f4c31" }.',
+            );
+          }
+        }
 
         // Each layer is its own download, and the same pin the pack files get:
         // six villager sheets at ten to twenty layers each is sixty to a
@@ -239,6 +295,7 @@ export function cutFlags(cut) {
       .join(',');
   }
   if (cut.walkcycle) flags.walkcycle = true;
+  if (cut.dropstand) flags.dropstand = true;
   if (cut.animals) flags.animals = true;
   if (cut.frame !== undefined) flags.frame = String(cut.frame);
   if (cut.row !== undefined) flags.row = String(cut.row);
@@ -301,7 +358,7 @@ function creditsTitle(heading, title) {
 }
 
 export function missingCredits({ packs, cuts, credits }) {
-  const used = new Set(cuts.map((cut) => cut.pack));
+  const used = new Set(cuts.flatMap(packsUsed));
   const headings = credits.split('\n').filter((line) => /^#{1,6}\s/.test(line));
   return [...used]
     .filter((name) => {

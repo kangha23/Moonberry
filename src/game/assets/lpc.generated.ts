@@ -13,7 +13,15 @@ import type { CropId } from '../systems/items';
  * should be requested over the network, and nothing else.
  */
 export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
+  ['blacksmith', '/assets/lpc/blacksmith.png'],
+  ['building-barn', '/assets/lpc/building-barn.png'],
+  ['building-coop', '/assets/lpc/building-coop.png'],
+  ['building-shed', '/assets/lpc/building-shed.png'],
+  ['building-silo', '/assets/lpc/building-silo.png'],
   ['bush', '/assets/lpc/bush.png'],
+  ['cottage', '/assets/lpc/cottage.png'],
+  ['cottage-brown', '/assets/lpc/cottage-brown.png'],
+  ['cottage-stone', '/assets/lpc/cottage-stone.png'],
   ['crop-cranberry', '/assets/lpc/crop-cranberry.png'],
   ['crop-frostcap', '/assets/lpc/crop-frostcap.png'],
   ['crop-melon', '/assets/lpc/crop-melon.png'],
@@ -62,6 +70,8 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
   ['item-wood-fence', '/assets/lpc/item-wood-fence.png'],
   ['item-wood-path', '/assets/lpc/item-wood-path.png'],
   ['log', '/assets/lpc/log.png'],
+  ['market-stall', '/assets/lpc/market-stall.png'],
+  ['node-boulder', '/assets/lpc/node-boulder.png'],
   ['node-forage-buttercup', '/assets/lpc/node-forage-buttercup.png'],
   ['node-forage-chestnut', '/assets/lpc/node-forage-chestnut.png'],
   ['node-forage-daffodil', '/assets/lpc/node-forage-daffodil.png'],
@@ -72,6 +82,7 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
   ['node-forage-wild-greens', '/assets/lpc/node-forage-wild-greens.png'],
   ['node-forage-wild-leek', '/assets/lpc/node-forage-wild-leek.png'],
   ['node-grass', '/assets/lpc/node-grass.png'],
+  ['node-rock', '/assets/lpc/node-rock.png'],
   ['node-stump', '/assets/lpc/node-stump.png'],
   ['node-tree-0', '/assets/lpc/node-tree-0.png'],
   ['node-tree-1', '/assets/lpc/node-tree-1.png'],
@@ -99,6 +110,7 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
   ['plot-wild', '/assets/lpc/plot-wild.png'],
   ['plot-wild-2', '/assets/lpc/plot-wild-2.png'],
   ['plot-wild-3', '/assets/lpc/plot-wild-3.png'],
+  ['ranch-pen', '/assets/lpc/ranch-pen.png'],
   ['stump', '/assets/lpc/stump.png'],
   ['stump-flowers', '/assets/lpc/stump-flowers.png'],
   ['tile-floor-wood', '/assets/lpc/tile-floor-wood.png'],
@@ -133,6 +145,7 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
   ['tile-water-3', '/assets/lpc/tile-water-3.png'],
   ['tree', '/assets/lpc/tree.png'],
   ['tuft-tall', '/assets/lpc/tuft-tall.png'],
+  ['well', '/assets/lpc/well.png'],
 ];
 
 /**
@@ -153,7 +166,7 @@ export const LPC_URL_BY_KEY: Readonly<Record<string, string>> = Object.fromEntri
  * The walk sheets, read as nine frames across and four directions down, at
  * 64px each. Row order is the LPC convention: up, left, down, right.
  */
-export const LPC_SHEETS = ['player-sheet', 'rowan-sheet'] as const;
+export const LPC_SHEETS = ['ash-sheet', 'bram-sheet', 'juniper-sheet', 'maeve-sheet', 'player-sheet', 'rowan-sheet', 'tobias-sheet'] as const;
 
 /**
  * The animal walk sheets, with the frame size each one was trimmed to.
@@ -177,6 +190,14 @@ export const LPC_ANIMAL_SHEETS: readonly LpcAnimalSheet[] = [
   { key: 'animal-duck-sheet', url: '/assets/lpc/animal-duck-sheet.png', frameWidth: 32, frameHeight: 30 },
   { key: 'animal-goat-sheet', url: '/assets/lpc/animal-goat-sheet.png', frameWidth: 54, frameHeight: 66 },
 ];
+
+/**
+ * The villager portraits, as the id each one draws: `portrait-rowan` is
+ * `'rowan'`. Four 64px frames across, in the order of `PORTRAIT_MOODS` in
+ * `src/game/npcs/types.ts`. A villager missing from this list talks from an
+ * empty frame rather than from somebody else's face.
+ */
+export const LPC_PORTRAITS: readonly string[] = ['ash', 'bram', 'juniper', 'maeve', 'rowan', 'tobias'];
 
 export type LpcSheet = (typeof LPC_SHEETS)[number];
 

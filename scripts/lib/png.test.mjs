@@ -16,6 +16,7 @@ import path from 'node:path';
 import test from 'node:test';
 import zlib from 'node:zlib';
 import {
+  arrange,
   composite,
   decodePng,
   encodeImage,
@@ -31,6 +32,7 @@ import {
   animalcycle,
   box,
   cut,
+  dropStand,
   expectationFor,
   parseFlags,
   parseRecolour,
@@ -560,6 +562,35 @@ test('the encoder still rejects a pixel buffer of the wrong length', () => {
   assert.throws(() => encodePng(2, 2, new Uint8Array(4)), /Expected 16 bytes/);
 });
 
+// --- laying pieces out -----------------------------------------------------
+
+test('puts each piece at its own offset on a transparent canvas', () => {
+  const wall = raster(2, 1);
+  wall.set(0, 0, '#ff0000');
+  wall.set(1, 0, '#ff0000');
+  const door = raster(1, 1);
+  door.set(0, 0, '#0000ff');
+  const house = arrange(3, 2, [
+    { image: { width: 2, height: 1, pixels: wall.pixels }, x: 1, y: 1 },
+    { image: { width: 1, height: 1, pixels: door.pixels }, x: 2, y: 1 },
+  ]);
+  assert.equal(house.width, 3);
+  assert.equal(house.height, 2);
+  assert.deepEqual(at(house, 0, 0), [0, 0, 0, 0]);
+  assert.deepEqual(at(house, 1, 1), [255, 0, 0, 255]);
+  // Later pieces go on top, so the door covers the wall it was laid over.
+  assert.deepEqual(at(house, 2, 1), [0, 0, 255, 255]);
+});
+
+test('clips a piece that hangs past the canvas instead of failing', () => {
+  const eave = raster(2, 2);
+  for (const [x, y] of [[0, 0], [1, 0], [0, 1], [1, 1]]) eave.set(x, y, '#00ff00');
+  const clipped = arrange(2, 2, [{ image: { width: 2, height: 2, pixels: eave.pixels }, x: -1, y: 1 }]);
+  assert.deepEqual(at(clipped, 0, 1), [0, 255, 0, 255]);
+  assert.deepEqual(at(clipped, 1, 1), [0, 0, 0, 0]);
+  assert.deepEqual(at(clipped, 0, 0), [0, 0, 0, 0]);
+});
+
 // --- stacking layers --------------------------------------------------------
 
 test('stacks layers first to last, so the head lands on the body', () => {
@@ -643,6 +674,48 @@ test('reads a folder of layers in file-name order, which is the generator z-orde
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('recolours a named layer before stacking it, and leaves the others alone', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'lpc-layers-'));
+  try {
+    // Two layers drawn in the same base colour, the way the generator ships a
+    // body and a shirt. Only the body is asked to change, which a recolour of
+    // the finished stack could never express.
+    const layer = (hex, x) => {
+      const sheet = raster(2, 1);
+      sheet.set(x, 0, hex);
+      return encodeImage({ width: 2, height: 1, pixels: sheet.pixels });
+    };
+    fs.writeFileSync(path.join(dir, '010 body.png'), layer('#cc8665', 0));
+    fs.writeFileSync(path.join(dir, '035 shirt.png'), layer('#cc8665', 1));
+
+    const { image } = readSource(dir, { '010 body.png': { cc8665: '7f4c31' } });
+    assert.deepEqual(at(image, 0, 0), [0x7f, 0x4c, 0x31, 255]);
+    assert.deepEqual(at(image, 1, 0), [0xcc, 0x86, 0x65, 255]);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test('drops the standing pose that opens a generator walk row', () => {
+  const { frame, frames, rows } = WALK;
+  const width = frames * frame;
+  const height = rows * frame;
+  const pixels = new Uint8Array(width * height * 4);
+  // Mark the top-left pixel of every column of the second row with its column number.
+  for (let col = 0; col < frames; col += 1) {
+    const i = (frame * width + col * frame) * 4;
+    pixels[i] = col + 1;
+    pixels[i + 3] = 255;
+  }
+
+  const sheet = dropStand({ width, height, pixels });
+  for (let col = 0; col < frames - 1; col += 1) {
+    assert.equal(at(sheet, col * frame, frame)[0], col + 2, `column ${col} should be the source's ${col + 1}`);
+  }
+  assert.deepEqual(at(sheet, (frames - 1) * frame, frame), [0, 0, 0, 0], 'the ninth column is left blank');
+  assert.throws(() => dropStand({ width: 832, height, pixels: new Uint8Array(832 * height * 4) }), /576x256/);
 });
 
 test('mirrors an image without changing a single colour', () => {

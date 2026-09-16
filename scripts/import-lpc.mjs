@@ -56,6 +56,12 @@ export const EXPECTED = [
   { match: /^crop-/, size: [32, 32], note: 'a crop stage or a ripe crop' },
   { match: /^grass-tuft$/, size: [32, 32], note: 'ground decoration' },
   {
+    // Four expressions side by side, in the order `PORTRAIT_MOODS` reads them.
+    match: /^portrait-/,
+    size: [256, 64],
+    note: 'a villager portrait: neutral, happy, sad and angry, 64px each',
+  },
+  {
     // Animal sheets come first: `animal-cow-sheet` ends in `-sheet` too, and
     // the people rule below would hold it to a person's frame size.
     match: /^animal-[a-z0-9-]+-sheet$/,
@@ -132,6 +138,36 @@ export function walkcycle(source, startRow = WALK.defaultRow) {
     );
   }
   return sliceRect(source, 0, startRow * frame, frames * frame, rows * frame);
+}
+
+/**
+ * Drops the standing pose from a walk sheet and closes the gap.
+ *
+ * The generator's current per-animation exports draw a row as a standing pose
+ * followed by the eight poses of the stride, which inks all nine columns. The
+ * game plays the first eight columns of a row as the walk and stands on the
+ * first of them — the shape `player-sheet` and `rowan-sheet` always had, and
+ * the one `walk-sheets.test.mjs` holds every person's sheet to. Played as-is,
+ * a generator sheet would stride through its standing pose and never reach its
+ * last step. Shifting the eight stride poses left and blanking the ninth
+ * column makes it that shape, so the game needs no second convention.
+ */
+export function dropStand(source) {
+  const { frame, frames, rows } = WALK;
+  const width = frames * frame;
+  const height = rows * frame;
+  if (source.width !== width || source.height !== height) {
+    throw new Error(
+      `--dropstand wants a ${width}x${height} walk sheet (${frames} frames of ${frame}px, ${rows} rows), ` +
+        `got ${source.width}x${source.height}.`,
+    );
+  }
+  const pixels = new Uint8Array(width * height * 4);
+  for (let y = 0; y < height; y += 1) {
+    const from = (y * width + frame) * 4;
+    pixels.set(source.pixels.subarray(from, from + (width - frame) * 4), y * width * 4);
+  }
+  return { width, height, pixels };
 }
 
 /**
@@ -457,6 +493,7 @@ export function planImport(source, target, flags = {}) {
   }
   const expected = expectationFor(target);
   let region = cut(source, flags);
+  if (flags.dropstand) region = dropStand(region);
 
   if (flags.flip !== undefined) {
     const axes = String(flags.flip).toLowerCase();
@@ -547,7 +584,7 @@ Use --animals, which cuts a sheet that does.`);
  * the leading numbers are the stacking order, which is why sorting the names
  * is the right way to stack them rather than a lucky coincidence.
  */
-export function readSource(sourcePath) {
+export function readSource(sourcePath, recolours = {}) {
   if (!fs.existsSync(sourcePath)) throw new Error(`No such file or folder: ${sourcePath}`);
 
   if (!fs.statSync(sourcePath).isDirectory()) {
@@ -560,7 +597,14 @@ export function readSource(sourcePath) {
     .sort();
   if (!layers.length) throw new Error(`No PNGs in ${sourcePath}.`);
 
-  const image = composite(layers.map((file) => decodePng(fs.readFileSync(path.join(sourcePath, file)))));
+  // A layer named in `recolours` has its colours swapped before it is stacked,
+  // which is the only point at which its pixels are still its own.
+  const image = composite(
+    layers.map((file) => {
+      const layer = decodePng(fs.readFileSync(path.join(sourcePath, file)));
+      return recolours[file] ? recolour(layer, recolours[file]) : layer;
+    }),
+  );
   return { image, layers };
 }
 
@@ -599,6 +643,10 @@ Options:
   --walkcycle      take the four walk rows out of a character-generator export
                    (${WALK.frames} frames of ${WALK.frame}px, starting at row ${WALK.defaultRow}) and write a
                    576x256 sheet. Overrides --rect.
+  --dropstand      drop the standing pose that opens every row of a
+                   generator walk export and shift the stride left, leaving
+                   the ninth column blank as the game expects. Applied after
+                   the cut.
   --animals        take ${ANIMAL.rows} rows of ${ANIMAL.cols} frames out of an animal sheet and trim
                    the empty space off every frame at once. Needs --frame.
   --frame N        the size of one frame in the source, for --animals. The LPC

@@ -21,7 +21,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { OUT_DIR, planImport, readSource } from './import-lpc.mjs';
-import { encodeImage } from './lib/png.mjs';
+import { arrange, encodeImage, sliceRect } from './lib/png.mjs';
 import { cutFlags, missingCredits, reconcile, validateSources } from './lib/sources.mjs';
 import { extractZipMember } from './lib/zip.mjs';
 
@@ -132,10 +132,36 @@ async function layerFolder(cut) {
   return dir;
 }
 
+/**
+ * A pieced cut's canvas: every piece sliced out of its own pinned sheet and
+ * laid at its offset. What comes back is an ordinary source image, so the box,
+ * the floor and the recolour after it apply exactly as they do to any cut.
+ */
+async function piecedSource(json, cut) {
+  const placed = [];
+  for (const piece of cut.pieces) {
+    const sheet = readSource(await packFile(piece.pack, piece.file, json.packs[piece.pack].files[piece.file]));
+    const [x, y, width, height] = piece.rect;
+    placed.push({ image: sliceRect(sheet.image, x, y, width, height), x: piece.at[0], y: piece.at[1] });
+  }
+  return { image: arrange(cut.size[0], cut.size[1], placed) };
+}
+
+/** Each layer's own colour swaps, by the file name the layer is cached under. */
+function layerRecolours(cut) {
+  return Object.fromEntries(
+    Object.entries(cut.layers)
+      .filter(([, entry]) => entry.recolour)
+      .map(([name, entry]) => [name, entry.recolour]),
+  );
+}
+
 async function bytesFor(json, cut) {
-  const source = cut.layers
-    ? readSource(await layerFolder(cut))
-    : readSource(await packFile(cut.pack, cut.file, json.packs[cut.pack].files[cut.file]));
+  const source = cut.pieces
+    ? await piecedSource(json, cut)
+    : cut.layers
+      ? readSource(await layerFolder(cut), layerRecolours(cut))
+      : readSource(await packFile(cut.pack, cut.file, json.packs[cut.pack].files[cut.file]));
   const { image, warnings } = planImport(source.image, cut.target, cutFlags(cut));
   for (const warning of warnings) console.warn(`warning: ${cut.target}: ${warning}`);
   return encodeImage(image);

@@ -13,7 +13,7 @@ import { npcDef, type NpcId } from '../../npcs/definitions';
 import type { NpcActor } from '../../npcs/schedule';
 import { advanceChase, chaseFacing, createChase, type TickChase } from '../../view/tickChase';
 import { TILE_SIZE, type Direction } from '../../world/areas';
-import { AVATAR_DEPTH_BASE, WALK_FRAMES, standFrame, type SceneContext } from './shared';
+import { AVATAR_DEPTH_BASE, PROSE_FONT, WALK_FRAMES, standFrame, type SceneContext } from './shared';
 
 /**
  * One villager on screen.
@@ -32,11 +32,27 @@ interface Villager {
   chase: TickChase;
 }
 
+/** Which way to turn to look at a point: the axis it is further along wins. */
+export function facingToward(fromX: number, fromY: number, toX: number, toY: number): Direction {
+  const dx = toX - fromX;
+  const dy = toY - fromY;
+  if (Math.abs(dx) > Math.abs(dy)) return dx < 0 ? 'left' : 'right';
+  return dy < 0 ? 'up' : 'down';
+}
+
 /** The people standing on the built area, and the marks they carry. */
 export class VillagerView {
   /** One record per villager standing on the built area. */
   private villagers = new Map<NpcId, Villager>();
   private questIcon: Phaser.GameObjects.Image | null = null;
+  /**
+   * Who is in a conversation with this player, and the point they are looking
+   * at. Held here rather than in the state: the reducer walks the village for
+   * everybody at once, and a villager stopping for one player's chat would stop
+   * them on every other player's screen too. So they stop on yours, and the
+   * walk catches up when the box closes.
+   */
+  private listener: { npc: NpcId; x: number; y: number } | null = null;
 
   private readonly context: Pick<SceneContext, 'scene' | 'farm' | 'builtArea' | 'areaLayer'>;
   private readonly scene: Phaser.Scene;
@@ -49,6 +65,15 @@ export class VillagerView {
   /** Lets go of the quest marker, which went with the layer it was drawn in. */
   forgetArea() {
     this.questIcon = null;
+  }
+
+  /** Turns somebody to face a point, and keeps them there until `stopListening`. */
+  listen(npc: NpcId, x: number, y: number) {
+    this.listener = { npc, x, y };
+  }
+
+  stopListening() {
+    this.listener = null;
   }
 
   /**
@@ -72,6 +97,16 @@ export class VillagerView {
       }
 
       const { sprite, shadow, label, chase } = villager;
+
+      if (this.listener?.npc === actor.id) {
+        // Stood still and turned to you, on the spot the sprite is drawn at
+        // rather than the one the state has moved on to. The chase is not
+        // advanced, so when the box closes the walk resumes from here.
+        villager.facing = facingToward(sprite.x, sprite.y, this.listener.x, this.listener.y);
+        sprite.anims.stop();
+        if (this.scene.anims.exists(`${villager.sheet}-walk-down`)) sprite.setFrame(standFrame(villager.facing));
+        continue;
+      }
 
       // The same walk the herd gets, and for the same reason — a villager
       // covers 120 world pixels a step rather than an animal's 60, so the old
@@ -146,7 +181,9 @@ export class VillagerView {
 
     const label = this.scene.add
       .text(actor.x, actor.y - 26, def.name, {
-        fontFamily: 'Nunito, monospace',
+        // Not VT323: a name over a head is drawn well under the 16px where its
+        // tone marks survive, so it is set like the players' own labels.
+        fontFamily: PROSE_FONT,
         fontSize: '11px',
         color: PALETTE['light.7'],
         stroke: PALETTE['outline.2'],
@@ -168,9 +205,9 @@ export class VillagerView {
   /**
    * A walk cycle per sheet, built once.
    *
-   * The villagers borrow the two sheets that ship rather than having one
-   * each, so the animation keys are named for the sheet: two sets of four,
-   * however many people are using them.
+   * The animation keys are named for the sheet rather than for the villager,
+   * so a sheet two people share — the player's, say, lent to somebody whose
+   * own is not drawn yet — is one set of four rather than two.
    */
   createVillagerAnimations() {
     for (const sheet of LPC_SHEETS) {

@@ -3,7 +3,7 @@
  * to talk to, what they say, and what happens when you hand one a present.
  */
 import { npcDef } from '../../npcs/definitions';
-import { pickDialogue, type DialogueContext } from '../../npcs/dialogue';
+import { GIFT_MOOD, pickLine, type DialogueContext, type SpokenLine } from '../../npcs/dialogue';
 import {
   REACTION_BLURB,
   giveGift,
@@ -56,12 +56,12 @@ function dialogueContextFor(state: FarmState, player: PlayerState, actor: NpcAct
   };
 }
 
-/** The line this villager has for this player right now. */
-function speakLine(state: FarmState, playerId: PlayerId, actor: NpcActor): string {
+/** The line this villager has for this player right now, and its face. */
+function speakLine(state: FarmState, playerId: PlayerId, actor: NpcActor): SpokenLine | null {
   const player = state.players[playerId];
   const def = npcDef(actor.id);
-  if (!player) return '';
-  return pickDialogue(def, dialogueContextFor(state, player, actor));
+  if (!player) return null;
+  return pickLine(def, dialogueContextFor(state, player, actor));
 }
 
 /**
@@ -72,11 +72,11 @@ function speakLine(state: FarmState, playerId: PlayerId, actor: NpcActor): strin
  * over one interaction.
  */
 function speakEvents(state: FarmState, playerId: PlayerId, actor: NpcActor): GameEvent[] {
-  const line = speakLine(state, playerId, actor);
-  if (!line) return [];
+  const spoken = speakLine(state, playerId, actor);
+  if (!spoken) return [];
   return [
-    { kind: 'npcSpoke', npc: actor.id, playerId, line },
-    say(playerId, `${npcDef(actor.id).name}: ${line}`),
+    { kind: 'npcSpoke', npc: actor.id, playerId, line: spoken.line, mood: spoken.mood },
+    say(playerId, `${npcDef(actor.id).name}: ${spoken.line}`),
   ];
 }
 
@@ -137,6 +137,8 @@ function applyGift(
   if (!inventory) return { state, events: [say(playerId, 'Bạn không mang theo thứ đó.')] };
 
   const label = itemDef(item).label.toLowerCase();
+  const spoken = speakLine(state, playerId, actor);
+  const line = spoken?.line ?? '';
   const next: PlayerState = {
     ...player,
     inventory,
@@ -153,6 +155,8 @@ function applyGift(
       heartsNow: result.hearts,
       heartGained: result.heartGained,
       birthday: result.birthday,
+      line,
+      mood: GIFT_MOOD[result.reaction],
     },
     say(
       playerId,
@@ -160,7 +164,7 @@ function applyGift(
         ? `Bạn tặng ${def.name} ${label} — đúng ngày sinh nhật. ${def.name} ${REACTION_BLURB[result.reaction]}.`
         : `Bạn tặng ${def.name} ${label}. ${def.name} ${REACTION_BLURB[result.reaction]}.`,
     ),
-    say(playerId, `${def.name}: ${speakLine(state, playerId, actor)}`),
+    say(playerId, `${def.name}: ${line}`),
   ];
 
   // This is where spec 11 pays spec 07's debt, and it is two lines long.

@@ -276,6 +276,30 @@ test('accepts a layered cut whose layer names are numbered and pinned', () => {
   assert.equal(validateSources(json), json);
 });
 
+test('accepts a layer with its own recolour, and rejects one that is not a colour map', () => {
+  const layered = (recolour) => ({
+    packs: { 'lpc-generator': generatorPack },
+    cuts: [
+      {
+        target: 'maeve-sheet',
+        pack: 'lpc-generator',
+        dropstand: true,
+        layers: {
+          '010 body.png': { from: 'https://example.invalid/b.png', sha256: 'a'.repeat(64), recolour },
+        },
+      },
+    ],
+  });
+  assert.doesNotThrow(() => validateSources(layered({ cc8665: '7f4c31' })));
+  assert.throws(() => validateSources(layered({})), /invalid "recolour"/);
+  assert.throws(() => validateSources(layered({ cc8665: '#7f4c31' })), /invalid "recolour"/);
+  assert.throws(() => validateSources(layered('cc8665:7f4c31')), /invalid "recolour"/);
+});
+
+test('passes dropstand through to the importer', () => {
+  assert.deepEqual(cutFlags({ target: 'maeve-sheet', dropstand: true }), { dropstand: true });
+});
+
 test('rejects a layer name with no number, because the number is the stacking order', () => {
   const json = {
     packs: { 'lpc-generator': generatorPack },
@@ -527,4 +551,71 @@ test('rejects a non-whole-number floor', () => {
     cuts: [{ target: 'weed-1', pack: 'lpc-crops', file: 'crops.png', box: [64, 80], floor: 74.5 }],
   };
   assert.throws(() => validateSources(json), /weed-1.*"floor"/s);
+});
+
+// --- pieced cuts -------------------------------------------------------------
+
+const roofs = {
+  ...pack,
+  title: '[LPC] Roofs',
+  files: { 'roofs.png': { from: 'https://example.invalid/roofs.png', sha256: 'b'.repeat(64) } },
+};
+
+function pieced(overrides = {}) {
+  return {
+    target: 'cottage',
+    pack: 'lpc-crops',
+    size: [96, 112],
+    pieces: [
+      { pack: 'lpc-crops', file: 'crops.png', rect: [0, 0, 96, 64], at: [0, 48] },
+      { pack: 'lpc-roofs', file: 'roofs.png', rect: [0, 0, 104, 56], at: [-4, 0] },
+    ],
+    ...overrides,
+  };
+}
+
+test('accepts a cut laid out from pieces of more than one pack', () => {
+  const json = { packs: { 'lpc-crops': pack, 'lpc-roofs': roofs }, cuts: [pieced()] };
+  assert.equal(validateSources(json), json);
+});
+
+test('rejects a pieced cut with no pieces, or with no size to lay them on', () => {
+  const packs = { 'lpc-crops': pack, 'lpc-roofs': roofs };
+  assert.throws(() => validateSources({ packs, cuts: [pieced({ pieces: [] })] }), /cottage.*empty "pieces"/s);
+  assert.throws(() => validateSources({ packs, cuts: [pieced({ size: undefined })] }), /cottage.*"size"/s);
+});
+
+test('rejects a piece naming a pack or a file that is not declared', () => {
+  const [wall] = pieced().pieces;
+  assert.throws(
+    () => validateSources({ packs: { 'lpc-crops': pack }, cuts: [pieced()] }),
+    /cottage piece 1.*lpc-roofs/s,
+  );
+  assert.throws(
+    () =>
+      validateSources({
+        packs: { 'lpc-crops': pack },
+        cuts: [pieced({ pieces: [{ ...wall, file: 'walls.png' }] })],
+      }),
+    /cottage piece 0.*walls\.png/s,
+  );
+});
+
+test('rejects a piece with no offset, because there is nowhere to put it', () => {
+  const [wall] = pieced().pieces;
+  assert.throws(
+    () => validateSources({ packs: { 'lpc-crops': pack }, cuts: [pieced({ pieces: [{ ...wall, at: [1] }] })] }),
+    /cottage piece 0.*"at"/s,
+  );
+});
+
+test('rejects a cut naming both pieces and a single rect, which would have to ignore one', () => {
+  const json = { packs: { 'lpc-crops': pack, 'lpc-roofs': roofs }, cuts: [pieced({ rect: [0, 0, 1, 1] })] };
+  assert.throws(() => validateSources(json), /cottage.*"pieces" and "rect"/s);
+});
+
+test('demands credit for every pack a piece is taken from, not only the one the cut names', () => {
+  const packs = { 'lpc-crops': { title: '[LPC] Crops' }, 'lpc-roofs': { title: '[LPC] Roofs' } };
+  const credits = '## [LPC] Crops (CC-BY-SA 3.0+)\n';
+  assert.deepEqual(missingCredits({ packs, cuts: [pieced()], credits }), ['lpc-roofs']);
 });

@@ -106,48 +106,6 @@ function parseRgbBody(inside) {
   return (r << 16) | (g << 8) | b;
 }
 
-/**
- * The five villager identity tints.
- *
- * This is NOT exempt because a Phaser tint is a multiplier (`spriteColour x
- * tint`) rather than a drawn colour. That argument proves too much: it is
- * true of every tint in the codebase, verbatim, and Task 12 spent a whole
- * pass converting 28 of the other 33 tints in `src/` to `tint('group.N')`
- * precisely because being a multiplier did not stop *them* from having to
- * name a palette member. An argument that would justify exempting all 33
- * cannot be the reason only 5 are exempt — so it isn't the real reason, and
- * an unfalsifiable "category error" claim was worse than no reason at all.
- *
- * The real, falsifiable reason: this palette has no pale blue and no pale
- * green, so it cannot express five mutually distinguishable villager
- * identities, and an identity tint that isn't distinguishable has failed at
- * its one job. Measured in OkLab, ash's `#8fb6e0` (pale blue) and juniper's
- * `#9fd9a8` (pale green) both land nearest to the same palette entry,
- * `light.6` (`#acbfb0`, a sage grey roughly equidistant between them) —
- * snapping either to its nearest palette colour, or to any single shared
- * substitute, would make two villagers share a tint and therefore share a
- * look. That is a fact about the current 48 colours, not about what a
- * Phaser tint fundamentally is, and it comes with its own expiry: if the
- * palette ever gains a genuine pale blue and pale green (a re-derivation
- * that widens the `light` group, say), this exemption should end and all
- * five villagers should convert to `tint('group.N')` like every other
- * sprite. Until then, the five exact values are allowlisted rather than
- * matched by distance, because snapping to nearest is exactly the move that
- * collapses two of them onto `light.6`.
- *
- * Kept in sync with `src/game/npcs/villagers/*.ts` by the assertion right
- * below this list, not by hand alone: a retint that changes a villager's
- * `tint:` value without updating this list would otherwise leave a stale
- * entry here that nothing ever objects to.
- */
-const VILLAGER_TINTS = new Set([
-  0x8fb6e0, // ash
-  0xb8a06a, // bram
-  0x9fd9a8, // juniper
-  0xc98a8a, // maeve
-  0xe0c27a, // tobias
-]);
-
 function nearestName(n) {
   const lab = srgbToOklab(...unpackRgb(n));
   const i = nearestIndex(lab, LAB);
@@ -201,32 +159,6 @@ function walk(dir, match, found = []) {
  */
 function stripComments(source) {
   return source.replace(/\/\*[\s\S]*?\*\/|(?<![:\w])\/\/.*$/gm, '');
-}
-
-/**
- * Every value in `VILLAGER_TINTS` is still somebody's `tint:` in
- * `src/game/npcs/villagers/`.
- *
- * The allowlist above is a second source of truth for those five hexes, with
- * nothing structural tying it to the villager files themselves — a retint
- * that changes one file's `tint:` value has no way to make the Set above
- * notice its old entry is now unused. Checked once, at module load, so a
- * stale entry (one that widens the exemption past what any villager actually
- * needs) fails immediately instead of sitting there forever.
- */
-{
-  const villagerSource = walk(path.join('src', 'game', 'npcs', 'villagers'), /\.ts$/)
-    .map((file) => fs.readFileSync(file, 'utf8'))
-    .join('\n');
-  const staleTints = [...VILLAGER_TINTS].filter(
-    (n) => !villagerSource.includes(`0x${n.toString(16)}`),
-  );
-  assert.deepEqual(
-    staleTints.map((n) => `#${n.toString(16).padStart(6, '0')}`),
-    [],
-    'VILLAGER_TINTS in scripts/palette-lock.test.mjs has an entry no villager file uses any more — ' +
-      'remove it, since a stale exemption only widens what the lock lets through.',
-  );
 }
 
 test('every pixel the game loads is on the palette', () => {
@@ -293,23 +225,13 @@ test('no source file names a colour the palette does not have', () => {
     const source = stripComments(fs.readFileSync(file, 'utf8'));
     for (const match of source.matchAll(/#([0-9a-fA-F]{6})\b|0x([0-9a-fA-F]{6})\b/g)) {
       const n = Number.parseInt(match[1] ?? match[2], 16);
-      if (ALLOWED.has(n) || UTILITY_TINTS.has(n) || VILLAGER_TINTS.has(n)) continue;
+      if (ALLOWED.has(n) || UTILITY_TINTS.has(n)) continue;
       const line = source.slice(0, match.index).split('\n').length;
-      // A sixth villager needing an identity tint hits this exact failure,
-      // and "use light.6" — the message every other file gets — is precisely
-      // the fix VILLAGER_TINTS exists to reject: light.6 is where both the
-      // pale blue and the pale green villager tints already collide. Point
-      // at the allowlist and its reasoning instead of at a nearest-colour
-      // suggestion that would silently recreate the bug it was added to fix.
-      const isVillagerFile = file.split(path.sep).join('/').includes('npcs/villagers/');
-      failures.push(
-        isVillagerFile
-          ? `${file}:${line}  ${match[0]}  -> not on the palette and not in VILLAGER_TINTS. If this is a ` +
-            'new or changed identity tint, read the comment on VILLAGER_TINTS in ' +
-            'scripts/palette-lock.test.mjs before picking a replacement — "use the nearest palette ' +
-            'colour" is the exact mistake that comment exists to prevent.'
-          : `${file}:${line}  ${match[0]}  -> use ${nearestName(n)}`,
-      );
+      // There used to be an exemption here for five villager identity tints,
+      // because the palette could not tell a pale-blue borrowed sprite from a
+      // pale-green one. Every villager now has a walk sheet of their own and
+      // draws untinted, so there is nothing left to exempt.
+      failures.push(`${file}:${line}  ${match[0]}  -> use ${nearestName(n)}`);
     }
 
     // The rgb()/rgba() half of the same check — see RGB_FUNCTION's own
