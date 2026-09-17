@@ -50,9 +50,10 @@ Phaser 4.
 - Một cái mỏ bốn mươi tầng sinh tất định từ hạt giống, xuống được từ khu rừng.
   Mỗi tầng có mạch quặng đòi cuốc chim đúng bậc — đá, than và quặng đồng thì
   cuốc thường cuốc được, quặng sắt cần cuốc đồng, quặng vàng cần cuốc thép — và
-  quái canh giữ chúng. Xuống mỏ lần đầu mà chưa có kiếm thì nhận ngay một thanh
-  kiếm gỉ bỏ lại ở cửa mỏ; kiếm tốt hơn chế được từ thỏi kim loại và mở công
-  thức theo độ sâu cả nhóm đã xuống tới, không riêng người vừa xuống.
+  quái canh giữ chúng. Xuống mỏ mà chưa cầm kiếm thì nhận ngay một thanh kiếm gỉ
+  bỏ lại ở cửa mỏ, bất kể là lần đầu hay lần thứ mười; kiếm tốt hơn chế được từ
+  thỏi kim loại và mở công thức theo độ sâu cả nhóm đã xuống tới, không riêng
+  người vừa xuống.
 - Bốn công trình dựng được trên nông trại — kho, silo, chuồng gà, chuồng bò — đặt
   bằng cách kéo một khung mờ quanh đồng, trả bằng ví chung, và đứng đó như một
   giàn giáo cho tới khi thợ mộc xong việc. Chúng đặc: bạn đi sau lưng chuồng bò và

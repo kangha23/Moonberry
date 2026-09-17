@@ -87,11 +87,19 @@ Hàm đổi tên thành `reconcileFloors` và lo cả hai danh sách, vì hai v�
 là một: một tầng có quái mới mà quặng cũ là một tầng không tồn tại trong bất kỳ
 hạt giống nào.
 
-**Chấp nhận:** rời tầng rồi quay lại thì quặng mọc lại. Spec 13 đã chọn điều này
-cho quái; đồng hồ và sức lực là giới hạn. Không đổi luật thang máy.
+**Chấp nhận:** rời tầng rồi quay lại thì quặng mọc lại; mất kết nối rồi nối lại
+ngay trên một tầng mỏ cũng dựng lại tầng đó theo đúng cách ấy — offline không
+tính là "có người", nên nối lại là một tầng vừa có người đầu tiên. Spec 13 đã
+chọn điều này cho quái; đồng hồ và sức lực vẫn là giới hạn cả hai đường. Không
+đổi luật thang máy.
 
 `startNewDay` đã đưa mọi người khỏi mỏ, nên sau đổi ngày không còn tầng nào có
 người, và `reconcileFloors` xoá sạch node mỏ.
+
+Chính vì một tầng mỏ biến mất theo cách đó — không phải khi đổi ngày, mà ngay
+khi người cuối cùng rời nó — `checkSpot` từ chối đặt bất kỳ công trình nào
+(`isMineArea(area)`) trên một tầng mỏ: một cái rương hay giàn tưới đặt xuống đó
+sẽ biến mất cùng lần dựng lại kế tiếp.
 
 ### Cuốc trong mỏ
 
@@ -99,6 +107,12 @@ người, và `reconcileFloors` xoá sạch node mỏ.
 xuống. Thêm luật: **cầm công cụ không phải kiếm thì đi tiếp xuống luồng node
 thường** (`workNodes`), với đúng tầm với và quét hình chữ nhật như trên mặt đất.
 Thứ tự: kiếm → thang → node.
+
+Ngoại lệ của "thang": một cú bấm chuột **có nhắm** (`target` đi kèm) trúng ô có
+mạch quặng, với công cụ không phải kiếm trong tay, vẫn đi vào luồng node dù
+người chơi đang đứng đúng trên thang — chỉ phím tắt không nhắm (bàn phím,
+không có `target`) mới luôn là xuống thang. Cuốc chim không phải đổi hướng
+đứng để đào mạch quặng ngay dưới chân mình lúc đang đứng trên thang.
 
 `seedNodes` và `startNodeDay` bỏ qua `mine:*`: đất trong mỏ không mọc lại qua
 đêm, nó được sinh lại.
@@ -138,7 +152,10 @@ fuel?: { item: ItemId; count: number };
 
 `outputFor` đọc `converts` trước `artisanOutputFor`. Nạp máy là **tất cả hoặc
 không**: thiếu quặng, thiếu than hay túi không có đủ thì từ chối và túi nguyên
-vẹn. Câu từ chối của lò nấu: "Lò nấu cần 5 quặng cùng loại và 1 than."
+vẹn. Câu từ chối của lò nấu: "Lò nấu cần 5 quặng cùng loại và 1 than." Đủ quặng
+mà thiếu than thì câu từ chối là riêng cho than — "Lò nấu cần thêm 1 than làm
+nhiên liệu." — và túi vẫn nguyên vẹn, vì trừ than được thử sau khi trừ quặng
+nhưng trước khi trạng thái được viết lại.
 
 Không có nhánh `if (kind === 'furnace')` nào ngoài bảng.
 
@@ -173,7 +190,7 @@ và bốn người co-op sẽ biến mỏ thành việc cày.
 - `applyUpgradeTool` kiểm tra theo thứ tự: đứng ở lò rèn → đe rảnh → công cụ có
   bậc trên → mang theo công cụ → **đủ thỏi** → đủ vàng. Thiếu bất kỳ thứ gì thì
   từ chối và không mất gì. Đủ thì trừ công cụ, thỏi và vàng cùng một lúc.
-- Câu từ chối khi thiếu thỏi: "Lên đồng cần 3 đồng thỏi, bạn mới có 1."
+- Câu từ chối khi thiếu thỏi: "Cuốc đồng cần 3 đồng thỏi, bạn mới có 1."
 - `pendingUpgrade` không đổi hình dạng: một công cụ đang chờ lúc cập nhật vẫn
   về đúng hạn, không bị đòi thỏi hồi tố.
 
@@ -217,6 +234,12 @@ chuyện giữa hai người, còn "đã có người xuống tới đó" là ch
 Công thức mới học ngay trong `arrive` khi `deepestFloor` tăng và vào buổi sáng,
 như `hearts` học sau khi tặng quà: một công thức chỉ tới lúc bình minh sẽ khiến
 người chơi tự hỏi mình vừa xuống tầng 10 để làm gì.
+
+Và khi một người **mới** vào nông trại — `player/join` không gặp bản ghi cũ —
+họ cũng được `learnRecipes` chạy ngay với `deepestFloor` hiện tại, chứ không
+phải chỉ với bộ công thức khởi đầu: vào nhóm sau khi cả nhóm đã xuống tầng 10
+không có nghĩa là chờ tới sáng mai mới biết công thức kiếm đồng mà mọi người
+khác đã biết từ hôm trước.
 
 ## Thay đổi ở reducer
 

@@ -1,9 +1,9 @@
 # Specs
 
-Mười một phần việc đã đưa Moonberry từ một cỗ máy trồng trọt biết chạy thành một
-trò chơi đáng chơi, và ba phần việc nữa để nó trông như một trò chơi và có chiều
-sâu đầy đủ của thể loại. Mỗi spec tự chứa: mục tiêu, những quyết định không hiển nhiên, cái
-gì đổi ở đâu, và làm sao biết là nó chạy đúng.
+Mười sáu phần việc đã đưa Moonberry từ một cỗ máy trồng trọt biết chạy thành một
+trò chơi đáng chơi, trông như một trò chơi, và có chiều sâu đầy đủ của thể loại.
+Mỗi spec tự chứa: mục tiêu, những quyết định không hiển nhiên, cái gì đổi ở đâu,
+và làm sao biết là nó chạy đúng.
 
 ## Phần đã xong — vì sao theo thứ tự đó
 
@@ -67,7 +67,7 @@ bộ art nội thất.
 
 ### Spec 10 để lại gì cho những cái sau
 
-Đáng ghi lại, vì hai spec còn lại đều dựng trên đúng những thứ này:
+Đáng ghi lại, vì mọi spec sau nó đều dựng trên đúng những thứ này:
 
 - **`ResourceNode` là state, không phải prop Tiled**, và `isWalkable` nhận một
   đối tượng `Blockers` thay vì thêm một tham số nữa. Spec 13 thêm một trường vào
