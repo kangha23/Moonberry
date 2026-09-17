@@ -101,12 +101,22 @@ Không migrate gì cho phần này:
   món không thích. Thêm món ghét mới là việc của một lần xem lại bảng quà, không
   phải của spec kinh tế.
 
+- **Lời thoại:** ba câu nhắc tới hai cây được viết lại, giữ nguyên `when` và
+  `priority`:
+
+  | Ai | Khi | Câu mới |
+  | --- | --- | --- |
+  | Juniper | `season: 'Winter'` | "Rễ đông với cải tuyết nằm ngay dưới lớp tuyết. Phải biết chỗ mà bới." |
+  | Juniper | `minHearts: 6` | "Có một bãi rễ đông tôi mới chỉ cho đúng một người. Ông ấy mất rồi, nên con số quay về một." |
+  | Tobias | `season: 'Winter'` | "Mùa đông quầy chỉ còn nông cụ. Đất nghỉ thì bác lên mỏ hay ra sông, tôi ngồi đếm tiền mùa thu." |
+
 - **Sạp chợ mùa Đông:** `shopStock('Winter')` không còn hạt nào.
   [ShopPanel.tsx](../../src/components/ShopPanel.tsx) đã có câu cho sạp không có
   hạt ("Mùa Đông gieo gì cũng không sống đến ngày thu hoạch…"), nên không cần sửa.
-- Mọi test đang nhắc hai id này thì sửa hoặc bỏ. Sau khi gỡ, tìm hai chuỗi
-  `frostcap` và `winterberry` trong `src/`, `tests/`, `server/`, `public/` và
-  `art/` không được ra kết quả nào, trừ trong bảng giá của migration.
+- Mọi test đang nhắc hai id này thì sửa hoặc bỏ. Sau khi gỡ, tìm các chuỗi
+  `frostcap`, `winterberry`, `sương giá` và `dâu đông` trong `src/`, `tests/`,
+  `server/`, `public/` và `art/` không được ra kết quả nào, trừ trong bảng giá
+  của migration và test của nó.
 
 ### Migration v11 → v12: đổi ra vàng
 
