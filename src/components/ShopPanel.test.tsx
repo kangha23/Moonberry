@@ -83,9 +83,8 @@ describe('the seed counter', () => {
   it('restocks itself when the season turns', () => {
     show({ ...atTheStall(), season: 'Winter' });
 
-    // Winter's two hardy crops, and none of spring's.
-    expect(screen.getByText('Meo nấm sương giá')).toBeDefined();
-    expect(screen.getByText('Cành dâu đông')).toBeDefined();
+    // Nothing grows in winter, so the stall says so and keeps only its tools.
+    expect(screen.getByText(/gieo gì cũng không sống đến ngày thu hoạch/)).toBeDefined();
     expect(screen.queryByText('Hạt củ cải')).toBeNull();
   });
 

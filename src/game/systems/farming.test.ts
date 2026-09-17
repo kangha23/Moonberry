@@ -279,13 +279,13 @@ describe('the crop catalogue', () => {
     if (crop.regrowDays !== null) expect(crop.regrowDays).toBeLessThan(crop.growDays);
   });
 
-  it('stocks every season the calendar can produce', () => {
+  it('stocks every growing season, and leaves winter fallow on purpose', () => {
     for (const season of ['Spring', 'Summer', 'Autumn'] as const) {
       expect(cropsForSeason(season).length).toBeGreaterThanOrEqual(3);
     }
-    // Winter is deliberately lean, but not empty while there is nothing else
-    // to do in it. See the note in the catalogue.
-    expect(cropsForSeason('Winter').length).toBeGreaterThan(0);
+    // Spec 17: winter is the mine's, the river's and the phố's. See the note
+    // in the catalogue.
+    expect(cropsForSeason('Winter')).toEqual([]);
   });
 });
 

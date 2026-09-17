@@ -30,7 +30,6 @@ export const ASH: NpcDef = {
     tomato: 'liked',
     pumpkin: 'liked',
     turnip: 'hated',
-    frostcap: 'hated',
   },
   schedule: [
     // Sent in when it rains, and not remotely happy about it.

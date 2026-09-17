@@ -308,8 +308,6 @@ export const CROP_PALETTES: Record<CropId, CropPalette> = {
   barley: { form: 'grain', body: PALETTE['light.5'], light: PALETTE['light.7'], dark: PALETTE['soil.6'], seed: PALETTE['soil.5'] },
   cranberry: { form: 'berry', body: PALETTE['clothWarm.2'], light: PALETTE['building.3'], dark: PALETTE['clothWarm.0'], seed: PALETTE['clothWarm.2'] },
   pumpkin: { form: 'gourd', body: PALETTE['light.3'], light: PALETTE['light.5'], dark: PALETTE['soil.5'], seed: PALETTE['light.3'] },
-  frostcap: { form: 'cap', body: PALETTE['light.6'], light: PALETTE['light.7'], dark: PALETTE['building.2'], seed: PALETTE['building.2'] },
-  winterberry: { form: 'berry', body: PALETTE['water.2'], light: PALETTE['water.3'], dark: PALETTE['water.0'], seed: PALETTE['water.2'] },
   // Spec 15's pair. Nếp is a pale ear rather than wheat's gold, and its packet
   // window is the husk; đậu xanh is a green pod-bunch in the berry shape.
   nep: { form: 'grain', body: PALETTE['light.6'], light: PALETTE['light.7'], dark: PALETTE['leaf.3'], seed: PALETTE['gold.0'] },

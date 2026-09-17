@@ -27,7 +27,6 @@ export const ROWAN: NpcDef = {
     // Spec 15. Everybody in the valley is glad of a bánh chưng.
     'banh-chung': 'liked',
     rhubarb: 'loved',
-    winterberry: 'loved',
     turnip: 'liked',
     wheat: 'liked',
     barley: 'liked',

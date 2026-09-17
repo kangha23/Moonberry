@@ -46,7 +46,7 @@ export interface CropDefinition {
 /**
  * The catalogue.
  *
- * Three or four crops a season, chosen so none is strictly better than
+ * Three or four crops in each growing season, chosen so none is strictly better than
  * another. Each season has a cheap fast one, a slow expensive one, one that
  * regrows, and one that earns badly on purpose because a later spec — animals,
  * cooking, gifts — will want something to be made of.
@@ -83,17 +83,11 @@ const CROPS: ReadonlyArray<Omit<CropDefinition, 'seed' | 'produce'>> = [
   { id: 'cranberry', seasons: ['Autumn'], growDays: 7, regrowDays: 2 },
   { id: 'pumpkin', seasons: ['Autumn'], growDays: 8, regrowDays: null },
 
-  // Winter, and a stopgap rather than a design.
-  //
-  // Stardew grows nothing in winter because winter is for the mine, the
-  // river and the town, and that shape is what gives the year its rhythm. We
-  // have none of those three yet, so an empty winter would be four weeks of
-  // walking around a farm with nothing to do. Two hardy crops keep it
-  // playable, priced below autumn so the season still reads as lean. When
-  // spec 07 gives the village something to be worth visiting for, the right
-  // move is to take these two out again.
-  { id: 'frostcap', seasons: ['Winter'], growDays: 5, regrowDays: null },
-  { id: 'winterberry', seasons: ['Winter'], growDays: 8, regrowDays: 4 },
+  // Winter grows nothing, and that is the design rather than a gap in it.
+  // Spec 17 took out the two stopgap crops that kept an empty winter playable
+  // before there was anywhere else to be: the mine, the river, the animals, the
+  // winter forage and the phố are what the season is for now, and a fallow
+  // month is what gives the farming year its rhythm.
 ];
 
 export const CROP_DEFINITIONS: Record<CropId, CropDefinition> = Object.fromEntries(

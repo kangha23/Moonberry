@@ -1,6 +1,6 @@
 # Specs
 
-Mười sáu phần việc đã đưa Moonberry từ một cỗ máy trồng trọt biết chạy thành một
+Mười bảy phần việc đã đưa Moonberry từ một cỗ máy trồng trọt biết chạy thành một
 trò chơi đáng chơi, trông như một trò chơi, và có chiều sâu đầy đủ của thể loại.
 Mỗi spec tự chứa: mục tiêu, những quyết định không hiển nhiên, cái gì đổi ở đâu,
 và làm sao biết là nó chạy đúng.
@@ -30,6 +30,7 @@ cái thứ hai. Mọi thứ còn lại là chiều sâu đặt lên trên hai c�
 | 14 | [Bước vào trong nhà](14-farmhouse-interior.md) | — | Ngôi nhà thôi là mặt tiền, và giấc ngủ có một cái giường. |
 | 15 | [Phố Việt](15-vietnamese-street.md) | 07, 11, 04 | Một khu phố nghe tiếng Việt. Bước đầu của thành phố, không trả giá của nó. |
 | 16 | [Kim loại có chỗ dùng](16-metal-and-the-mine.md) | 13, 10, 11, 06 | Mỏ của 13 đã chạy nhưng đứt ở ba chỗ: quặng không đào được, không ai có kiếm, không có lò nấu. Nối lại, và thợ rèn lấy thỏi. |
+| 17 | [Cân lại kinh tế đầu game](17-early-economy.md) | 16, 11, 04 | Ống tưới ngày 4 xoá giới hạn sức lực ngay tuần đầu, và mùa Đông còn hai cây tạm. Ống tưới giờ cần thỏi và mở theo tầng mỏ; mùa Đông để đất nghỉ. |
 
 ## Phần còn lại
 
@@ -94,6 +95,20 @@ mọi thứ đã có: chặt cây lên cấp Hái lượm, đào lên cấp Khai
 cá, và mỗi cấp mở công thức ở spec 11. Làm nó sau cùng nghĩa là phải quay lại sửa
 cả ba chỗ — và sau spec 10 và 12 thì chặt cây, đào đá và kéo cá đều đã tồn tại,
 nên chỗ để móc vào đã sẵn sàng.
+
+### Spec 17 để lại gì
+
+- **Ống tưới là phần thưởng của mỏ.** Cả hai công thức mở bằng `{ by: 'depth' }`
+  (tầng 5 và 15) và đòi thỏi. Spec 18 mở rộng ruộng bằng cách mua ô đất: đất
+  tiêu vàng, ống tưới tiêu quặng, nên không phải cân lại bảng này.
+- **Mùa Đông không có cây nào.** `cropsForSeason('Winter')` rỗng, và sạp chợ mùa
+  Đông chỉ còn công cụ. Thêm một cây mùa Đông là một quyết định thiết kế, không
+  phải một chỗ trống cần lấp.
+- **Bản lưu v12.** `migrateWinterCrops` đổi mọi đồ mùa Đông ra vàng theo một bảng
+  giá viết cứng. Mẫu này dùng lại được cho lần sau gỡ một vật phẩm khỏi bảng:
+  bảng giá nằm trong migration, không đọc từ `ITEMS`.
+- **Món Việt vẫn chưa cân.** Bánh chưng và chè đậu lời hơn thùng ủ; xem mục
+  "Ngoài phạm vi" của spec 17.
 
 ### Spec 16 để lại gì
 

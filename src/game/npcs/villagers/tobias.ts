@@ -28,7 +28,6 @@ export const TOBIAS: NpcDef = {
     turnip: 'neutral',
     clover: 'disliked',
     wood: 'disliked',
-    frostcap: 'hated',
   },
   schedule: [
     { ...TOBIAS_DOOR, fromHour: 6, toHour: 8, activity: 'home' },
@@ -50,7 +49,7 @@ export const TOBIAS: NpcDef = {
     { priority: 20, when: { season: 'Spring' }, line: '"Gốc dâu tây. Đắt, chậm, và là quyết định sáng suốt nhất cả mùa xuân của bác."' },
     { priority: 20, when: { season: 'Summer' }, line: '"Dưa. Năm nào tôi cũng nói, năm nào cũng có người đi trồng củ cải."' },
     { priority: 20, when: { season: 'Autumn' }, line: '"Tiền nằm ở mùa thu. Đừng bán bí ngô cho tôi ngay ngày đầu, chờ lúc sốt giá đã."' },
-    { priority: 20, when: { season: 'Winter' }, line: '"Nấm sương giá với dâu đông, hết. Thời tiết đâu phải do tôi đặt ra."' },
+    { priority: 20, when: { season: 'Winter' }, line: '"Mùa đông quầy chỉ còn nông cụ. Đất nghỉ thì bác lên mỏ hay ra sông, tôi ngồi đếm tiền mùa thu."' },
     { priority: 20, when: { weather: 'Breezy' }, line: '"Sáng nay nửa cái mái che bay xuống cuối đường. Bác thử hỏi Maeve về mấy cái chốt bà ấy bán cho tôi xem."' },
 
     { priority: 40, when: { minHearts: 2 }, line: '"Hôm nào giỏ bác cũng nặng. Cái đó không phải may, dù bác có nói với người ta thế nào."' },

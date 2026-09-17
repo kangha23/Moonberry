@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { cropsForSeason } from './farming';
 import { countItem, createInventory, emptyInventory, newStack, type Inventory } from './inventory';
-import { ITEMS, itemDef } from './items';
+import { isItemId, ITEMS, itemDef } from './items';
 import { MAX_BUY, buyFromStall, sellAtStall, shopStock, stallFor, stocks } from './shop';
 
 /** A satchel with no room at all, for the refusal paths. */
@@ -56,6 +56,12 @@ describe('what the stall stocks', () => {
     // And never a stack of them, which `addItem` would otherwise happily do
     // across two slots at 4000g each.
     expect(buyFromStall(createInventory(), 99_000, 'Spring', 'gold-scythe', 2).changed).toBe(false);
+  });
+
+  it('sells only tools in winter, because nothing grows in it (spec 17)', () => {
+    expect(shopStock('Winter').every((entry) => entry.kind === 'tool')).toBe(true);
+    expect(isItemId('frostcap')).toBe(false);
+    expect(isItemId('winterberry-seeds')).toBe(false);
   });
 });
 

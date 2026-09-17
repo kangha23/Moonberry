@@ -998,16 +998,6 @@
       ]
     },
     {
-      "target": "crop-frostcap",
-      "pack": "lpc-plants",
-      "file": "plants.png",
-      "grid": 32,
-      "cell": [
-        5,
-        22
-      ]
-    },
-    {
       "target": "crop-seeded",
       "pack": "lpc-crops",
       "file": "crops.png",
@@ -1084,16 +1074,6 @@
       "grid": 32,
       "cell": [
         22,
-        17
-      ]
-    },
-    {
-      "target": "crop-winterberry",
-      "pack": "lpc-crops",
-      "file": "crops.png",
-      "grid": 32,
-      "cell": [
-        23,
         17
       ]
     },
@@ -14626,26 +14606,6 @@
         "ffbf36": "f08a1d",
         "c44d29": "b0351a"
       }
-    },
-    {
-      "target": "item-frostcap-seeds",
-      "pack": "emberfield",
-      "file": "item-icons.png",
-      "grid": 32,
-      "cell": [
-        6,
-        20
-      ]
-    },
-    {
-      "target": "item-winterberry-seeds",
-      "pack": "emberfield",
-      "file": "item-icons.png",
-      "grid": 32,
-      "cell": [
-        2,
-        20
-      ]
     },
     {
       "target": "item-nep-seeds",
