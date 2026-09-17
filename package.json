@@ -1,8 +1,9 @@
 {
-  "name": "stardew-valley-clone",
+  "name": "moonberry-farmstead",
   "version": "0.1.0",
   "private": false,
-  "description": "A cozy Stardew-Valley-inspired farming RPG vertical slice built with React, Vite, and Phaser 4.",
+  "description": "Moonberry Farmstead — a cozy multiplayer farming RPG built with React, Vite, TypeScript and Phaser 4.",
+  "repository": { "type": "git", "url": "https://github.com/kangha23/Moonberry.git" },
   "type": "module",
   "license": "MIT",
   "scripts": {

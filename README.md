@@ -19,7 +19,8 @@ Phaser 4.
   những người đang online đã nằm xuống, và thức tới 2 giờ sáng thì nông trại mất
   một phần mười ví tiền.
 - Thời gian, chuyển ngày, thời tiết và mùa đều tất định.
-- Mười ba loại cây trải khắp bốn mùa, mỗi loại chỉ trồng được đúng mùa của nó và
+- Mười ba loại cây trải khắp ba mùa trồng trọt — mùa Đông cố ý để đất nghỉ, vì
+  đó là mùa của mỏ, sông và phố — mỗi loại chỉ trồng được đúng mùa của nó và
   chết ở ranh giới mùa — kèm ba ngày báo trước, một lớp màu héo, và một bản tóm
   tắt buổi sáng gọi tên những gì đã mất. Có loại mọc lại sau thu hoạch thay vì bị
   nhổ đi, và đó là lý do đáng cam kết một luống đất cho cả mùa.
@@ -392,10 +393,11 @@ gì:
 | 14 | ~~[Bước vào trong nhà](docs/specs/14-farmhouse-interior.md)~~ | Xong. Ngôi nhà thôi là mặt tiền, và giấc ngủ có một cái giường |
 | 15 | ~~[Phố Việt](docs/specs/15-vietnamese-street.md)~~ | Xong. Một khu phố nghe tiếng Việt; bước đầu của thành phố, không trả giá của nó |
 | 16 | ~~[Kim loại có chỗ dùng](docs/specs/16-metal-and-the-mine.md)~~ | Xong. Mỏ cho quặng, lò nấu cho thỏi; thợ rèn và kiếm giờ đòi kim loại chứ không chỉ vàng |
+| 17 | ~~[Cân lại kinh tế đầu game](docs/specs/17-early-economy.md)~~ | Xong. Ống tưới đòi thỏi và mở theo tầng mỏ; mùa Đông thôi trồng trọt |
 
 ### Còn lại gì
 
-Không còn spec nào đánh số cả — cả mười sáu đã xong.
+Không còn spec nào đánh số cả — cả mười bảy đã xong.
 
 [`docs/specs/README.md`](docs/specs/README.md) bàn kỹ hơn về thứ tự — đáng đọc
 trước khi bắt đầu, vì thứ tự đánh số không phải thứ tự chặt chẽ nhất — và liệt
@@ -477,7 +479,15 @@ nào cũng được.
 
 Bản chính thức chạy trên Vercel theo `vercel.json` (đầu ra tĩnh của Vite).
 
+## Nguồn gốc
+
+Moonberry Farmstead lớn lên từ một bản dựng thử ("vertical slice") MIT của Carlo
+Miguel Dy — [carlomigueldy/stardew-valley-clone](https://github.com/carlomigueldy/stardew-valley-clone).
+Mọi thứ trong `docs/specs/` là việc làm thêm kể từ đó. Kho chính thức của bản
+này là [kangha23/Moonberry](https://github.com/kangha23/Moonberry); kho gốc vẫn
+còn trong git dưới tên remote `upstream`.
+
 ## Giấy phép
 
-Mã nguồn là MIT (xem `LICENSE`). Tranh trong `public/assets/lpc/` giữ giấy phép
+Mã nguồn là MIT (xem `LICENSE`, giữ cả dòng bản quyền của bản dựng thử ban đầu). Tranh trong `public/assets/lpc/` giữ giấy phép
 riêng của chúng — đọc `public/assets/lpc/CREDITS.md` trước khi phân phối lại.
