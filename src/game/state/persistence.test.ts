@@ -1330,3 +1330,117 @@ describe('a cast never survives a reload', () => {
     expect(restored?.players.a.fishing).toBeNull();
   });
 });
+
+describe('version 11 saves, from when winter still grew two crops', () => {
+  /** Puts a stack in the first empty slot of a serialised satchel or chest. */
+  function stash(slots: unknown[], stack: { item: string; count: number }) {
+    const empty = slots.indexOf(null);
+    if (empty < 0) throw new Error('no empty slot to stash into');
+    slots[empty] = stack;
+  }
+
+  /**
+   * A save as version 11 wrote it, with winter's two crops in every place one
+   * could be: a satchel, the satchel of somebody else on the farm, a chest, a
+   * keg, and the ground. Written into the JSON by hand, because once spec 17
+   * is in, this build's types have no name for any of it.
+   *
+   * Worth, by the refund table: 2 jam (168) + 5 frostcap (260) + 3 winterberry
+   * seeds (240) + 4 winterberry in the chest (152) + the winterberry in the keg
+   * (38) = 858g.
+   */
+  function version11Envelope() {
+    let farm = playedFarm();
+    farm = applyIntent(farm, { type: 'player/join', playerId: 'b', name: 'B' }).state;
+
+    const chest = createPlaceable('p1', 'chest', START_AREA, 20, 12) as Chest;
+    chest.contents[0] = newStack('wood', 40);
+    const winterKeg = createPlaceable('p2', 'keg', START_AREA, 21, 12) as Machine;
+    const melonKeg = createPlaceable('p3', 'keg', START_AREA, 22, 12) as Machine;
+    melonKeg.job = { input: 'melon', output: 'wine-melon', readyOnDay: farm.time.day + 7 };
+
+    const cells = areaMap(START_AREA).plotTiles.slice(0, 3);
+    const keys = cells.map((cell) => plotKey(START_AREA, cell.x, cell.y));
+    farm = {
+      ...farm,
+      coins: 100,
+      placeables: [chest, winterKeg, melonKeg],
+      plots: {
+        ...farm.plots,
+        [keys[2]]: { ...cells[2], stage: 'sprout', crop: 'strawberry', daysWatered: 2, wateredToday: false },
+      },
+    };
+
+    const envelope = JSON.parse(encodeSave(farm));
+    envelope.version = 11;
+    stash(envelope.farm.players.a.inventory, { item: 'jam-winterberry', count: 2 });
+    stash(envelope.farm.players.b.inventory, { item: 'frostcap', count: 5 });
+    stash(envelope.farm.players.b.inventory, { item: 'winterberry-seeds', count: 3 });
+    envelope.farm.placeables[0].contents[3] = { item: 'winterberry', count: 4 };
+    envelope.farm.placeables[1].job = { input: 'winterberry', output: 'wine-winterberry', readyOnDay: 9 };
+    for (const i of [0, 1]) {
+      envelope.farm.plots[keys[i]] = { ...cells[i], stage: 'sprout', crop: 'frostcap', daysWatered: 2, wateredToday: true };
+    }
+    return { envelope, keys };
+  }
+
+  const WINTER_IDS = [
+    'frostcap-seeds',
+    'winterberry-seeds',
+    'frostcap',
+    'winterberry',
+    'juice-frostcap',
+    'pickle-frostcap',
+    'wine-winterberry',
+    'jam-winterberry',
+  ];
+
+  it('loads, and pays for every winter item it held into the shared wallet', () => {
+    const restored = decodeSave(JSON.stringify(version11Envelope().envelope));
+    expect(restored).not.toBeNull();
+    expect(restored!.coins).toBe(100 + 858);
+  });
+
+  it('leaves no winter item in any satchel or chest, and everything else where it was', () => {
+    const restored = decodeSave(JSON.stringify(version11Envelope().envelope))!;
+    const chest = restored.placeables.find((placeable) => placeable.id === 'p1') as Chest;
+    for (const id of WINTER_IDS) {
+      expect(countItem(restored.players.a.inventory, id)).toBe(0);
+      expect(countItem(restored.players.b.inventory, id)).toBe(0);
+      expect(countItem(chest.contents, id)).toBe(0);
+    }
+    expect(countItem(restored.players.a.inventory, 'turnip-seeds')).toBe(8);
+    expect(chest.contents[0]).toEqual({ item: 'wood', count: 40 });
+    expect(chest.contents[3]).toBeNull();
+  });
+
+  it('empties a machine that was working on a winter crop, and leaves any other job alone', () => {
+    const restored = decodeSave(JSON.stringify(version11Envelope().envelope))!;
+    const winterKeg = restored.placeables.find((placeable) => placeable.id === 'p2') as Machine;
+    const melonKeg = restored.placeables.find((placeable) => placeable.id === 'p3') as Machine;
+    expect(winterKeg.job).toBeNull();
+    expect(melonKeg.job?.input).toBe('melon');
+  });
+
+  it('turns winter crops in the ground back into bare tilled soil, and leaves other crops growing', () => {
+    const { envelope, keys } = version11Envelope();
+    const restored = decodeSave(JSON.stringify(envelope))!;
+    for (const key of keys.slice(0, 2)) {
+      expect(restored.plots[key]).toMatchObject({ stage: 'tilled', crop: null, daysWatered: 0, wateredToday: false });
+    }
+    expect(restored.plots[keys[2]]).toMatchObject({ stage: 'sprout', crop: 'strawberry', daysWatered: 2 });
+  });
+
+  it('leaves the wallet alone for a version 11 save that never grew anything in winter', () => {
+    const farm = { ...playedFarm(), coins: 321 };
+    const envelope = JSON.parse(encodeSave(farm));
+    envelope.version = 11;
+    expect(decodeSave(JSON.stringify(envelope))?.coins).toBe(321);
+  });
+
+  it('round-trips an upgraded version 11 save through the current format', () => {
+    const upgraded = decodeSave(JSON.stringify(version11Envelope().envelope));
+    expect(upgraded).not.toBeNull();
+    expect(decodeSave(encodeSave(upgraded!))).toEqual(upgraded);
+  });
+});

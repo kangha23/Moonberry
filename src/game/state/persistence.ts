@@ -65,7 +65,7 @@ import {
  * Bumped whenever the shape of FarmState changes in a way an older save
  * cannot satisfy. `migrate` is where upgrades from earlier versions go.
  */
-export const SAVE_VERSION = 11;
+export const SAVE_VERSION = 12;
 
 export const SAVE_KEY = 'moonberry:farm';
 
@@ -798,6 +798,7 @@ function migrate(version: number, farm: unknown): unknown {
   if (version <= 8) current = migratePlaceables(current);
   if (version <= 9) current = migrateFishing(current);
   if (version <= 10) current = migrateMine(current);
+  if (version <= 11) current = migrateWinterCrops(current);
   return current;
 }
 
@@ -976,6 +977,91 @@ function migrateMine(farm: unknown): unknown {
   if (!isObject(withPlayers)) return null;
   const spawnSeed = isCount(withPlayers.spawnSeed) ? withPlayers.spawnSeed : LEGACY_SPAWN_SEED;
   return { ...withPlayers, worldSeed: spawnSeed, deepestFloor: 0 };
+}
+
+/**
+ * What spec 17 paid for each winter item when it took winter's two crops out.
+ *
+ * Written out rather than read from `ITEMS`, because by the time this runs the
+ * item table no longer has these rows — which is the whole reason the
+ * migration exists. Seeds at what they cost, everything else at what it sold
+ * for, the machine goods at the price their factor gave them.
+ */
+const WINTER_CROP_REFUNDS: Readonly<Record<string, number>> = {
+  'frostcap-seeds': 20,
+  'winterberry-seeds': 80,
+  frostcap: 52,
+  winterberry: 38,
+  'juice-frostcap': 156,
+  'pickle-frostcap': 114,
+  'wine-winterberry': 114,
+  'jam-winterberry': 84,
+};
+
+const WINTER_CROPS: readonly string[] = ['frostcap', 'winterberry'];
+
+function isWinterItem(value: unknown): value is string {
+  return typeof value === 'string' && Object.hasOwn(WINTER_CROP_REFUNDS, value);
+}
+
+/**
+ * Version 11 could still grow frostcap and winterberry, and spec 17 took them
+ * out. Left alone, a save holding either would be refused outright (a satchel
+ * with an unknown id fails `parseInventory`) or would quietly lose it (a chest
+ * slot with an unknown id becomes an empty slot). Neither is acceptable, so
+ * Tobias buys it all back: every winter item in a satchel, a chest or a
+ * machine becomes gold in the shared wallet.
+ *
+ * A crop in the ground goes back to tilled soil and is not paid for. The seed
+ * was spent the day it was planted; the plot is what the player gets back.
+ */
+function migrateWinterCrops(farm: unknown): unknown {
+  let refund = 0;
+
+  const clearSlots = (slots: unknown): unknown => {
+    if (!Array.isArray(slots)) return slots;
+    return slots.map((slot) => {
+      if (!isObject(slot) || !isWinterItem(slot.item)) return slot;
+      refund += WINTER_CROP_REFUNDS[slot.item] * (isCount(slot.count) ? slot.count : 0);
+      return null;
+    });
+  };
+
+  const withPlayers = upgradePlayers(farm, (player) => ({
+    ...player,
+    inventory: clearSlots(player.inventory),
+  }));
+  if (!isObject(withPlayers)) return null;
+
+  const placeables = Array.isArray(withPlayers.placeables)
+    ? withPlayers.placeables.map((placeable) => {
+        if (!isObject(placeable)) return placeable;
+        let next: Unknown = placeable;
+        if (Array.isArray(placeable.contents)) {
+          next = { ...next, contents: clearSlots(placeable.contents) };
+        }
+        const job = placeable.job;
+        if (isObject(job) && (isWinterItem(job.input) || isWinterItem(job.output))) {
+          if (isWinterItem(job.input)) refund += WINTER_CROP_REFUNDS[job.input];
+          next = { ...next, job: null };
+        }
+        return next;
+      })
+    : withPlayers.placeables;
+
+  const plots = isObject(withPlayers.plots)
+    ? Object.fromEntries(
+        Object.entries(withPlayers.plots).map(([key, plot]) => {
+          if (!isObject(plot) || typeof plot.crop !== 'string' || !WINTER_CROPS.includes(plot.crop)) {
+            return [key, plot];
+          }
+          return [key, { ...plot, stage: 'tilled', crop: null, daysWatered: 0, wateredToday: false }];
+        }),
+      )
+    : withPlayers.plots;
+
+  const coins = isCount(withPlayers.coins) ? withPlayers.coins + refund : withPlayers.coins;
+  return { ...withPlayers, placeables, plots, coins };
 }
 
 /** Which slot the old tool enum should leave the player holding. */

@@ -563,7 +563,7 @@ describe('the day and the save', () => {
   });
 
   it('loads a player saved on mine:7 back onto a farm spawn', () => {
-    expect(SAVE_VERSION).toBe(11);
+    expect(SAVE_VERSION).toBe(12);
     let state = inMine({ ...farmWith('p1'), deepestFloor: 7 }, 'p1', 7);
     state = withMonsters(state, [slime(7, state.players.p1)]);
     const loaded = decodeSave(encodeSave(state));
