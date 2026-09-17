@@ -179,17 +179,22 @@ export function applyAct(state: FarmState, playerId: PlayerId, target?: Point): 
     return { state, events: [say(playerId, 'Chỗ đó ngoài tầm với.')] };
   }
 
-  // Underground the action key means one of two things (spec 13): a sword in
-  // hand swings it, and standing on the ladder goes down it. A click with a
-  // sword is always a swing; the bare key on the ladder is always the ladder,
-  // so a player holding a sword never has to put it away to descend.
+  // Underground the action key means one of three things (spec 13, and F2 of
+  // spec 16's final review): a sword in hand swings it, standing on the
+  // ladder goes down it, and an aimed click at a vein works the vein even
+  // when the ladder is what you happen to be standing on. A click with a
+  // sword is always a swing; the bare key on the ladder — no target, which is
+  // what the keyboard sends — is always the ladder. Only an aimed click that
+  // named a vein, with something other than a sword in hand, is let through
+  // to the ordinary node flow below instead of taking the ladder.
   const depth = mineDepth(player.area);
   if (depth !== null) {
     const ladder = floorFor(state.mineSeed, depth).ladder;
     const onLadder =
       ladder !== null && worldToTile(player.x) === ladder.x && worldToTile(player.y) === ladder.y;
     if (holdsSword(player) && (target || !onLadder)) return applyAttack(state, playerId, target);
-    if (onLadder) return applyDescend(state, playerId);
+    const aimedAtVein = target ? nodeAt(state.nodes, player.area, target.x, target.y) : null;
+    if (onLadder && !aimedAtVein) return applyDescend(state, playerId);
   }
 
   const tile = target ?? targetTile(player.area, player, player.facing);

@@ -408,6 +408,25 @@ describe('ladders, elevators and floors', () => {
     expect(result.state.players.p1.area).toBe(mineArea(3));
   });
 
+  it('an aimed pick click at a vein on the ladder works the vein, not the ladder (F2)', () => {
+    const depth = 12;
+    let state = onLadder(farmWith('p1'), 'p1', depth);
+    const ladder = generateFloor(state.mineSeed, depth).ladder!;
+    const at = { x: ladder.x + 1, y: ladder.y };
+    const vein = createNode('t-coal', 'ore', mineArea(depth), at.x, at.y, { item: 'coal' });
+    state = { ...state, nodes: [...state.nodes, vein] };
+    state = patch(state, 'p1', { selectedSlot: 4 }); // the starting pickaxe
+
+    const result = applyIntent(state, { type: 'player/act', playerId: 'p1', target: at });
+    expect(result.state.players.p1.area).toBe(mineArea(depth));
+    expect(ofKind(result.events, 'descended')).toEqual([]);
+    expect(result.state.players.p1.energy).toBeLessThan(state.players.p1.energy);
+
+    // The bare key — no target — still goes down the ladder.
+    const descended = applyIntent(state, { type: 'player/act', playerId: 'p1' });
+    expect(descended.state.players.p1.area).toBe(mineArea(depth + 1));
+  });
+
   it('forgets an empty floor, and the same day brings it back exactly as it was', () => {
     const start = onLadder(farmWith('p1'), 'p1', 1);
     const first = applyIntent(start, { type: 'player/descend', playerId: 'p1' }).state;
@@ -626,5 +645,19 @@ describe('swords (spec 16)', () => {
     expect(result.state.players.p1.knownRecipes).toContain('copper-sword');
     expect(result.state.players.p2.knownRecipes).toContain('copper-sword');
     expect(ofKind(result.events, 'recipeLearned').map((event) => event.playerId).sort()).toEqual(['p1', 'p2']);
+  });
+
+  it('teaches a joining player the depth recipes the farm already earned (F4)', () => {
+    const state = { ...farmWith('p1'), deepestFloor: 10 };
+
+    const result = applyIntent(state, { type: 'player/join', playerId: 'p2', name: 'p2' });
+
+    expect(result.state.players.p2.knownRecipes).toContain('copper-sword');
+    expect(ofKind(result.events, 'recipeLearned')).toContainEqual({
+      kind: 'recipeLearned',
+      playerId: 'p2',
+      recipe: 'copper-sword',
+      from: { by: 'depth', depth: 10 },
+    });
   });
 });

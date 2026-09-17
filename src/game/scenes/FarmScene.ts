@@ -1163,7 +1163,7 @@ export default class FarmScene extends Phaser.Scene {
     const player = this.localPlayer;
     if (!player) return false;
     const aimed = this.actSource === 'pointer' && this.pointerTile !== null;
-    const action = mineActionFor(this.farm, player, aimed);
+    const action = mineActionFor(this.farm, player, aimed, this.pointerTile);
     if (!action) return false;
 
     if (action === 'attack') {

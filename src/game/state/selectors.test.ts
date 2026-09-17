@@ -18,7 +18,8 @@ import {
 import { applyIntent, createFarmState } from './reducer';
 import { generateFloor } from '../systems/mine';
 import { addItem, newStack } from '../systems/inventory';
-import { TILE_SIZE, mineArea, type Point } from '../world/areas';
+import { createNode } from '../systems/resources';
+import { TILE_SIZE, mineArea, worldToTile, type Point } from '../world/areas';
 import { elevatorTile } from '../world/mineMap';
 import type { FarmStoreState } from './store';
 import { STARTING_MAX_ENERGY, type FarmState, type PlayerId } from './types';
@@ -326,6 +327,45 @@ describe('the mine, as the HUD and the action key read it', () => {
     // Nothing underfoot and nothing in hand: the ordinary act.
     const bare = underground(4, (f) => ({ x: f.entrance.x + 1, y: f.entrance.y + 1 }));
     expect(mineActionFor(bare.farm, bare.player, false)).toBeNull();
+  });
+
+  it('lets an aimed click at a vein work it rather than descend, even on the ladder (F2)', () => {
+    const onLadder = underground(6, (f) => f.ladder!);
+    const target = { x: worldToTile(onLadder.player.x), y: worldToTile(onLadder.player.y) + 1 };
+    const vein = createNode('t1', 'ore', onLadder.player.area, target.x, target.y, { item: 'coal' });
+    const farm = { ...onLadder.farm, nodes: [...onLadder.farm.nodes, vein] };
+    const player = { ...onLadder.player, selectedSlot: 4 }; // the starting pickaxe
+
+    // The bare key — no target, the keyboard's press — still goes down.
+    expect(mineActionFor(farm, player, false)).toBe('descend');
+    // An aimed click at the vein under the pick is let through to the
+    // ordinary act, not swallowed by the ladder.
+    expect(mineActionFor(farm, player, true, target)).toBeNull();
+  });
+
+  it('shows the last message on a mine floor rather than the generic floor line (F1)', () => {
+    const bare = underground(6, (f) => ({ x: f.entrance.x + 1, y: f.entrance.y + 1 }));
+    const store = storeWith(bare.farm, 'a', 'Học được công thức: cuốc đồng.');
+    expect(promptFor(store)).toBe('Học được công thức: cuốc đồng.');
+  });
+
+  it('shows the vein ahead over the last message and the generic floor line (F1)', () => {
+    const bare = underground(6, (f) => ({ x: f.entrance.x + 1, y: f.entrance.y + 1 }));
+    const player = { ...bare.player, selectedSlot: 4 }; // the starting pickaxe
+    const target = { x: worldToTile(player.x), y: worldToTile(player.y) + 1 }; // facing down
+    const vein = createNode('t1', 'ore', player.area, target.x, target.y, { item: 'coal' });
+    const farm = { ...bare.farm, nodes: [...bare.farm.nodes, vein], players: { a: player } };
+
+    const prompt = promptFor(storeWith(farm, 'a', 'Held-over message.'));
+    expect(prompt).toContain('Mạch quặng');
+    expect(prompt).not.toBe('Held-over message.');
+    expect(prompt).not.toContain('Tầng');
+  });
+
+  it('still shows the ladder hint over the message and the vein (F1)', () => {
+    const ladder = underground(4, (f) => f.ladder!);
+    const store = storeWith(ladder.farm, 'a', 'Held-over message.');
+    expect(promptFor(store)).toBe('Space: xuống tầng 5.');
   });
 
   it('lists the elevator stops the farm has opened', () => {

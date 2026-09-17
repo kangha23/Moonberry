@@ -58,6 +58,7 @@ import {
   mineDepth,
   targetTile,
   worldToTile,
+  type Point,
 } from '../world/areas';
 import { mineFixtureAt } from '../world/mineMap';
 import { closedStallMessage, stallAt, stallOpen } from './rules/counters';
@@ -344,8 +345,22 @@ export function promptFor(store: FarmStoreState): string {
   const player = localPlayer(store);
   if (!player) return store.message;
 
-  const mine = mineHint(store.farm, player);
-  if (mine) return mine;
+  const fixture = mineFixtureHint(store.farm, player);
+  if (fixture) return fixture;
+
+  // Underground, and not standing on a fixture: a vein ahead of the aim beats
+  // the last message, and the last message beats the generic reminder — the
+  // one order that keeps a tier refusal, a vein hint or "Học được công thức:
+  // …" from being swallowed by a line that fires on every tile of every
+  // floor (spec 16's F1 fix). Nothing below this applies underground: there
+  // is no villager, counter, animal or building down here to compete with it.
+  if (mineDepth(player.area) !== null) {
+    const vein = nodeAhead(store.farm, player);
+    const veinOffer = vein ? nodeHint(player, vein) : '';
+    if (veinOffer) return veinOffer;
+    if (store.message) return store.message;
+    return mineFloorFallback(player);
+  }
 
   const nearby = interactableAt(player.area, player);
   // Nearest wins between a person and a counter, exactly as it does in the
@@ -482,7 +497,20 @@ export function holdingSword(player: PlayerState | null): boolean {
  */
 export type MineAction = 'attack' | 'descend' | 'exitMine' | 'elevator';
 
-export function mineActionFor(farm: FarmState, player: PlayerState, aimed: boolean): MineAction | null {
+/**
+ * Mirrors `applyAct`'s own reading of the ladder (spec 16's F2 fix): an aimed
+ * click at a tile holding a vein is a swing at the vein even while standing on
+ * the ladder, so a pick in hand still mines what it was pointed at. Only a
+ * bare key — no target, which is what the keyboard sends — is unconditionally
+ * the ladder. Returning `null` here sends the key back to the ordinary `act`
+ * path, which is where a pickaxe already knows what to do with a vein.
+ */
+export function mineActionFor(
+  farm: FarmState,
+  player: PlayerState,
+  aimed: boolean,
+  target?: Point | null,
+): MineAction | null {
   const sword = holdingSword(player);
   const depth = mineDepth(player.area);
   if (depth === null) {
@@ -495,7 +523,10 @@ export function mineActionFor(farm: FarmState, player: PlayerState, aimed: boole
     x: worldToTile(player.x),
     y: worldToTile(player.y),
   });
-  if (fixture === 'ladder') return 'descend';
+  if (fixture === 'ladder') {
+    const aimedAtVein = aimed && target ? nodeAt(farm.nodes, player.area, target.x, target.y) : null;
+    return aimedAtVein ? null : 'descend';
+  }
   if (fixture === 'exit') return 'exitMine';
   if (fixture === 'elevator') return 'elevator';
   return sword ? 'attack' : null;
@@ -508,7 +539,15 @@ export function elevatorStops(farm: FarmState): number[] {
   return stops;
 }
 
-function mineHint(farm: FarmState, player: PlayerState): string {
+/**
+ * What standing on a fixture says: the ladder, the way out, or the elevator.
+ * Empty everywhere else, on the surface and on a bare stretch of tunnel alike
+ * — a fixture is something you have walked up to, and outranks everything
+ * else the bar could say (spec 16's F1 fix keeps that one rule and nothing
+ * more in this function; the rest of a floor's voice — a vein ahead, the last
+ * thing that happened, the generic reminder — is `promptFor`'s to order).
+ */
+function mineFixtureHint(farm: FarmState, player: PlayerState): string {
   const action = mineActionFor(farm, player, false);
   const depth = mineDepth(player.area);
   if (action === 'descend') {
@@ -518,12 +557,21 @@ function mineHint(farm: FarmState, player: PlayerState): string {
   if (action === 'elevator') {
     return elevatorStops(farm).length > 0 ? 'Space: gọi thang máy.' : 'Thang máy. Chưa mở tầng nào để tới.';
   }
-  if (depth !== null) {
-    return holdingSword(player)
-      ? `Tầng ${depth}. Space hoặc bấm chuột để vung kiếm.`
-      : `Tầng ${depth}. Cầm kiếm để đánh quái; tìm thang để xuống sâu hơn.`;
-  }
   return '';
+}
+
+/**
+ * The last thing worth saying on a floor when nothing more specific applies:
+ * not on a fixture, nothing ahead worth swinging at, and no message waiting.
+ * Named for both tools a floor actually wants, because a mine gives ore as
+ * often as it gives a fight.
+ */
+function mineFloorFallback(player: PlayerState): string {
+  const depth = mineDepth(player.area);
+  if (depth === null) return '';
+  return holdingSword(player)
+    ? `Tầng ${depth}. Space hoặc bấm chuột để vung kiếm.`
+    : `Tầng ${depth}. Cầm kiếm hoặc cuốc: đánh quái hoặc đào khoáng. Tìm thang để xuống sâu hơn.`;
 }
 
 /** Health as a fraction of its ceiling, for the tube. */
