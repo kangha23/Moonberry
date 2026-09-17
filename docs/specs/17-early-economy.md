@@ -122,8 +122,9 @@ Không migrate gì cho phần này:
 
 Gặp id vật phẩm lạ thì `parseStack` từ chối, và túi của người chơi từ chối thì
 **cả bản lưu bị từ chối**. Rương thì ngược lại: ô lạ lặng lẽ thành ô trống, tức
-người chơi mất đồ mà không ai báo. Máy có việc nhắc id lạ thì bị bỏ. Cả ba đều
-không chấp nhận được, nên phải có migration.
+người chơi mất đồ mà không ai báo. Máy có việc nhắc id lạ thì `parsePlaceable`
+trả `null`, và bản lưu bị từ chối theo đó. Cả ba đều không chấp nhận được, nên
+phải có migration.
 
 `SAVE_VERSION` lên **12**. `migrate()` thêm
 `if (version <= 11) current = migrateWinterCrops(current);`. Hình dạng

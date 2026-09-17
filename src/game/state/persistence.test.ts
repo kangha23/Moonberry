@@ -1443,4 +1443,28 @@ describe('version 11 saves, from when winter still grew two crops', () => {
     expect(upgraded).not.toBeNull();
     expect(decodeSave(encodeSave(upgraded!))).toEqual(upgraded);
   });
+
+  it('migration chain cleans even an older save: winter items in v9 are paid for and removed', () => {
+    // The migration runs last in the chain (version <= 11), so a v9 save that
+    // carried winter items — possible only by hand-editing at the time — gets
+    // cleaned up when upgraded all the way through to v12. A v9 envelope is
+    // built by deleting fishing (spec 9 adds it), then stashing a winter item
+    // into the satchel like v11 does.
+    const envelope = JSON.parse(encodeSave(playedFarm()));
+    envelope.version = 9;
+    for (const player of Object.values(envelope.farm.players) as Array<Record<string, unknown>>) {
+      delete player.fishing;
+    }
+    const initialCoins = (envelope.farm.coins as number) ?? 0;
+    stash(envelope.farm.players.a.inventory, { item: 'frostcap', count: 1 });
+
+    const restored = decodeSave(JSON.stringify(envelope));
+
+    // The save loads: the chained migration (v9 → v12) runs all steps.
+    expect(restored).not.toBeNull();
+    // The winter item is gone.
+    expect(countItem(restored!.players.a.inventory, 'frostcap')).toBe(0);
+    // Coins grew by the refund amount (52 for one frostcap at sell price).
+    expect(restored!.coins).toBe(initialCoins + 52);
+  });
 });

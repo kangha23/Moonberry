@@ -986,6 +986,9 @@ function migrateMine(farm: unknown): unknown {
  * item table no longer has these rows — which is the whole reason the
  * migration exists. Seeds at what they cost, everything else at what it sold
  * for, the machine goods at the price their factor gave them.
+ *
+ * The table is frozen: these are the prices as they stood when the crops were
+ * removed, and a later spec repricing other items must not alter these numbers.
  */
 const WINTER_CROP_REFUNDS: Readonly<Record<string, number>> = {
   'frostcap-seeds': 20,
