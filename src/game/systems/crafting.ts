@@ -58,28 +58,27 @@ export type RecipeUnlock =
 const RECIPES: readonly Recipe[] = [
   // --- the field ------------------------------------------------------------
   //
-  // The sprinkler is the most important row in the table, so it is the one
-  // that was weighed hardest. Spec 11 asks for a copper bar in the ordinary
-  // one; it does not get one, and that is a deliberate departure worth
-  // stating. Copper is dug, and digging is spec 13, which is scheduled *after*
-  // this — so a copper-barred sprinkler would ship the headline feature of
-  // this spec in an uncraftable state for however long spec 13 takes. The
-  // ordinary sprinkler is therefore stone, fibre and sap, all of which spec 10
-  // already puts on the ground, and the copper moves up one rung to the
-  // quality sprinkler, where it belongs anyway: the eight-tile one is the
-  // genuine second ratchet, and gating it behind the mine is exactly the
-  // shape spec 13 wants to arrive into.
+  // Both sprinklers are behind the mine, and that is spec 17 rather than spec
+  // 11. Spec 11 shipped the ordinary one as stone, fibre and sap on day four,
+  // because copper was not dug yet and a copper-barred sprinkler would have
+  // shipped uncraftable. Spec 16 dug it — and a sprinkler on day four had been
+  // deleting the energy budget in the first week, since watering is what a day
+  // is actually spent on. So each one now costs a bar from the band of the
+  // mine that opens it: the four-tile one at floor five, where copper is, and
+  // the eight-tile one at fifteen, once iron is coming up. The quality
+  // sprinkler no longer eats an ordinary one: it already asks for two bands'
+  // bars, and crafting the small one first would be a click, not a choice.
   {
     id: 'sprinkler',
-    needs: { stone: 6, fiber: 8, sap: 3 },
+    needs: { 'copper-bar': 1, stone: 6, sap: 3 },
     yields: 1,
-    unlock: { by: 'day', day: 4 },
+    unlock: { by: 'depth', depth: 5 },
   },
   {
     id: 'quality-sprinkler',
-    needs: { sprinkler: 1, 'copper-bar': 2, sap: 5 },
+    needs: { 'iron-bar': 1, 'copper-bar': 1, sap: 5 },
     yields: 1,
-    unlock: { by: 'hearts', npc: 'maeve', hearts: 6 },
+    unlock: { by: 'depth', depth: 15 },
   },
 
   // --- storage --------------------------------------------------------------

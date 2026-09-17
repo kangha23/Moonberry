@@ -225,6 +225,47 @@ describe('unlocks', () => {
     const short = craft(bag({ 'copper-bar': 2, wood: 5 }), ['copper-sword'], 'copper-sword', 1);
     expect(short.ok).toBe(false);
   });
+
+  it('puts both sprinklers behind the mine, spec 17', () => {
+    expect(recipeFor('sprinkler')!.needs).toEqual({ 'copper-bar': 1, stone: 6, sap: 3 });
+    expect(recipeFor('sprinkler')!.unlock).toEqual({ by: 'depth', depth: 5 });
+    expect(recipeFor('quality-sprinkler')!.needs).toEqual({ 'iron-bar': 1, 'copper-bar': 1, sap: 5 });
+    expect(recipeFor('quality-sprinkler')!.unlock).toEqual({ by: 'depth', depth: 15 });
+  });
+
+  it('teaches no sprinkler on day four to a farm that has never been down, however friendly', () => {
+    const learned = newlyUnlocked([...STARTING_RECIPES], {
+      day: 4,
+      heartsFor: () => 10,
+      deepestFloor: 0,
+    }).map((entry) => entry.recipe);
+    expect(learned).not.toContain('sprinkler');
+    expect(learned).not.toContain('quality-sprinkler');
+  });
+
+  it('opens the sprinkler at floor five and the quality one at fifteen, not a floor before', () => {
+    const at = (deepestFloor: number) =>
+      newlyUnlocked([...STARTING_RECIPES], { day: 1, heartsFor: () => 0, deepestFloor }).map(
+        (entry) => entry.recipe,
+      );
+    expect(at(4)).not.toContain('sprinkler');
+    expect(at(5)).toContain('sprinkler');
+    expect(at(14)).not.toContain('quality-sprinkler');
+    expect(at(15)).toContain('quality-sprinkler');
+  });
+
+  it('makes a quality sprinkler out of bars and sap, without eating an ordinary one', () => {
+    const made = craft(bag({ 'iron-bar': 1, 'copper-bar': 1, sap: 5 }), ['quality-sprinkler'], 'quality-sprinkler');
+    expect(made.ok).toBe(true);
+    if (!made.ok) return;
+    expect(countItem(made.inventory, 'quality-sprinkler')).toBe(1);
+    expect(countItem(made.inventory, 'iron-bar')).toBe(0);
+    expect(countItem(made.inventory, 'copper-bar')).toBe(0);
+
+    // The old stone-fibre-sap sprinkler is no longer a sprinkler.
+    const noBar = craft(bag({ stone: 6, fiber: 8, sap: 3 }), ['sprinkler'], 'sprinkler');
+    expect(noBar.ok).toBe(false);
+  });
 });
 
 describe('the phố’s three dishes, spec 15', () => {

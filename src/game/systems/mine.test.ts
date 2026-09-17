@@ -644,7 +644,15 @@ describe('swords (spec 16)', () => {
     expect(result.state.deepestFloor).toBe(10);
     expect(result.state.players.p1.knownRecipes).toContain('copper-sword');
     expect(result.state.players.p2.knownRecipes).toContain('copper-sword');
-    expect(ofKind(result.events, 'recipeLearned').map((event) => event.playerId).sort()).toEqual(['p1', 'p2']);
+    // Floor 9 was reached without ever teaching the sprinkler (depth 5), so this
+    // descend also newly meets it for both players alongside the copper sword —
+    // filter to the recipe this test is actually about.
+    expect(
+      ofKind(result.events, 'recipeLearned')
+        .filter((event) => event.recipe === 'copper-sword')
+        .map((event) => event.playerId)
+        .sort(),
+    ).toEqual(['p1', 'p2']);
   });
 
   it('teaches a joining player the depth recipes the farm already earned (F4)', () => {
@@ -659,5 +667,27 @@ describe('swords (spec 16)', () => {
       recipe: 'copper-sword',
       from: { by: 'depth', depth: 10 },
     });
+  });
+
+  it('teaches the whole farm the sprinkler the moment anybody reaches floor five (spec 17)', () => {
+    let state = { ...farmWith('p1', 'p2'), deepestFloor: 4 };
+    state = onLadder(state, 'p1', 4);
+    expect(state.players.p2.knownRecipes).not.toContain('sprinkler');
+
+    const result = applyIntent(state, { type: 'player/descend', playerId: 'p1' });
+
+    expect(result.state.deepestFloor).toBe(5);
+    expect(result.state.players.p1.knownRecipes).toContain('sprinkler');
+    expect(result.state.players.p2.knownRecipes).toContain('sprinkler');
+    expect(result.state.players.p2.knownRecipes).not.toContain('quality-sprinkler');
+  });
+
+  it('teaches a joining player the sprinkler once the farm has been to floor five (spec 17)', () => {
+    const state = { ...farmWith('p1'), deepestFloor: 5 };
+
+    const result = applyIntent(state, { type: 'player/join', playerId: 'p2', name: 'p2' });
+
+    expect(result.state.players.p2.knownRecipes).toContain('sprinkler');
+    expect(result.state.players.p2.knownRecipes).not.toContain('quality-sprinkler');
   });
 });
