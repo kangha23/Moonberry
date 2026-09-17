@@ -51,7 +51,7 @@ import {
   type MachineKind,
 } from '../systems/items';
 import { SEASONS, type Weather } from '../systems/time';
-import { MAX_DEPTH, mineSeedFor } from '../systems/mine';
+import { MAX_DEPTH, MINED_ITEMS, mineSeedFor } from '../systems/mine';
 import { areaMap, isAreaId, isMineArea, spawnPoints } from '../world/areas';
 import type { Direction } from '../world/areas';
 import {
@@ -358,10 +358,16 @@ function parseNode(value: unknown): ResourceNode | null {
   }
 
   // The same, for what a piece of forage is. An id this build has never heard
-  // of would be picked up and then priced at nothing.
+  // of would be picked up and then priced at nothing. A vein is pickier still
+  // — it only ever holds what the mine actually mines, so `wood` on an `ore`
+  // node (which nothing in this build can produce) refuses the save rather
+  // than being drawn as if it were ordinary.
   let item: ItemId | null = null;
-  if (value.kind === 'forage' || value.kind === 'ore') {
+  if (value.kind === 'forage') {
     if (!isItemId(value.item)) return null;
+    item = value.item;
+  } else if (value.kind === 'ore') {
+    if (!isItemId(value.item) || !MINED_ITEMS.includes(value.item)) return null;
     item = value.item;
   } else if (value.item !== null && value.item !== undefined) {
     return null;

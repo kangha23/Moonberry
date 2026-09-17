@@ -2903,6 +2903,17 @@ describe('machines', () => {
     });
   });
 
+  it('refuses the furnace on too little ore, and touches neither the ore nor the coal (F8)', () => {
+    let farm = withMachine('furnace');
+    farm = give(hold(farm, 'a', 'copper-ore', 4), 'a', 'coal', 1);
+
+    const result = applyIntent(farm, { type: 'machine/load', playerId: 'a', machineId: 'p1' });
+
+    expect((thing(result.state, 'p1') as Machine).job).toBeNull();
+    expect(countItem(result.state.players.a.inventory, 'copper-ore')).toBe(4);
+    expect(countItem(result.state.players.a.inventory, 'coal')).toBe(1);
+  });
+
   it('knows how to build a furnace from the first morning', () => {
     const farm = give(give(craftingFarm(), 'a', 'stone', 25), 'a', 'copper-ore', 10);
     const made = applyIntent(farm, { type: 'player/craft', playerId: 'a', recipe: 'furnace', count: 1 });

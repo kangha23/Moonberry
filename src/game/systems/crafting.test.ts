@@ -35,7 +35,7 @@ function fullBag(item: ItemId = 'stone'): Inventory {
   return emptyInventory().map(() => newStack(item, ITEMS[item].stackSize));
 }
 
-const NO_HEARTS = { day: 1, heartsFor: () => 0 };
+const NO_HEARTS = { day: 1, heartsFor: () => 0, deepestFloor: 0 };
 
 describe('the recipe catalogue', () => {
   it('names an item that exists for every recipe', () => {
@@ -163,8 +163,8 @@ describe('unlocks', () => {
   it('opens a dated recipe on its day and not before', () => {
     const dated = ALL_RECIPES.find((recipe) => recipe.unlock.by === 'day')!;
     const on = dated.unlock.by === 'day' ? dated.unlock.day : 0;
-    expect(unlockMet(dated.unlock, { day: on - 1, heartsFor: () => 0 })).toBe(false);
-    expect(unlockMet(dated.unlock, { day: on, heartsFor: () => 0 })).toBe(true);
+    expect(unlockMet(dated.unlock, { day: on - 1, heartsFor: () => 0, deepestFloor: 0 })).toBe(false);
+    expect(unlockMet(dated.unlock, { day: on, heartsFor: () => 0, deepestFloor: 0 })).toBe(true);
   });
 
   it('opens a hearted recipe at its threshold and not below', () => {
@@ -172,20 +172,20 @@ describe('unlocks', () => {
     if (hearted.unlock.by !== 'hearts') return;
     const { npc, hearts } = hearted.unlock;
     const heartsFor = (who: NpcId) => (who === npc ? hearts - 1 : 99);
-    expect(unlockMet(hearted.unlock, { day: 1, heartsFor })).toBe(false);
-    expect(unlockMet(hearted.unlock, { day: 1, heartsFor: () => hearts })).toBe(true);
+    expect(unlockMet(hearted.unlock, { day: 1, heartsFor, deepestFloor: 0 })).toBe(false);
+    expect(unlockMet(hearted.unlock, { day: 1, heartsFor: () => hearts, deepestFloor: 0 })).toBe(true);
   });
 
   it('never ripens a bought recipe, which is paid for rather than earned', () => {
-    expect(unlockMet({ by: 'buy', cost: 10 }, { day: 999, heartsFor: () => 99 })).toBe(false);
+    expect(unlockMet({ by: 'buy', cost: 10 }, { day: 999, heartsFor: () => 99, deepestFloor: 0 })).toBe(false);
   });
 
   it('offers a newly met recipe once, and never again once it is known', () => {
-    const first = newlyUnlocked([...STARTING_RECIPES], { day: 999, heartsFor: () => 99 });
+    const first = newlyUnlocked([...STARTING_RECIPES], { day: 999, heartsFor: () => 99, deepestFloor: 0 });
     expect(first.length).toBeGreaterThan(0);
 
     const known = [...STARTING_RECIPES, ...first.map((entry) => entry.recipe)];
-    expect(newlyUnlocked(known, { day: 999, heartsFor: () => 99 })).toEqual([]);
+    expect(newlyUnlocked(known, { day: 999, heartsFor: () => 99, deepestFloor: 0 })).toEqual([]);
   });
 
   it('offers nothing on the first morning to somebody who has met nobody', () => {
@@ -193,7 +193,7 @@ describe('unlocks', () => {
   });
 
   it('carries the condition along, so a toast can say who gave it to you', () => {
-    const learned = newlyUnlocked([...STARTING_RECIPES], { day: 1, heartsFor: () => 99 });
+    const learned = newlyUnlocked([...STARTING_RECIPES], { day: 1, heartsFor: () => 99, deepestFloor: 0 });
     const hearted = learned.find((entry) => entry.from.by === 'hearts');
     expect(hearted).toBeDefined();
     if (hearted?.from.by !== 'hearts') return;

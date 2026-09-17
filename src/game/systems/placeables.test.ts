@@ -37,7 +37,7 @@ import {
   type Placeable,
   type PlacementWorld,
 } from './placeables';
-import { AREA_IDS, START_AREA, TILE_SIZE, areaMap, plotKey, plotTiles } from '../world/areas';
+import { AREA_IDS, START_AREA, TILE_SIZE, areaMap, mineArea, plotKey, plotTiles } from '../world/areas';
 
 function plots(): Record<string, PlotState> {
   const map: Record<string, PlotState> = {};
@@ -162,6 +162,12 @@ describe('where a thing may stand', () => {
     expect(checkSpot(START_AREA, -1, 4, 'chest', world()).ok).toBe(false);
     expect(checkSpot(START_AREA, 9999, 4, 'chest', world()).ok).toBe(false);
     expect(checkSpot(START_AREA, 1.5, 4, 'chest', world()).ok).toBe(false);
+  });
+
+  it('refuses every mine floor, whatever else is true of the spot (F5)', () => {
+    const floor = mineArea(3);
+    const spot = areaMap(floor).plotTiles[0] ?? { x: 4, y: 4 };
+    expect(checkSpot(floor, spot.x, spot.y, 'chest', world()).ok).toBe(false);
   });
 
   it('lets a path lie across a doorway but never a fence', () => {

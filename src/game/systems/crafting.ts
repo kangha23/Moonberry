@@ -214,8 +214,8 @@ export interface UnlockContext {
   day: number;
   /** Hearts with each villager, for this one player. */
   heartsFor: (npc: NpcId) => number;
-  /** The farm's record depth. Absent reads as never having gone down. */
-  deepestFloor?: number;
+  /** The farm's record depth. 0 reads as never having gone down. */
+  deepestFloor: number;
 }
 
 /**
@@ -237,7 +237,7 @@ export function unlockMet(unlock: RecipeUnlock, context: UnlockContext): boolean
     case 'buy':
       return false;
     case 'depth':
-      return (context.deepestFloor ?? 0) >= unlock.depth;
+      return context.deepestFloor >= unlock.depth;
   }
 }
 

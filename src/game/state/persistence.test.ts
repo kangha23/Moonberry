@@ -926,7 +926,7 @@ describe('the ground, saved and restored', () => {
     expect(decodeSave(JSON.stringify(envelope))).toBeNull();
   });
 
-  it('refuses a map, a kind or a forage item this build has never heard of', () => {
+  it('refuses a map, a kind, a bad forage item, or a bad ore this build has never heard of', () => {
     const farm = playedFarm();
     const good = { id: 'n1', kind: 'rock', area: START_AREA, x: 30, y: 4, health: 2, requires: 'basic', stage: null, item: null };
 
@@ -935,6 +935,14 @@ describe('the ground, saved and restored', () => {
       { ...good, kind: 'obelisk' },
       { ...good, requires: 'mithril' },
       { ...good, kind: 'forage', item: 'moonfruit' },
+      // A vein missing its item outright — mine-area nodes are never saved
+      // (spec 16: they are rebuilt from the seed), but a static-area `ore`
+      // node is still parsed, and a missing item is refused the same way a
+      // missing forage item is.
+      { ...good, kind: 'ore', item: null },
+      // `wood` is a real item id, just never one the mine actually drops —
+      // only what `MINED_ITEMS` lists belongs on a vein (spec 16's F7 fix).
+      { ...good, kind: 'ore', item: 'wood' },
       // A rock with a growth stage, or a tree without one, is a hand-edited
       // save: both halves are checked because both halves would misbehave.
       { ...good, stage: 2 },

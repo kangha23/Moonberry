@@ -12,6 +12,7 @@ import type { PlotState } from './farming';
 import {
   TILE_SIZE,
   areaMap,
+  isMineArea,
   plotKey,
   tileAt,
   type AreaId,
@@ -535,6 +536,13 @@ export function checkSpot(
 ): Placement {
   if (!Number.isInteger(x) || !Number.isInteger(y)) {
     return { ok: false, reason: 'Đó không phải một chỗ trên bản đồ.' };
+  }
+
+  // A mine floor is rebuilt from the seed the moment the last player leaves
+  // it (spec 16), and a chest or a sprinkler set down on it would vanish with
+  // that rebuild — so it never gets the chance (spec 16's F5 fix).
+  if (isMineArea(area)) {
+    return { ok: false, reason: 'Không đặt được thứ gì trong mỏ.' };
   }
 
   const map = areaMap(area);

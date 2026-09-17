@@ -58,6 +58,7 @@ import {
   applyChestStow,
   applyMachineLoad,
   applyMachineCollect,
+  learnRecipes,
 } from './rules/placeables';
 import { applyAct } from './rules/act';
 import { applyTick } from './rules/clock';
@@ -186,6 +187,11 @@ function dispatch(state: FarmState, intent: Intent): ApplyResult {
       const existing = state.players[intent.playerId];
       if (existing) {
         if (existing.online) return unchanged(state);
+        // A returning member's knownRecipes are never stale: the depth loop
+        // in rules/mine.ts and the dawn loop in rules/day.ts both walk every
+        // player in state.players regardless of online status, so whatever
+        // was earned while this member was offline was already taught to
+        // them the moment it happened. Nothing to redo here.
         return {
           state: {
             ...state,
@@ -199,16 +205,19 @@ function dispatch(state: FarmState, intent: Intent): ApplyResult {
       const taken = Object.keys(state.players).length;
       if (taken >= MAX_PLAYERS) return unchanged(state);
       const spawns = spawnPoints();
+      // A brand-new farmhand knows only the starting recipes — but a farm
+      // that has already gone deep hands over every depth recipe that
+      // record earns on the spot, so joining late never means waiting for
+      // dawn to learn what everyone else already knows (spec 16's F4 fix).
+      const created = createPlayer(intent.playerId, intent.name, spawns[taken % spawns.length]);
+      const taught = learnRecipes(created, state.time.day, state.deepestFloor);
       return {
         state: {
           ...state,
           revision: state.revision + 1,
-          players: {
-            ...state.players,
-            [intent.playerId]: createPlayer(intent.playerId, intent.name, spawns[taken % spawns.length]),
-          },
+          players: { ...state.players, [intent.playerId]: taught.player },
         },
-        events: [{ kind: 'playerJoined', playerId: intent.playerId }],
+        events: [{ kind: 'playerJoined', playerId: intent.playerId }, ...taught.events],
       };
     }
 
