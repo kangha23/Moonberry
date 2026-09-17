@@ -36,7 +36,6 @@ export const BRAM: NpcDef = {
     // heard, and he lets you know it.
     egg: 'disliked',
     milk: 'disliked',
-    frostcap: 'hated',
   },
   schedule: [
     // He works in the wet. The stock still has to eat, and he says so often

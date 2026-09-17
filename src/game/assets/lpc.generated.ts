@@ -23,7 +23,6 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
   ['cottage-brown', '/assets/lpc/cottage-brown.png'],
   ['cottage-stone', '/assets/lpc/cottage-stone.png'],
   ['crop-cranberry', '/assets/lpc/crop-cranberry.png'],
-  ['crop-frostcap', '/assets/lpc/crop-frostcap.png'],
   ['crop-melon', '/assets/lpc/crop-melon.png'],
   ['crop-pumpkin', '/assets/lpc/crop-pumpkin.png'],
   ['crop-rhubarb', '/assets/lpc/crop-rhubarb.png'],
@@ -33,7 +32,6 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
   ['crop-sunflower', '/assets/lpc/crop-sunflower.png'],
   ['crop-tomato', '/assets/lpc/crop-tomato.png'],
   ['crop-turnip', '/assets/lpc/crop-turnip.png'],
-  ['crop-winterberry', '/assets/lpc/crop-winterberry.png'],
   ['farmhouse', '/assets/lpc/farmhouse.png'],
   ['flowers-gold', '/assets/lpc/flowers-gold.png'],
   ['flowers-red', '/assets/lpc/flowers-red.png'],
@@ -72,7 +70,6 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
   ['item-eel', '/assets/lpc/item-eel.png'],
   ['item-fiber', '/assets/lpc/item-fiber.png'],
   ['item-fishing-rod', '/assets/lpc/item-fishing-rod.png'],
-  ['item-frostcap-seeds', '/assets/lpc/item-frostcap-seeds.png'],
   ['item-gem', '/assets/lpc/item-gem.png'],
   ['item-gold-axe', '/assets/lpc/item-gold-axe.png'],
   ['item-gold-basket', '/assets/lpc/item-gold-basket.png'],
@@ -125,7 +122,6 @@ export const LPC_IMAGES: readonly (readonly [key: string, url: string])[] = [
   ['item-wild-grape', '/assets/lpc/item-wild-grape.png'],
   ['item-wild-greens', '/assets/lpc/item-wild-greens.png'],
   ['item-wild-leek', '/assets/lpc/item-wild-leek.png'],
-  ['item-winterberry-seeds', '/assets/lpc/item-winterberry-seeds.png'],
   ['item-wood', '/assets/lpc/item-wood.png'],
   ['item-wood-fence', '/assets/lpc/item-wood-fence.png'],
   ['item-wood-path', '/assets/lpc/item-wood-path.png'],
@@ -297,4 +293,4 @@ export type LpcSheet = (typeof LPC_SHEETS)[number];
  * for — but every id that moves out of that fallback and into this list is the
  * game looking more like itself.
  */
-export const LPC_CROPS: readonly CropId[] = ['turnip', 'strawberry', 'rhubarb', 'sunflower', 'tomato', 'melon', 'cranberry', 'pumpkin', 'frostcap', 'winterberry'];
+export const LPC_CROPS: readonly CropId[] = ['turnip', 'strawberry', 'rhubarb', 'sunflower', 'tomato', 'melon', 'cranberry', 'pumpkin'];

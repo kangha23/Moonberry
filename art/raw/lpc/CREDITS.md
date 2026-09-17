@@ -28,7 +28,7 @@ Applies to: `tile-grass*.png`, `tile-path.png`, `tile-water.png`,
 
 Applies to: `crop-seeded.png`, `crop-sprout.png` and the ripe crops `crop-turnip`,
 `crop-strawberry`, `crop-tomato`, `crop-melon`, `crop-rhubarb`, `crop-pumpkin`,
-`crop-cranberry`, `crop-winterberry`.
+`crop-cranberry`.
 
 > "[LPC] Crops" by bluecarrot16, Daniel Eddeland (daneeklu), Joshua Taylor,
 > Richard Kettering (Jetrel). Commissioned by castelonia.
@@ -46,15 +46,14 @@ row 9 is the same plant after harvest. Columns follow the order of the item
 table in the credits file exactly. So `crop-turnip` is band 1 column 10 row 7,
 and `crop-strawberry` is band 2 column 20 row 17.
 
-Two of these are stand-ins rather than name matches, and should be replaced if
-the right drawing turns up: `crop-cranberry` is the pack's raspberry bush and
-`crop-winterberry` is its blueberry bush. Both are the right shape and the
-right colour temperature, which is most of what a crop sprite has to do.
+One of these is a stand-in rather than a name match, and should be replaced if
+the right drawing turns up: `crop-cranberry` is the pack's raspberry bush. It
+is the right shape and the right colour temperature, which is most of what a
+crop sprite has to do.
 
 ## [LPC] Flowers / Plants / Fungi / Wood (CC-BY-SA 3.0)
 
-Applies to: `crop-sunflower.png` (column 4, row 6), `crop-frostcap.png`
-(column 5, row 22 — the pack's ice-blue mushroom), and the scatter props
+Applies to: `crop-sunflower.png` (column 4, row 6), and the scatter props
 `bush` (8, 22), `tuft-tall` (9, 22), `flowers-red` (8, 5), `flowers-gold`
 (9, 5), `flowers-white` (8, 10), `stump` (0, 24), `log` (3, 24) and
 `stump-flowers` (5, 24).

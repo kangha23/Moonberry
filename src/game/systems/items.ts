@@ -36,8 +36,6 @@ export type CropId =
   | 'barley'
   | 'cranberry'
   | 'pumpkin'
-  | 'frostcap'
-  | 'winterberry'
   | 'nep'
   | 'dau-xanh';
 
@@ -1106,7 +1104,10 @@ function fishRows(): Record<ItemId, ItemDef> {
  *
  * Fixed because migrations pack an old save's produce into slots by walking
  * this list: reordering it would move a returning player's turnips. Adding to
- * the end is safe; inserting in the middle is not.
+ * the end is safe; inserting in the middle is not. Removing spec 17's two
+ * winter crops from the middle was safe only because no migration older than
+ * v12 ever packed a winter crop into slots — the v2 satchel migration
+ * predates both.
  */
 export const CROP_ORDER: readonly CropId[] = [
   'turnip',
@@ -1120,8 +1121,6 @@ export const CROP_ORDER: readonly CropId[] = [
   'barley',
   'cranberry',
   'pumpkin',
-  'frostcap',
-  'winterberry',
   // Spec 15's. At the end, for the reason above.
   'nep',
   'dau-xanh',
@@ -1301,8 +1300,6 @@ const CROP_CLASS: Record<CropId, ArtisanClass> = {
   barley: 'grain',
   cranberry: 'fruit',
   pumpkin: 'vegetable',
-  frostcap: 'vegetable',
-  winterberry: 'fruit',
   nep: 'grain',
   'dau-xanh': 'vegetable',
 };
@@ -1665,44 +1662,6 @@ const BASE_ITEMS: Record<ItemId, ItemDef> = {
     sellPrice: 200,
     produce: true,
     blurb: 'Cả làng kéo ra xem những quả to.',
-  },
-  'frostcap-seeds': {
-    id: 'frostcap-seeds',
-    label: 'Meo nấm sương giá',
-    texture: 'item-frostcap-seeds',
-    stackSize: DEFAULT_STACK_SIZE,
-    plants: 'frostcap',
-    sellPrice: 0,
-    buyPrice: 20,
-    blurb: 'Meo nấm, không phải hạt. Nó ưa lạnh và đòi hỏi rất ít.',
-  },
-  frostcap: {
-    id: 'frostcap',
-    label: 'Nấm sương giá',
-    texture: 'item-frostcap',
-    stackSize: DEFAULT_STACK_SIZE,
-    sellPrice: 52,
-    produce: true,
-    blurb: 'Xám, chắc, và ngọt thoảng. Thứ duy nhất mùa đông cho không.',
-  },
-  'winterberry-seeds': {
-    id: 'winterberry-seeds',
-    label: 'Cành dâu đông',
-    texture: 'item-winterberry-seeds',
-    stackSize: DEFAULT_STACK_SIZE,
-    plants: 'winterberry',
-    sellPrice: 0,
-    buyPrice: 80,
-    blurb: 'Tám ngày bén rễ, bốn ngày một lứa hái. Trồng vào ngày đầu đông.',
-  },
-  winterberry: {
-    id: 'winterberry',
-    label: 'Dâu đông',
-    texture: 'item-winterberry',
-    stackSize: DEFAULT_STACK_SIZE,
-    sellPrice: 38,
-    produce: true,
-    blurb: 'Đông cứng trên cành. Tan ra thành thứ đáng kinh ngạc.',
   },
   // Spec 15's two. Priced to be cooked rather than sold: over a summer each
   // earns about what a strawberry earns over a spring, and turned into a dish
